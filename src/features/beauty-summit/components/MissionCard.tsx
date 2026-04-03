@@ -1,7 +1,15 @@
 import React from 'react';
 
 import type { Mission } from '@/features/beauty-summit/types';
-import { CameraIcon, LinkIcon, MissionIcon, QrIcon, VoteIcon } from '@/features/beauty-summit/icons';
+import {
+  CameraIcon,
+  ChevronRightIcon,
+  LinkIcon,
+  MissionIcon,
+  QrIcon,
+  StarIcon,
+  VoteIcon,
+} from '@/features/beauty-summit/icons';
 
 interface MissionCardProps {
   mission: Mission;
@@ -20,26 +28,30 @@ const MissionCard: React.FC<MissionCardProps> = ({
 }) => {
   const renderIcon = (): React.ReactNode => {
     if (completed) {
-      return <MissionIcon color="#fff" />;
+      return <MissionIcon size={22} color="#fff" />;
     }
 
     if (mission.checkin || mission.proofType === 'scan') {
-      return <QrIcon color={accentColor} />;
+      return <QrIcon size={22} color={accentColor} />;
     }
 
     if (mission.proofType === 'image') {
-      return <CameraIcon color={accentColor} />;
+      return <CameraIcon size={22} color={accentColor} />;
     }
 
-    if (mission.proofType === 'link' || mission.proofType === 'referral') {
-      return <LinkIcon color={accentColor} />;
+    if (mission.proofType === 'link') {
+      return <LinkIcon size={22} color={accentColor} />;
+    }
+
+    if (mission.proofType === 'referral') {
+      return <StarIcon size={20} color={accentColor} />;
     }
 
     if (mission.proofType === 'vote') {
-      return <VoteIcon color={accentColor} />;
+      return <VoteIcon size={22} color={accentColor} />;
     }
 
-    return <MissionIcon color={accentColor} />;
+    return <MissionIcon size={22} color={accentColor} />;
   };
 
   return (
@@ -50,23 +62,23 @@ const MissionCard: React.FC<MissionCardProps> = ({
           onOpen(mission);
         }
       }}
-      className={`beauty-slide-up flex w-full items-center gap-3 rounded-[1.1rem] border p-4 text-left transition ${
+      className={`beauty-slide-up flex w-full items-center gap-4 rounded-[1.55rem] border px-5 py-4 text-left transition ${
         completed
-          ? 'border-emerald-400/20 bg-emerald-400/8'
-          : 'border-white/6 bg-white/[0.03] hover:border-white/12 hover:bg-white/[0.045]'
+          ? 'border-[#1d5b45] bg-[#0d211a]'
+          : 'border-white/8 bg-[#15161f] hover:border-white/12 hover:bg-[#191a24]'
       }`}
       style={{ animationDelay: `${delay}ms` }}
     >
       <div
-        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${
-          completed ? 'bg-[linear-gradient(135deg,#22c55e,#4ade80)]' : ''
+        className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.1rem] ${
+          completed ? 'bg-[linear-gradient(135deg,#2fd36f,#30c96f)]' : ''
         }`}
         style={
           completed
             ? undefined
             : {
-                background: `linear-gradient(135deg, ${accentColor}2b, rgba(255,255,255,0.03))`,
-                border: `1px solid ${accentColor}33`,
+                background: `linear-gradient(135deg, ${accentColor}24, rgba(255,255,255,0.03))`,
+                border: `1px solid ${accentColor}26`,
               }
         }
       >
@@ -74,20 +86,23 @@ const MissionCard: React.FC<MissionCardProps> = ({
       </div>
       <div className="min-w-0 flex-1">
         <div
-          className={`text-sm font-semibold ${completed ? 'text-emerald-300 line-through opacity-80' : 'text-white'}`}
+          className={`text-[14px] font-bold ${
+            completed ? 'text-[#4ddd87] line-through decoration-[#4ddd87]/80 decoration-[1.5px]' : 'text-white'
+          }`}
         >
           {mission.title}
         </div>
-        <div className="mt-1 truncate text-[12px] font-normal text-zinc-400">{mission.desc}</div>
+        <div className="mt-1 truncate text-[12px] font-normal text-zinc-500">{mission.desc}</div>
       </div>
-      <div className="shrink-0 text-right">
+      <div className="flex shrink-0 items-center gap-3">
         <div
-          className={`rounded-full px-2 py-1 text-[11px] font-semibold ${
-            completed ? 'bg-emerald-400/10 text-emerald-300' : 'bg-amber-300/10 text-amber-200'
+          className={`rounded-[0.8rem] px-3 py-2 text-[12px] font-black leading-none ${
+            completed ? 'bg-[#163a29] text-[#4ddd87]' : 'bg-[#2c2510] text-[#ffd44d]'
           }`}
         >
-          +{mission.points} BP
+          +{mission.points}
         </div>
+        {!completed ? <ChevronRightIcon color="#4f5059" /> : null}
       </div>
     </button>
   );

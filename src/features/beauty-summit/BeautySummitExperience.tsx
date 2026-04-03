@@ -62,6 +62,10 @@ const BeautySummitExperience: React.FC = () => {
   const [checkinLog, setCheckinLog] = React.useState<CheckinLog[]>([]);
   const [ticketHelpOpen, setTicketHelpOpen] = React.useState<boolean>(false);
   const [permissionStep, setPermissionStep] = React.useState<'phone' | 'profile' | null>(null);
+  const [permissionIntent, setPermissionIntent] = React.useState<'activate' | 'generate-qr' | null>(
+    null,
+  );
+  const [permissionsGranted, setPermissionsGranted] = React.useState<boolean>(false);
 
   const toastTimer = React.useRef<number | null>(null);
 
@@ -202,6 +206,12 @@ const BeautySummitExperience: React.FC = () => {
       return;
     }
 
+    if (permissionsGranted) {
+      finalizeQr();
+      return;
+    }
+
+    setPermissionIntent('generate-qr');
     setPermissionStep('phone');
   };
 
@@ -210,6 +220,22 @@ const BeautySummitExperience: React.FC = () => {
     setQrGenerated(true);
     markMissionComplete(`${tier}-b1`, 'QR đã được tạo thành công');
     showToast('App đã sẵn sàng để check-in');
+  };
+
+  const handlePermissionApproved = (): void => {
+    const intent = permissionIntent;
+
+    setPermissionStep(null);
+    setPermissionIntent(null);
+    setPermissionsGranted(true);
+
+    if (intent === 'generate-qr') {
+      finalizeQr();
+      return;
+    }
+
+    setScreen('main');
+    showToast('Đã kích hoạt app thành công');
   };
 
   const handleDemoCheckin = (zoneId: string): void => {
@@ -342,7 +368,10 @@ const BeautySummitExperience: React.FC = () => {
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => setPermissionStep(null)}
+                onClick={() => {
+                  setPermissionStep(null);
+                  setPermissionIntent(null);
+                }}
                 className="rounded-2xl bg-white/8 px-4 py-3 text-sm font-semibold text-zinc-300"
               >
                 Quay lại
@@ -396,17 +425,20 @@ const BeautySummitExperience: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
-              onClick={() => setPermissionStep(null)}
+              onClick={() => {
+                setPermissionStep(null);
+                setPermissionIntent(null);
+              }}
               className="rounded-2xl bg-white/8 px-4 py-3 text-sm font-semibold text-zinc-300"
             >
               Từ chối
             </button>
             <button
               type="button"
-              onClick={finalizeQr}
+              onClick={handlePermissionApproved}
               className="rounded-2xl bg-[linear-gradient(135deg,#0ea5e9,#38bdf8)] px-4 py-3 text-sm font-semibold text-white"
             >
-              Cho phép
+              {permissionIntent === 'activate' ? 'Vào dashboard' : 'Cho phép'}
             </button>
           </div>
         </div>
@@ -444,6 +476,8 @@ const BeautySummitExperience: React.FC = () => {
     </div>
   );
 
+  const userName = 'Minh Hoàng';
+  const userPhone = '0912 345 678';
   const qrMarkup = generateQrMarkup(`BS26-${tier}-${orderCode || 'DEMO'}`);
 
   return (
@@ -467,14 +501,13 @@ const BeautySummitExperience: React.FC = () => {
       {screen === 'terms' ? (
         <TermsScreen
           agreed={agreed}
-          tier={tier}
           onToggleAgree={() => setAgreed((current) => !current)}
-          onTierChange={setTier}
           onContinue={() => {
             if (!agreed) {
               return;
             }
-            setScreen('qr');
+            setPermissionIntent('activate');
+            setPermissionStep('phone');
           }}
         />
       ) : null}
@@ -486,8 +519,8 @@ const BeautySummitExperience: React.FC = () => {
           qrGenerated={qrGenerated}
           availablePoints={availablePoints}
           totalPoints={totalPoints}
-          userName="Minh Hoàng"
-          userPhone="0912 345 678"
+          userName={userName}
+          userPhone={userPhone}
           qrMarkup={qrMarkup}
           zones={accessibleZones}
           checkinLog={checkinLog}
@@ -509,6 +542,11 @@ const BeautySummitExperience: React.FC = () => {
           totalPoints={totalPoints}
           spentPoints={spentPoints}
           availablePoints={availablePoints}
+          qrGenerated={qrGenerated}
+          userName={userName}
+          userPhone={userPhone}
+          orderCode={orderCode}
+          qrMarkup={qrMarkup}
           currentPhaseMissions={currentPhaseMissions}
           allMissionCount={allMissions.length}
           completedIds={completedIds}
@@ -548,6 +586,7 @@ const BeautySummitExperience: React.FC = () => {
           onOpenMilestone={(milestone) => setSelectedMilestonePct(milestone.pct)}
           onCloseMilestone={() => setSelectedMilestonePct(null)}
           onClaimMilestone={handleClaimMilestone}
+          onOpenQr={() => setScreen('qr')}
         />
       ) : null}
 

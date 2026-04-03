@@ -50,8 +50,8 @@ const InternalTabBar: React.FC<InternalTabBarProps> = ({
   }
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 bg-[linear-gradient(180deg,transparent_0%,rgba(7,8,15,0.88)_18%,rgba(7,8,15,0.98)_100%)] px-3 pb-4 pt-5">
-      <div className="pointer-events-auto grid grid-cols-4 gap-2 rounded-[1.1rem] border border-white/5 bg-black/35 p-2 backdrop-blur-xl">
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 bg-[linear-gradient(180deg,transparent_0%,rgba(8,9,17,0.78)_18%,rgba(8,9,17,0.98)_100%)] px-3 pb-3 pt-4">
+      <div className="pointer-events-auto grid grid-cols-4 gap-2">
         {tabs.map((tab) => {
           const active = tab.key === activeTab;
 
@@ -60,16 +60,16 @@ const InternalTabBar: React.FC<InternalTabBarProps> = ({
               key={tab.key}
               type="button"
               onClick={() => onChange(tab.key)}
-              className={`rounded-2xl border px-2 py-2 text-center transition ${
+              className={`h-[72px] rounded-[1.25rem] border px-2 py-2 text-center transition ${
                 active
-                  ? 'border-pink-400/35 bg-[linear-gradient(145deg,rgba(236,72,153,0.2),rgba(245,158,11,0.08))] text-white'
-                  : 'border-white/6 bg-white/[0.03] text-zinc-500'
+                  ? 'border-[#8b175f] bg-[linear-gradient(180deg,rgba(69,22,58,0.96),rgba(28,18,37,0.96))] text-white shadow-[0_10px_24px_rgba(135,24,95,0.14)]'
+                  : 'border-white/8 bg-[#13141d]/96 text-zinc-500'
               }`}
             >
               {tab.key === 'missions' ? (
                 <div
-                  className={`mx-auto mb-1 inline-flex min-w-10 justify-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                    active ? 'bg-pink-400/15 text-pink-200' : 'bg-white/6 text-zinc-500'
+                  className={`mx-auto mb-1 inline-flex min-w-10 justify-center rounded-full px-2.5 py-1 text-[9px] font-black ${
+                    active ? 'bg-[#7d235c] text-[#ff87d0]' : 'bg-white/6 text-zinc-500'
                   }`}
                 >
                   {completedCount}/{totalCount}
@@ -79,7 +79,7 @@ const InternalTabBar: React.FC<InternalTabBarProps> = ({
               )}
               <div className="flex items-center justify-center gap-1">
                 {tab.renderIcon(active)}
-                <span className={`text-[11px] font-medium ${active ? 'text-white' : 'text-zinc-500'}`}>
+                <span className={`text-[10px] font-semibold ${active ? 'text-white' : 'text-zinc-500'}`}>
                   {tab.label}
                 </span>
               </div>

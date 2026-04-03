@@ -28,6 +28,12 @@ export const MissionIcon: React.FC<IconProps> = ({ size = 18, color = '#fff', cl
   </svg>
 );
 
+export const StarIcon: React.FC<IconProps> = ({ size = 18, color = '#fff', className }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill={color}>
+    <path d="M12 2.4l2.86 5.79 6.39.93-4.62 4.5 1.09 6.38L12 16.99 6.28 20l1.09-6.38-4.62-4.5 6.39-.93L12 2.4Z" />
+  </svg>
+);
+
 export const VoucherIcon: React.FC<IconProps> = ({ size = 18, color = '#fff', className }) => (
   <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
     <rect x="2.5" y="6" width="19" height="12" rx="2.5" />
@@ -92,6 +98,15 @@ export const TrophyIcon: React.FC<IconProps> = ({ size = 18, color = '#ffd700', 
   </svg>
 );
 
+export const GiftIcon: React.FC<IconProps> = ({ size = 18, color = '#fff', className }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 9.5h16v10.5H4z" />
+    <path d="M12 9.5V20" />
+    <path d="M4 13h16" />
+    <path d="M12 9.5H8.6A2.6 2.6 0 1 1 11 5.2L12 6.5l1-1.3a2.6 2.6 0 1 1 2.4 4.3H12Z" />
+  </svg>
+);
+
 export const CalendarIcon: React.FC<IconProps> = ({ size = 16, color = '#fff', className }) => (
   <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
     <rect x="3" y="4.5" width="18" height="17" rx="2" />
@@ -112,5 +127,11 @@ export const CloseIcon: React.FC<IconProps> = ({ size = 16, color = '#888', clas
   <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
     <path d="M6 6l12 12" />
     <path d="M18 6L6 18" />
+  </svg>
+);
+
+export const ChevronRightIcon: React.FC<IconProps> = ({ size = 16, color = '#666', className }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 6l6 6-6 6" />
   </svg>
 );

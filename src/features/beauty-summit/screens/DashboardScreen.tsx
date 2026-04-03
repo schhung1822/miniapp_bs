@@ -23,9 +23,11 @@ import { getToneClasses, normalizeQuery } from '@/features/beauty-summit/utils';
 import {
   CalendarIcon,
   ClockIcon,
+  GiftIcon,
   PolicyIcon,
+  QrIcon,
   SearchIcon,
-  TrophyIcon,
+  StarIcon,
   VoucherIcon,
   VoteIcon,
 } from '@/features/beauty-summit/icons';
@@ -46,6 +48,11 @@ interface DashboardScreenProps {
   totalPoints: number;
   spentPoints: number;
   availablePoints: number;
+  qrGenerated: boolean;
+  userName: string;
+  userPhone: string;
+  orderCode: string;
+  qrMarkup: string;
   currentPhaseMissions: Mission[];
   allMissionCount: number;
   completedIds: string[];
@@ -78,6 +85,7 @@ interface DashboardScreenProps {
   onOpenMilestone: (milestone: Milestone) => void;
   onCloseMilestone: () => void;
   onClaimMilestone: () => void;
+  onOpenQr: () => void;
 }
 
 const phaseItems: Array<{
@@ -88,20 +96,20 @@ const phaseItems: Array<{
 }> = [
   {
     key: 'before',
-    label: 'Trước sự kiện',
-    renderIcon: (active) => <ClockIcon color={active ? '#fff' : '#71717a'} />,
+    label: 'Nhiệm vụ trước sự kiện',
+    renderIcon: (active) => <ClockIcon size={19} color={active ? '#fff' : '#696a73'} />,
   },
   {
     key: 'day1',
-    label: 'Ngày 1',
-    sub: '19/06',
-    renderIcon: (active) => <CalendarIcon color={active ? '#fff' : '#71717a'} />,
+    label: 'Nhiệm vụ ngày 1',
+    sub: '19/06/2026',
+    renderIcon: (active) => <CalendarIcon size={19} color={active ? '#fff' : '#696a73'} />,
   },
   {
     key: 'day2',
-    label: 'Ngày 2',
-    sub: '20/06',
-    renderIcon: (active) => <CalendarIcon color={active ? '#fff' : '#71717a'} />,
+    label: 'Nhiệm vụ ngày 2',
+    sub: '20/06/2026',
+    renderIcon: (active) => <CalendarIcon size={19} color={active ? '#fff' : '#696a73'} />,
   },
 ];
 
@@ -115,6 +123,11 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
   totalPoints,
   spentPoints,
   availablePoints,
+  qrGenerated,
+  userName,
+  userPhone,
+  orderCode,
+  qrMarkup,
   currentPhaseMissions,
   allMissionCount,
   completedIds,
@@ -147,16 +160,155 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
   onOpenMilestone,
   onCloseMilestone,
   onClaimMilestone,
+  onOpenQr,
 }) => {
   const completedSet = new Set(completedIds);
   const claimedFreeSet = new Set(claimedFreeVoucherIds);
   const redeemedSet = new Set(redeemedVoucherIds);
   const milestoneSet = new Set(claimedMilestonePcts);
+  const ticketCode = orderCode.trim().slice(-3) || 'KKK';
+  const hasQr = qrGenerated && orderCode.trim().length > 0;
+
+  const renderPassCard = (): React.ReactNode => (
+    <div className="beauty-glow mb-5 overflow-hidden rounded-[1.8rem] border border-[#715318] bg-[linear-gradient(135deg,#241d12_0%,#251b15_56%,#311225_100%)] shadow-[0_16px_38px_rgba(0,0,0,0.24)]">
+      <div className="relative px-5 pb-5 pt-6">
+        <div className="pointer-events-none absolute right-8 top-4 h-24 w-24 rounded-full bg-[#ff3bb1]/16 blur-[46px]" />
+        <div className="grid grid-cols-[minmax(0,1fr)_112px] items-start gap-4 sm:grid-cols-[minmax(0,1fr)_124px]">
+          <div className="min-w-0 pt-1">
+            <div className="mb-4 inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-[#f4c50a] px-4 py-2 text-[10px] font-black text-white">
+              <StarIcon size={12} color="#ffffff" />
+              <span>{tier.name} Pass</span>
+            </div>
+            <div className="text-[22px] font-black leading-[0.95] text-white sm:text-[26px]">
+              {userName}
+            </div>
+            <div className="mt-2 truncate text-[12px] font-medium leading-none text-[#8a8a92] sm:text-[14px]">
+              {userPhone} · {ticketCode}
+            </div>
+            <div className="mt-5 inline-flex items-center gap-2 rounded-[0.95rem] bg-[#3a2b10] px-4 py-3 text-[#ffd23f]">
+              <StarIcon size={15} color="#ffd23f" />
+              <span className="text-[16px] font-black leading-none">{availablePoints}</span>
+              <span className="text-[12px] font-medium text-[#9d937b]">BP</span>
+            </div>
+          </div>
+
+          <button type="button" onClick={onOpenQr} className="shrink-0 text-center">
+            <div className="rounded-[1.65rem] border-[3px] border-[#d4be83] bg-white p-3 shadow-[0_0_0_3px_rgba(255,255,255,0.05),0_16px_34px_rgba(211,80,168,0.18)]">
+              {hasQr ? (
+                <div
+                  className="h-[90px] w-[90px] overflow-hidden rounded-[0.85rem] sm:h-[98px] sm:w-[98px] [&>svg]:h-full [&>svg]:w-full"
+                  dangerouslySetInnerHTML={{ __html: qrMarkup }}
+                />
+              ) : (
+                <div className="flex h-[90px] w-[90px] items-center justify-center rounded-[0.85rem] bg-white sm:h-[98px] sm:w-[98px]">
+                  <QrIcon size={42} color="#1c1530" />
+                </div>
+              )}
+            </div>
+            <div className="mx-auto mt-[-10px] inline-flex rounded-full bg-[#e8b105] px-4 py-2 text-[10px] font-black text-white shadow-[0_12px_22px_rgba(232,177,5,0.32)]">
+              {hasQr ? 'CHECK-IN' : 'TẠO QR'}
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderProgressCard = (): React.ReactNode => {
+    const trackItems = [
+      { pct: 0, label: '0%', unlocked: completedIds.length > 0, milestone: null as Milestone | null },
+      ...MILESTONES.map((milestone) => ({
+        pct: milestone.pct,
+        label: `${milestone.pct}%`,
+        unlocked: progress >= milestone.pct,
+        milestone,
+      })),
+    ];
+
+    return (
+      <div className="mb-5 rounded-[1.65rem] border border-white/8 bg-[#161720] px-5 py-5 shadow-[0_14px_34px_rgba(0,0,0,0.16)]">
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <div className="text-[15px] font-semibold text-[#9ba1b2]">Tiến độ nhiệm vụ</div>
+          <div className="text-[16px] font-black text-[#ff58ba]">
+            {completedIds.length}/{allMissionCount}
+          </div>
+        </div>
+
+        <div className="flex items-start">
+          {trackItems.map((item, index) => {
+            const isFinal = item.pct === 100;
+            const iconColor = item.unlocked || isFinal ? '#c89d10' : '#5b5c67';
+            const node = (
+              <div className={`flex ${isFinal ? 'w-[64px]' : 'w-[40px]'} flex-col items-center`}>
+                {item.milestone ? (
+                  <button
+                    type="button"
+                    onClick={() => onOpenMilestone(item.milestone)}
+                    className={`flex items-center justify-center transition ${
+                      isFinal
+                        ? 'h-[54px] w-[54px] rounded-[1.1rem] border-2 border-dashed'
+                        : 'h-[46px] w-[46px] rounded-[0.95rem] border-2'
+                    }`}
+                    style={{
+                      borderColor: item.unlocked ? '#a88312' : isFinal ? 'rgba(168,131,18,0.7)' : '#3a3b44',
+                      background: item.unlocked
+                        ? 'rgba(168,131,18,0.14)'
+                        : isFinal
+                          ? 'rgba(168,131,18,0.06)'
+                          : 'rgba(32,33,41,0.9)',
+                    }}
+                  >
+                    <GiftIcon size={isFinal ? 22 : 19} color={iconColor} />
+                  </button>
+                ) : (
+                  <div
+                    className="flex h-[34px] w-[34px] items-center justify-center rounded-[0.85rem]"
+                    style={{
+                      background: item.unlocked ? 'linear-gradient(135deg, #b88908, #e5b61a)' : 'rgba(32,33,41,0.9)',
+                    }}
+                  >
+                    <span className={`text-[22px] leading-none ${item.unlocked ? 'text-white' : 'text-[#646572]'}`}>
+                      ✓
+                    </span>
+                  </div>
+                )}
+                <div
+                  className="mt-2 text-[10px] font-black"
+                  style={{ color: item.unlocked || isFinal ? '#c89d10' : '#5b5c67' }}
+                >
+                  {item.label}
+                </div>
+              </div>
+            );
+
+            if (index === trackItems.length - 1) {
+              return <div key={item.pct}>{node}</div>;
+            }
+
+            return (
+              <React.Fragment key={item.pct}>
+                {node}
+                <div className="mt-[14px] h-[6px] flex-1 rounded-full bg-[#2a2b33]">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: item.unlocked ? '100%' : '0%',
+                      background: 'linear-gradient(90deg, #b88908, #d6ad1b)',
+                    }}
+                  />
+                </div>
+              </React.Fragment>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
 
   const renderMissionsTab = (): React.ReactNode => {
     return (
       <>
-        <div className="mb-4 grid grid-cols-3 gap-2">
+        <div className="mb-5 grid grid-cols-3 gap-2.5">
           {phaseItems.map((item) => {
             const active = item.key === activePhase;
             const percent = phaseProgressMap[item.key];
@@ -166,35 +318,30 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 key={item.key}
                 type="button"
                 onClick={() => onPhaseChange(item.key)}
-                className={`rounded-[1rem] border px-2 py-3 text-center transition ${
-                  active ? 'text-white' : 'border-white/6 bg-white/[0.03] text-zinc-500'
+                className={`rounded-[1.35rem] border px-2.5 py-3.5 text-center transition ${
+                  active ? 'text-white' : 'border-white/8 bg-[#10111a] text-zinc-500'
                 }`}
                 style={
                   active
                     ? {
-                        borderColor: `${tier.color}55`,
-                        background: `linear-gradient(145deg, ${tier.color}24, rgba(255,255,255,0.05))`,
+                        borderColor: '#7d5e19',
+                        background: 'linear-gradient(180deg, rgba(39,30,18,0.96), rgba(28,23,15,0.96))',
                       }
                     : undefined
                 }
               >
                 <div
-                  className={`mx-auto mb-2 inline-flex rounded-full px-2 py-1 text-[10px] font-semibold ${
-                    percent === 100 ? 'bg-emerald-400/12 text-emerald-300' : ''
+                  className={`mx-auto mb-2 inline-flex rounded-full px-3 py-1 text-[9px] font-black ${
+                    active ? 'bg-[#3d2f14] text-[#e7b317]' : 'bg-[#191923] text-[#767680]'
                   }`}
-                  style={
-                    percent === 100
-                      ? undefined
-                      : active
-                        ? { background: `${tier.color}22`, color: tier.color }
-                        : { background: 'rgba(255,255,255,0.04)', color: '#71717a' }
-                  }
                 >
                   {percent}%
                 </div>
-                <div className="mb-1 flex justify-center">{item.renderIcon(active)}</div>
-                <div className="text-[11px] font-semibold">{item.label}</div>
-                {item.sub ? <div className="mt-1 text-[10px] text-zinc-500">{item.sub}</div> : null}
+                <div className="mb-2 flex justify-center">{item.renderIcon(active)}</div>
+                <div className={`text-[12px] font-semibold leading-5 ${active ? 'text-white' : 'text-[#73737c]'}`}>
+                  {item.label}
+                </div>
+                {item.sub ? <div className="mt-1 text-[10px] text-[#73737c]">{item.sub}</div> : null}
               </button>
             );
           })}
@@ -514,96 +661,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
   return (
     <div className="relative h-full">
-      <div className="h-full overflow-y-auto px-4 pb-28 pt-5">
-        <div
-          className="beauty-glow mb-4 overflow-hidden rounded-[1.5rem] border"
-          style={{
-            borderColor: `${tier.color}33`,
-            background: `linear-gradient(145deg, ${tier.color}16, rgba(255,255,255,0.05))`,
-          }}
-        >
-          <div className="px-5 pb-5 pt-4">
-            <div className="mb-4 flex items-start justify-between gap-4">
-              <div>
-                <div
-                  className="mb-2 inline-flex rounded-full px-3 py-1 text-xs font-semibold text-[#170d1d]"
-                  style={{ background: tier.gradient }}
-                >
-                  {tier.icon} {tier.name} Pass
-                </div>
-                <div className="text-2xl font-black text-white">Beauty Summit Dashboard</div>
-                <div className="mt-2 max-w-[17rem] text-sm leading-6 text-zinc-300">
-                  Theo dõi tiến độ nhiệm vụ, đổi voucher và bình chọn nhãn hàng yêu thích trong cùng một nơi.
-                </div>
-              </div>
-              <div className="rounded-[1.25rem] border border-white/10 bg-white/5 px-4 py-3 text-center">
-                <div className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Tiến độ</div>
-                <div className="mt-1 text-3xl font-black text-white">{progress}%</div>
-              </div>
-            </div>
-
-            <div className="mb-3 h-2 rounded-full bg-white/8">
-              <div
-                className="h-2 rounded-full"
-                style={{ width: `${progress}%`, background: tier.gradient }}
-              />
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              <div className="rounded-[1rem] border border-white/6 bg-white/[0.03] px-3 py-4 text-center">
-                <div className="text-lg font-black text-amber-200">{availablePoints}</div>
-                <div className="mt-1 text-[11px] text-zinc-400">BPoint</div>
-              </div>
-              <div className="rounded-[1rem] border border-white/6 bg-white/[0.03] px-3 py-4 text-center">
-                <div className="text-lg font-black text-pink-300">{completedIds.length}</div>
-                <div className="mt-1 text-[11px] text-zinc-400">nhiệm vụ xong</div>
-              </div>
-              <div className="rounded-[1rem] border border-white/6 bg-white/[0.03] px-3 py-4 text-center">
-                <div className="text-lg font-black text-sky-300">{Object.keys(votes).length}</div>
-                <div className="mt-1 text-[11px] text-zinc-400">hạng mục vote</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mb-5 grid grid-cols-3 gap-2">
-          {MILESTONES.map((milestone) => {
-            const unlocked = progress >= milestone.pct;
-            const claimed = milestoneSet.has(milestone.pct);
-
-            return (
-              <button
-                key={milestone.pct}
-                type="button"
-                onClick={() => onOpenMilestone(milestone)}
-                className={`rounded-[1rem] border px-3 py-4 text-center transition ${
-                  claimed ? 'border-emerald-400/25 bg-emerald-400/8' : 'border-white/6 bg-white/[0.03]'
-                }`}
-              >
-                <div className="mb-2 flex justify-center">
-                  <TrophyIcon size={20} color={claimed ? '#4ade80' : milestone.color} />
-                </div>
-                <div className="text-[11px] font-semibold text-white">{milestone.pct}%</div>
-                <div className="mt-1 text-[10px] text-zinc-500">
-                  {claimed ? 'Đã nhận' : unlocked ? 'Mở khóa' : 'Đang khóa'}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {activeTab === 'missions' ? null : (
-          <div className="mb-5 rounded-[1rem] border border-white/6 bg-white/[0.03] px-4 py-3">
-            <div className="flex items-center gap-2 text-sm font-semibold text-white">
-              {activeTab === 'vouchers' ? <VoucherIcon /> : activeTab === 'vote' ? <VoteIcon /> : <PolicyIcon />}
-              {activeTab === 'vouchers'
-                ? 'Voucher & quà tặng'
-                : activeTab === 'vote'
-                  ? 'Bình chọn nhãn hàng'
-                  : 'Chính sách chương trình'}
-            </div>
-          </div>
-        )}
+      <div className="h-full overflow-y-auto px-4 pb-40 pt-5">
+        {renderPassCard()}
+        {renderProgressCard()}
 
         {activeTab === 'missions'
           ? renderMissionsTab()
