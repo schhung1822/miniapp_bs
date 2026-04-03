@@ -1,0 +1,114 @@
+export type ExperienceScreen = 'onboarding' | 'terms' | 'qr' | 'main' | 'reward';
+
+export type TierKey = 'STANDARD' | 'PREMIUM' | 'VIP';
+
+export type BeautyTab = 'missions' | 'vouchers' | 'vote' | 'policy';
+
+export type MissionPhase = 'before' | 'day1' | 'day2';
+
+export type VoucherTab = 'bpoint' | 'free';
+
+export type ProofType =
+  | 'link'
+  | 'image'
+  | 'scan'
+  | 'vote'
+  | 'survey'
+  | 'referral'
+  | 'code'
+  | 'quiz'
+  | null;
+
+export interface TierMeta {
+  key: TierKey;
+  name: string;
+  color: string;
+  gradient: string;
+  icon: string;
+}
+
+export interface Voucher {
+  id: string;
+  brand: string;
+  logo: string;
+  discount: string;
+  desc: string;
+  code: string | null;
+  color: string;
+  cost?: number;
+  isGrand?: boolean;
+}
+
+export interface VoteBrand {
+  id: string;
+  name: string;
+}
+
+export interface VoteCategory {
+  id: string;
+  title: string;
+  desc: string;
+  color: string;
+  brands: VoteBrand[];
+}
+
+export interface Mission {
+  id: string;
+  title: string;
+  desc: string;
+  points: number;
+  phase: MissionPhase;
+  steps: string[];
+  proofType: ProofType;
+  proofLabel?: string;
+  proofPlaceholder?: string;
+  auto?: boolean;
+  checkin?: boolean;
+}
+
+export interface MissionSet {
+  before: Mission[];
+  day1: Mission[];
+  day2: Mission[];
+}
+
+export interface CheckinZone {
+  id: string;
+  name: string;
+  location: string;
+  color: string;
+  tiers: TierKey[];
+  desc: string;
+}
+
+export interface CheckinLog {
+  id: string;
+  zoneId: string;
+  zoneName: string;
+  color: string;
+  time: string;
+  day: string;
+}
+
+export interface PolicySection {
+  id: string;
+  title: string;
+  items: string[];
+  tone: 'pink' | 'gold' | 'green' | 'blue' | 'red';
+}
+
+export interface Milestone {
+  pct: number;
+  title: string;
+  brand: string;
+  desc: string;
+  color: string;
+}
+
+export interface OnboardingSlide {
+  id: string;
+  badge: string;
+  title: string;
+  desc: string;
+  accent: string;
+}
