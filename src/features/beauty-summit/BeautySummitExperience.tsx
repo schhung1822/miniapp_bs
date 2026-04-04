@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { configAppView } from 'zmp-sdk';
+import { AppError, configAppView, getAccessToken, getPhoneNumber, getUserID, getUserInfo } from 'zmp-sdk';
 
 import {
   BPOINT_VOUCHERS,
@@ -66,7 +66,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const [toast, setToast] = React.useState<string | null>(null);
   const [checkinLog, setCheckinLog] = React.useState<CheckinLog[]>([]);
   const [ticketHelpOpen, setTicketHelpOpen] = React.useState<boolean>(false);
-  const [permissionStep, setPermissionStep] = React.useState<'phone' | 'profile' | null>(null);
+  const [permissionStep, setPermissionStep] = React.useState<'profile' | null>(null);
   const [permissionIntent, setPermissionIntent] = React.useState<'activate' | 'generate-qr' | null>(
     null,
   );
@@ -217,7 +217,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     }
 
     setPermissionIntent('generate-qr');
-    setPermissionStep('phone');
+    setPermissionStep('profile');
   };
 
   const finalizeQr = (): void => {
@@ -226,17 +226,56 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     markMissionComplete(`${tier}-b1`, 'QR đã được tạo thành công');
     showToast('App đã sẵn sàng để check-in');
   };
+  const handlePermissionDenied = async () => {
+    setPermissionStep(null);
+    setPermissionIntent(null);
+    setPermissionsGranted(false);
 
-  const handlePermissionApproved = (): void => {
+    if (permissionIntent === 'activate') {
+      setAgreed(false);
+      setSlideIndex(0);
+      setScreen('onboarding');
+    }
+  }
+  const handlePermissionApproved = async (): Promise<void> => {
     const intent = permissionIntent;
 
     setPermissionStep(null);
     setPermissionIntent(null);
-    setPermissionsGranted(true);
-
-    if (intent === 'generate-qr') {
+    if (intent == 'generate-qr') {
+      setPermissionsGranted(true);
       finalizeQr();
       return;
+    } 
+
+    try {
+      const { userInfo } = await getUserInfo({
+        autoRequestPermission: true,
+      });
+      const userID = await getUserID({});
+      const userPhone = await getPhoneNumber({}); 
+      const accessToken = await getAccessToken({}); 
+      // console.log('userId theo App:' + userID);
+      // console.log('code:' + userPhone.token);
+      // console.log('accessToken:' + accessToken);
+      // console.log(userInfo);
+      //check số điện thoại tại đây
+      
+
+      setPermissionsGranted(true);
+
+      
+    } catch (error: any) {
+      if (error.code == -1401 || error.code == -201) {
+          // console.log(error);
+          // Người dùng từ chối quay về trang giới thiệu
+          setPermissionsGranted(false);
+          setAgreed(false);
+          setSlideIndex(0);
+          setScreen('onboarding');
+          return;
+        }
+
     }
 
     setScreen('main');
@@ -417,41 +456,6 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       return null;
     }
 
-    if (permissionStep === 'phone') {
-      return (
-        <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-sm">
-          <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 rounded-[1.6rem] border border-white/8 bg-[#141626] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.5)]">
-            <div className="mb-5 flex justify-center">
-              <BrandMark size={68} />
-            </div>
-            <div className="mb-3 text-center text-lg font-bold text-white">Cho phép dùng số điện thoại</div>
-            <div className="mb-6 text-center text-sm leading-6 text-zinc-300">
-              Beauty Summit cần số điện thoại để định danh tài khoản, check-in và gửi thông báo trong sự kiện.
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setPermissionStep(null);
-                  setPermissionIntent(null);
-                }}
-                className="rounded-2xl bg-white/8 px-4 py-3 text-sm font-semibold text-zinc-300"
-              >
-                Quay lại
-              </button>
-              <button
-                type="button"
-                onClick={() => setPermissionStep('profile')}
-                className="rounded-2xl bg-[linear-gradient(135deg,#ec4899,#f59e0b)] px-4 py-3 text-sm font-semibold text-white"
-              >
-                Tiếp tục
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
     return (
       <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-sm">
         <div className="absolute inset-x-0 bottom-0 rounded-t-[1.75rem] border-t border-white/8 bg-[#121320] px-5 pb-8 pt-3 shadow-[0_-24px_60px_rgba(0,0,0,0.45)]">
@@ -462,13 +466,13 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
             </div>
             <div className="text-lg font-bold text-white">Cho phép nhận thông tin từ Zalo</div>
             <div className="mt-2 text-sm leading-6 text-zinc-300">
-              Hệ thống sẽ dùng tên và số điện thoại của bạn để hiển thị thẻ check-in trong app.
+              App sẽ lấy tên và số điện thoại của bạn để hiển thị thẻ check-in trong app.
             </div>
           </div>
           <div className="mb-6 space-y-3">
             <div className="flex items-center justify-between rounded-[1rem] border border-white/8 bg-white/[0.03] px-4 py-3">
               <div>
-                <div className="text-sm font-semibold text-white">Tên & ảnh đại diện</div>
+                <div className="text-sm font-semibold text-white">Tên Zalo</div>
                 <div className="text-xs text-zinc-500">Hiển thị trên thẻ check-in</div>
               </div>
               <div className="rounded-full bg-sky-500/15 px-3 py-1 text-xs font-semibold text-sky-300">
@@ -488,10 +492,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
-              onClick={() => {
-                setPermissionStep(null);
-                setPermissionIntent(null);
-              }}
+              onClick={handlePermissionDenied}
               className="rounded-2xl bg-white/8 px-4 py-3 text-sm font-semibold text-zinc-300"
             >
               Từ chối
@@ -539,8 +540,8 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     </div>
   );
 
-  const userName = 'Minh Hoàng';
-  const userPhone = '0912 345 678';
+  let userName = 'Minh Hoàng';
+  let userPhone = '0912 345 678';
   const qrMarkup = generateQrMarkup(`BS26-${tier}-${orderCode || 'DEMO'}`);
 
   return (
@@ -570,7 +571,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
               return;
             }
             setPermissionIntent('activate');
-            setPermissionStep('phone');
+            setPermissionStep('profile');
           }}
         />
       ) : null}
