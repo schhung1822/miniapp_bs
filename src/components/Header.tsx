@@ -3,7 +3,6 @@ import { Icon } from 'zmp-ui';
 import { useNavigate } from 'react-router-dom';
 
 import { BrandMark } from '@/features/beauty-summit/icons';
-import { navigateBack } from '@/utils/navigation';
 
 export type HeaderProps =
   | { variant: 'logo' }
@@ -31,7 +30,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                 props.onBack();
                 return;
               }
-              navigateBack(navigate);
+              navigate(-1);
             }}
           >
             <Icon icon="zi-arrow-left" size={24} />
