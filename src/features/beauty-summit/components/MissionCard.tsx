@@ -62,7 +62,7 @@ const MissionCard: React.FC<MissionCardProps> = ({
           onOpen(mission);
         }
       }}
-      className={`beauty-slide-up flex w-full items-center gap-4 rounded-[1.55rem] border px-5 py-4 text-left transition ${
+      className={`beauty-slide-up flex w-full items-center gap-3 rounded-[1.4rem] border px-4 py-3.5 text-left transition ${
         completed
           ? 'border-[#1d5b45] bg-[#0d211a]'
           : 'border-white/8 bg-[#15161f] hover:border-white/12 hover:bg-[#191a24]'
@@ -70,7 +70,7 @@ const MissionCard: React.FC<MissionCardProps> = ({
       style={{ animationDelay: `${delay}ms` }}
     >
       <div
-        className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.1rem] ${
+        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[1rem] ${
           completed ? 'bg-[linear-gradient(135deg,#2fd36f,#30c96f)]' : ''
         }`}
         style={
@@ -86,17 +86,17 @@ const MissionCard: React.FC<MissionCardProps> = ({
       </div>
       <div className="min-w-0 flex-1">
         <div
-          className={`text-[14px] font-bold ${
+          className={`text-[13px] font-bold ${
             completed ? 'text-[#4ddd87] line-through decoration-[#4ddd87]/80 decoration-[1.5px]' : 'text-white'
           }`}
         >
           {mission.title}
         </div>
-        <div className="mt-1 truncate text-[12px] font-normal text-zinc-500">{mission.desc}</div>
+        <div className="mt-0.5 truncate text-[11px] font-normal text-zinc-500">{mission.desc}</div>
       </div>
-      <div className="flex shrink-0 items-center gap-3">
+      <div className="flex shrink-0 items-center gap-2">
         <div
-          className={`rounded-[0.8rem] px-3 py-2 text-[12px] font-black leading-none ${
+          className={`rounded-[0.75rem] px-2.5 py-1.5 text-[11px] font-black leading-none ${
             completed ? 'bg-[#163a29] text-[#4ddd87]' : 'bg-[#2c2510] text-[#ffd44d]'
           }`}
         >

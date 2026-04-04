@@ -43,7 +43,7 @@ const QrScreen: React.FC<QrScreenProps> = ({
 
   if (!qrGenerated) {
     return (
-      <div className="h-full overflow-y-auto px-5 pb-10 pt-6">
+      <div className="beauty-scroll h-full overflow-y-auto px-5 pb-10 pt-6">
         <div className="mb-6 text-center">
           <div
             className="mb-3 inline-flex rounded-full px-3 py-1 text-xs font-semibold text-[#170d1d]"
@@ -103,7 +103,7 @@ const QrScreen: React.FC<QrScreenProps> = ({
   }
 
   return (
-    <div className="h-full overflow-y-auto px-4 pb-10 pt-5">
+    <div className="beauty-scroll h-full overflow-y-auto px-4 pb-10 pt-5">
       <div
         className="mb-4 rounded-[1.3rem] border p-4"
         style={{

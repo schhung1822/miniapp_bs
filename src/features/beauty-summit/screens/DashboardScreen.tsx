@@ -171,42 +171,45 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
   const renderPassCard = (): React.ReactNode => (
     <div className="beauty-glow mb-5 overflow-hidden rounded-[1.8rem] border border-[#715318] bg-[linear-gradient(135deg,#241d12_0%,#251b15_56%,#311225_100%)] shadow-[0_16px_38px_rgba(0,0,0,0.24)]">
-      <div className="relative px-5 pb-5 pt-6">
-        <div className="pointer-events-none absolute right-8 top-4 h-24 w-24 rounded-full bg-[#ff3bb1]/16 blur-[46px]" />
-        <div className="grid grid-cols-[minmax(0,1fr)_112px] items-start gap-4 sm:grid-cols-[minmax(0,1fr)_124px]">
+      <div className="relative px-4 pb-4 pt-5">
+        <div className="pointer-events-none absolute right-7 top-4 h-20 w-20 rounded-full bg-[#ff3bb1]/14 blur-[42px]" />
+        <div className="grid grid-cols-[minmax(0,1fr)_104px] items-start gap-3 sm:grid-cols-[minmax(0,1fr)_118px]">
           <div className="min-w-0 pt-1">
-            <div className="mb-4 inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-[#f4c50a] px-4 py-2 text-[10px] font-black text-white">
-              <StarIcon size={12} color="#ffffff" />
-              <span>{tier.name} Pass</span>
+            <div className="mb-3 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[#f4c50a] px-3.5 py-2 text-[9px] font-black text-white">
+              <StarIcon size={15} color="#ffffff" />
+              <span className='text-[12px]'>{tier.name} Pass</span>
             </div>
-            <div className="text-[22px] font-black leading-[0.95] text-white sm:text-[26px]">
+            <div className="text-[19px] font-black leading-[0.95] text-white sm:text-[23px]">
               {userName}
             </div>
-            <div className="mt-2 truncate text-[12px] font-medium leading-none text-[#8a8a92] sm:text-[14px]">
+            <div className="mt-1.5 truncate text-[11px] font-medium leading-none text-[#8a8a92] sm:text-[13px]">
               {userPhone} · {ticketCode}
             </div>
-            <div className="mt-5 inline-flex items-center gap-2 rounded-[0.95rem] bg-[#3a2b10] px-4 py-3 text-[#ffd23f]">
-              <StarIcon size={15} color="#ffd23f" />
-              <span className="text-[16px] font-black leading-none">{availablePoints}</span>
-              <span className="text-[12px] font-medium text-[#9d937b]">BP</span>
+            <div className="mt-4 inline-flex items-center gap-2 rounded-[0.9rem] bg-[#3a2b10] px-3.5 py-2.5 text-[#ffd23f]">
+              <StarIcon size={14} color="#ffd23f" />
+              <span className="text-[14px] font-black leading-none">{availablePoints}</span>
+              <span className="text-[11px] font-medium text-[#9d937b]">BP</span>
             </div>
           </div>
 
           <button type="button" onClick={onOpenQr} className="shrink-0 text-center">
-            <div className="rounded-[1.65rem] border-[3px] border-[#d4be83] bg-white p-3 shadow-[0_0_0_3px_rgba(255,255,255,0.05),0_16px_34px_rgba(211,80,168,0.18)]">
+            <div className="relative rounded-[1.45rem] border-[3px] border-[#d4be83] bg-white p-2.5 shadow-[0_0_0_3px_rgba(255,255,255,0.05),0_14px_28px_rgba(211,80,168,0.16)]">
               {hasQr ? (
                 <div
-                  className="h-[90px] w-[90px] overflow-hidden rounded-[0.85rem] sm:h-[98px] sm:w-[98px] [&>svg]:h-full [&>svg]:w-full"
+                  className="h-[82px] w-[82px] overflow-hidden rounded-[0.8rem] sm:h-[92px] sm:w-[92px] [&>svg]:h-full [&>svg]:w-full"
                   dangerouslySetInnerHTML={{ __html: qrMarkup }}
                 />
               ) : (
-                <div className="flex h-[90px] w-[90px] items-center justify-center rounded-[0.85rem] bg-white sm:h-[98px] sm:w-[98px]">
-                  <QrIcon size={42} color="#1c1530" />
+                <div className="flex flex-col h-[82px] w-[82px] items-center justify-center rounded-[0.8rem] bg-white sm:h-[92px] sm:w-[92px]">
+                  <QrIcon size={36} color="#1c1530" />
+                  <p className='text-[#000]'>
+                    Tạo mã QR
+                  </p>
                 </div>
               )}
-            </div>
-            <div className="mx-auto mt-[-10px] inline-flex rounded-full bg-[#e8b105] px-4 py-2 text-[10px] font-black text-white shadow-[0_12px_22px_rgba(232,177,5,0.32)]">
-              {hasQr ? 'CHECK-IN' : 'TẠO QR'}
+              {hasQr ? ( <div className="absolute bottom-[-10px] px-2 left-4.5 rounded-full bg-gradient-to-br from-[#b8860b] to-[#ffd700] text-[9px] font-black text-white">
+                CHECK-IN
+              </div> ) : null}
             </div>
           </button>
         </div>
@@ -226,10 +229,10 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
     ];
 
     return (
-      <div className="mb-5 rounded-[1.65rem] border border-white/8 bg-[#161720] px-5 py-5 shadow-[0_14px_34px_rgba(0,0,0,0.16)]">
-        <div className="mb-5 flex items-center justify-between gap-4">
-          <div className="text-[15px] font-semibold text-[#9ba1b2]">Tiến độ nhiệm vụ</div>
-          <div className="text-[16px] font-black text-[#ff58ba]">
+      <div className="mb-4 rounded-[1.55rem] border border-white/8 bg-[#161720] px-4 py-4 shadow-[0_12px_28px_rgba(0,0,0,0.15)]">
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <div className="text-[14px] font-semibold text-[#9ba1b2]">Tiến độ nhiệm vụ</div>
+          <div className="text-[15px] font-black text-[#ff58ba]">
             {completedIds.length}/{allMissionCount}
           </div>
         </div>
@@ -239,15 +242,14 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
             const isFinal = item.pct === 100;
             const iconColor = item.unlocked || isFinal ? '#c89d10' : '#5b5c67';
             const node = (
-              <div className={`flex ${isFinal ? 'w-[64px]' : 'w-[40px]'} flex-col items-center`}>
+              <div className={`flex w-[36px] flex-col items-center`}>
                 {item.milestone ? (
                   <button
                     type="button"
                     onClick={() => onOpenMilestone(item.milestone)}
-                    className={`flex items-center justify-center transition ${
+                    className={`flex items-center justify-center transition h-[32px] w-[32px] rounded-[0.4rem] border-2 ${
                       isFinal
-                        ? 'h-[54px] w-[54px] rounded-[1.1rem] border-2 border-dashed'
-                        : 'h-[46px] w-[46px] rounded-[0.95rem] border-2'
+                        ? 'border-dashed' : ''
                     }`}
                     style={{
                       borderColor: item.unlocked ? '#a88312' : isFinal ? 'rgba(168,131,18,0.7)' : '#3a3b44',
@@ -258,22 +260,22 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                           : 'rgba(32,33,41,0.9)',
                     }}
                   >
-                    <GiftIcon size={isFinal ? 22 : 19} color={iconColor} />
+                    <GiftIcon size={20} color={iconColor} />
                   </button>
                 ) : (
                   <div
-                    className="flex h-[34px] w-[34px] items-center justify-center rounded-[0.85rem]"
+                    className="flex h-[30px] w-[30px] items-center justify-center rounded-[1rem]"
                     style={{
                       background: item.unlocked ? 'linear-gradient(135deg, #b88908, #e5b61a)' : 'rgba(32,33,41,0.9)',
                     }}
                   >
-                    <span className={`text-[22px] leading-none ${item.unlocked ? 'text-white' : 'text-[#646572]'}`}>
+                    <span className={`text-[18px] leading-none ${item.unlocked ? 'text-white' : 'text-[#646572]'}`}>
                       ✓
                     </span>
                   </div>
                 )}
                 <div
-                  className="mt-2 text-[10px] font-black"
+                  className="ms-1 mt-1 text-[12px] font-black"
                   style={{ color: item.unlocked || isFinal ? '#c89d10' : '#5b5c67' }}
                 >
                   {item.label}
@@ -288,7 +290,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
             return (
               <React.Fragment key={item.pct}>
                 {node}
-                <div className="mt-[14px] h-[6px] flex-1 rounded-full bg-[#2a2b33]">
+                <div className="mt-[12px] h-[5px] flex-1 rounded-full bg-[#2a2b33]">
                   <div
                     className="h-full rounded-full"
                     style={{
@@ -308,7 +310,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
   const renderMissionsTab = (): React.ReactNode => {
     return (
       <>
-        <div className="mb-5 grid grid-cols-3 gap-2.5">
+        <div className="mb-4 grid grid-cols-3 gap-2">
           {phaseItems.map((item) => {
             const active = item.key === activePhase;
             const percent = phaseProgressMap[item.key];
@@ -318,7 +320,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 key={item.key}
                 type="button"
                 onClick={() => onPhaseChange(item.key)}
-                className={`rounded-[1.35rem] border px-2.5 py-3.5 text-center transition ${
+                className={`rounded-[1.2rem] border px-2 py-3 text-center transition ${
                   active ? 'text-white' : 'border-white/8 bg-[#10111a] text-zinc-500'
                 }`}
                 style={
@@ -330,23 +332,25 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                     : undefined
                 }
               >
-                <div
-                  className={`mx-auto mb-2 inline-flex rounded-full px-3 py-1 text-[9px] font-black ${
-                    active ? 'bg-[#3d2f14] text-[#e7b317]' : 'bg-[#191923] text-[#767680]'
-                  }`}
-                >
-                  {percent}%
+                <div className="flex items-center justify-center gap-1">
+                  <span className='h-[19px]'>{item.renderIcon(active)}</span>
+                  <div
+                    className={`inline-flex rounded-full px-2.5 py-1 text-[12px] font-black ${
+                      active ? 'bg-[#3d2f14] text-[#e7b317]' : 'bg-[#191923] text-[#767680]'
+                    }`}
+                  >
+                    {percent}%
+                  </div>
                 </div>
-                <div className="mb-2 flex justify-center">{item.renderIcon(active)}</div>
-                <div className={`text-[12px] font-semibold leading-5 ${active ? 'text-white' : 'text-[#73737c]'}`}>
+                <div className={`text-[11px] font-semibold leading-4 ${active ? 'text-white' : 'text-[#73737c]'}`}>
                   {item.label}
                 </div>
-                {item.sub ? <div className="mt-1 text-[10px] text-[#73737c]">{item.sub}</div> : null}
+                {item.sub ? <div className="mt-1 text-[11px] text-[#73737c]">{item.sub}</div> : null}
               </button>
             );
           })}
         </div>
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {currentPhaseMissions.map((mission, index) => (
             <MissionCard
               key={mission.id}
@@ -661,7 +665,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
   return (
     <div className="relative h-full">
-      <div className="h-full overflow-y-auto px-4 pb-40 pt-5">
+      <div className="beauty-scroll h-full overflow-y-auto px-4 pb-40 pt-5">
         {renderPassCard()}
         {renderProgressCard()}
 

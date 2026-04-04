@@ -33,6 +33,17 @@
   transform: translateY(2px) scale(0.99);
 }
 
+.beauty-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.beauty-scroll::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 @keyframes beauty-slide-up {
   from {
     opacity: 0;

@@ -5,7 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import { BrandMark } from '@/features/beauty-summit/icons';
 import { navigateBack } from '@/utils/navigation';
 
-type HeaderProps = { variant: 'logo' } | { variant: 'back'; title: string };
+export type HeaderProps =
+  | { variant: 'logo' }
+  | { variant: 'back'; title?: string; onBack?: () => void };
 
 const Header: React.FC<HeaderProps> = (props) => {
   const navigate = useNavigate();
@@ -21,13 +23,22 @@ const Header: React.FC<HeaderProps> = (props) => {
         </div>
       ) : (
         <div className="flex h-11 items-center gap-2 px-2">
-          <div
+          <button
+            type="button"
             className="flex h-10 w-10 cursor-pointer items-center justify-center text-primary"
-            onClick={() => navigateBack(navigate)}
+            onClick={() => {
+              if (props.onBack) {
+                props.onBack();
+                return;
+              }
+              navigateBack(navigate);
+            }}
           >
             <Icon icon="zi-arrow-left" size={24} />
-          </div>
-          <span className="font-medium text-title-lg text-primary">{props.title}</span>
+          </button>
+          {props.title ? (
+            <span className="font-medium text-title-lg text-primary">{props.title}</span>
+          ) : null}
         </div>
       )}
       <div className="h-px bg-divider" />

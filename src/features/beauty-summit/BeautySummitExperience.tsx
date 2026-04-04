@@ -12,6 +12,7 @@ import {
   VOTE_CATEGORIES,
   buildMissions,
 } from '@/features/beauty-summit/data';
+import type { HeaderProps } from '@/components/Header';
 import BeautyShell from '@/features/beauty-summit/components/BeautyShell';
 import { BrandMark, CloseIcon, TrophyIcon } from '@/features/beauty-summit/icons';
 import DashboardScreen from '@/features/beauty-summit/screens/DashboardScreen';
@@ -31,7 +32,11 @@ import type {
 } from '@/features/beauty-summit/types';
 import { generateQrMarkup } from '@/features/beauty-summit/utils';
 
-const BeautySummitExperience: React.FC = () => {
+interface BeautySummitExperienceProps {
+  onHeaderChange: (config: HeaderProps) => void;
+}
+
+const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeaderChange }) => {
   const [screen, setScreen] = React.useState<ExperienceScreen>('onboarding');
   const [slideIndex, setSlideIndex] = React.useState<number>(0);
   const [tier, setTier] = React.useState<TierKey>('PREMIUM');
@@ -307,6 +312,64 @@ const BeautySummitExperience: React.FC = () => {
       showToast(`Đã nhận mốc quà ${selectedMilestone.pct}%`);
     }
   };
+
+  const handleReturnToDashboard = React.useCallback((): void => {
+    if (expandedMissionId) {
+      setExpandedMissionId(null);
+      return;
+    }
+
+    if (selectedVoucherId) {
+      setSelectedVoucherId(null);
+      return;
+    }
+
+    if (selectedBrandKey) {
+      setSelectedBrandKey(null);
+      return;
+    }
+
+    if (selectedMilestonePct !== null) {
+      setSelectedMilestonePct(null);
+      return;
+    }
+
+    if (screen === 'qr' || screen === 'reward') {
+      setScreen('main');
+    }
+  }, [expandedMissionId, screen, selectedBrandKey, selectedMilestonePct, selectedVoucherId]);
+
+  React.useEffect(() => {
+    const openedFromDashboard =
+      screen === 'qr' ||
+      screen === 'reward' ||
+      (screen === 'main' &&
+        Boolean(expandedMissionId || selectedVoucherId || selectedBrandKey || selectedMilestonePct));
+
+    if (openedFromDashboard) {
+      onHeaderChange({
+        variant: 'back',
+        onBack: handleReturnToDashboard,
+      });
+      return;
+    }
+
+    onHeaderChange({ variant: 'logo' });
+  }, [
+    expandedMissionId,
+    handleReturnToDashboard,
+    onHeaderChange,
+    screen,
+    selectedBrandKey,
+    selectedMilestonePct,
+    selectedVoucherId,
+  ]);
+
+  React.useEffect(() => {
+    return () => {
+      onHeaderChange({ variant: 'logo' });
+    };
+  }, [onHeaderChange]);
 
   const renderTicketHelp = (): React.ReactNode => {
     if (!ticketHelpOpen) {

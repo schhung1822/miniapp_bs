@@ -31,7 +31,7 @@ const TermsScreen: React.FC<TermsScreenProps> = ({ agreed, onToggleAgree, onCont
           </div>
         </div>
 
-        <div className="mb-5 min-h-0 flex-1 space-y-3 overflow-y-auto rounded-[1rem] border border-white/6 bg-black/20 p-4 text-[13px] leading-6 text-zinc-300">
+        <div className="beauty-scroll mb-5 min-h-0 flex-1 space-y-3 overflow-y-auto rounded-[1rem] border border-white/6 bg-black/20 p-4 text-[13px] leading-6 text-zinc-300">
           <div>
             <div className="mb-1 text-[13px] font-semibold text-white">1. Quy định chung</div>
             Mini App chỉ áp dụng cho khách tham dự Beauty Summit 2026. Mỗi số điện thoại chỉ
