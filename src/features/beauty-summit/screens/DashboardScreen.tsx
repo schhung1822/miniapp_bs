@@ -166,8 +166,20 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
   const claimedFreeSet = new Set(claimedFreeVoucherIds);
   const redeemedSet = new Set(redeemedVoucherIds);
   const milestoneSet = new Set(claimedMilestonePcts);
+  const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
+  const previousTabRef = React.useRef<BeautyTab>(activeTab);
   const ticketCode = orderCode.trim().slice(-3) || 'KKK';
   const hasQr = qrGenerated && orderCode.trim().length > 0;
+
+  React.useEffect(() => {
+    if (previousTabRef.current !== activeTab) {
+      scrollContainerRef.current?.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+      previousTabRef.current = activeTab;
+    }
+  }, [activeTab]);
 
   const renderPassCard = (): React.ReactNode => (
     <div className="beauty-glow mb-5 overflow-hidden rounded-[1.8rem] border border-[#715318] bg-[linear-gradient(135deg,#241d12_0%,#251b15_56%,#311225_100%)] shadow-[0_16px_38px_rgba(0,0,0,0.24)]">
@@ -247,7 +259,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   <button
                     type="button"
                     onClick={() => onOpenMilestone(item.milestone)}
-                    className={`flex items-center justify-center transition h-[32px] w-[32px] rounded-[0.4rem] border-2 ${
+                    className={`flex items-center justify-center transition h-[33px] w-[33px] rounded-[0.4rem] border-2 ${
                       isFinal
                         ? 'border-dashed' : ''
                     }`}
@@ -264,7 +276,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   </button>
                 ) : (
                   <div
-                    className="flex h-[30px] w-[30px] items-center justify-center rounded-[1rem]"
+                    className="flex h-[33px] w-[33px] items-center justify-center rounded-[1rem]"
                     style={{
                       background: item.unlocked ? 'linear-gradient(135deg, #b88908, #e5b61a)' : 'rgba(32,33,41,0.9)',
                     }}
@@ -290,7 +302,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
             return (
               <React.Fragment key={item.pct}>
                 {node}
-                <div className="mt-[12px] h-[5px] flex-1 rounded-full bg-[#2a2b33]">
+                <div className="mt-[15px] h-[5px] flex-1 rounded-full bg-[#2a2b33]">
                   <div
                     className="h-full rounded-full"
                     style={{
@@ -665,7 +677,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
   return (
     <div className="relative h-full">
-      <div className="beauty-scroll h-full overflow-y-auto px-4 pb-40 pt-5">
+      <div ref={scrollContainerRef} className="beauty-scroll h-full overflow-y-auto px-4 pb-40 pt-5">
         {renderPassCard()}
         {renderProgressCard()}
 
