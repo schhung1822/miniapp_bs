@@ -8,6 +8,7 @@ import {
   getUserInfo,
   scanQRCode,
 } from 'zmp-sdk';
+import { nativeStorage } from 'zmp-sdk/apis';
 
 import {
   BPOINT_VOUCHERS,
@@ -39,6 +40,7 @@ import type {
   VoteBrand,
   VoteCategory,
 } from '@/features/beauty-summit/types';
+import apiClient from '@/lib/api-client';
 import { generateQrMarkup } from '@/features/beauty-summit/utils';
 
 interface BeautySummitExperienceProps {
@@ -50,7 +52,17 @@ const DEFAULT_ZALO_PROFILE = {
   avatar: 'https://h5.zdn.vn/static/images/avatar.png',
 } as const;
 
-const DEFAULT_PHONE_DISPLAY = '0912 345 678';
+const DEFAULT_PHONE_DISPLAY = import.meta.env.VITE_DEFAULT_PHONE_DISPLAY?.trim() || '0912 345 678';
+const FALLBACK_ZALO_PHONE = import.meta.env.VITE_FALLBACK_ZALO_PHONE?.trim() || '84123456789';
+const ZALO_USER_STORAGE_KEY =
+  import.meta.env.VITE_ZALO_USER_STORAGE_KEY?.trim() || 'beauty-summit.zalo-user';
+
+interface CachedZaloUser {
+  id: string;
+  name: string;
+  avatar: string;
+  phone: string;
+}
 
 interface ZaloPhoneResponse {
   data?: {
@@ -75,6 +87,67 @@ const formatPhoneDisplay = (value: string): string => {
   return value;
 };
 
+const normalizePhoneValue = (value: string): string => value.replace(/\s/g, '');
+
+const isCompleteZaloUser = (value: Partial<CachedZaloUser> | null | undefined): value is CachedZaloUser =>
+  Boolean(value?.id?.trim() && value?.avatar?.trim() && value?.phone?.trim());
+
+const readCachedZaloUser = (): CachedZaloUser | null => {
+  try {
+    console.log('[BeautySummit] checking nativeStorage key:', ZALO_USER_STORAGE_KEY);
+    const rawValue = nativeStorage.getItem(ZALO_USER_STORAGE_KEY);
+    console.log('[BeautySummit] nativeStorage raw user:', rawValue);
+
+    if (!rawValue) {
+      console.log('[BeautySummit] nativeStorage cache miss');
+      return null;
+    }
+
+    const parsedValue = JSON.parse(rawValue) as Partial<CachedZaloUser>;
+    if (!isCompleteZaloUser(parsedValue)) {
+      console.log('[BeautySummit] nativeStorage cache incomplete:', parsedValue);
+      nativeStorage.removeItem(ZALO_USER_STORAGE_KEY);
+      return null;
+    }
+
+    const cachedUser = {
+      id: parsedValue.id.trim(),
+      name: parsedValue.name?.trim() || DEFAULT_ZALO_PROFILE.name,
+      avatar: parsedValue.avatar.trim(),
+      phone: normalizePhoneValue(parsedValue.phone),
+    };
+    console.log('[BeautySummit] nativeStorage cache hit:', cachedUser);
+    return cachedUser;
+  } catch {
+    nativeStorage.clear();
+    console.log('[BeautySummit] nativeStorage parse failed, cache cleared');
+    return null;
+  }
+};
+
+const writeCachedZaloUser = (value: CachedZaloUser): void => {
+  nativeStorage.setItem(
+    ZALO_USER_STORAGE_KEY,
+    JSON.stringify({
+      ...value,
+      phone: normalizePhoneValue(value.phone),
+    }),
+  );
+};
+
+const resolveZaloPhoneNumber = async (): Promise<string> => {
+  try {
+    const phoneAuth = await getPhoneNumber({});
+    const accessToken = await getAccessToken({});
+    const phoneNumber = await fetchZaloPhoneNumber(accessToken, phoneAuth.token);
+
+    return normalizePhoneValue(phoneNumber || FALLBACK_ZALO_PHONE);
+  } catch (error) {
+    console.warn('Falling back to demo phone number', error);
+    return FALLBACK_ZALO_PHONE;
+  }
+};
+
 const fetchZaloPhoneNumber = async (accessToken: string, code: string): Promise<string | null> => {
   const secretKey = import.meta.env.VITE_ZALO_SECRET_KEY?.trim();
   if (!secretKey) {
@@ -95,6 +168,22 @@ const fetchZaloPhoneNumber = async (accessToken: string, code: string): Promise<
   }
 
   return payload.data?.number ?? null;
+};
+
+const syncMiniAppUser = async (user: CachedZaloUser): Promise<void> => {
+  try {
+    await apiClient.post('/api/auth/zalo-miniapp', {
+      id: user.id,
+      name: user.name,
+      phone: normalizePhoneValue(user.phone),
+      avatar: user.avatar,
+    });
+    return;
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Unable to sync mini app account';
+    throw new Error(message);
+  }
 };
 
 const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeaderChange }) => {
@@ -136,6 +225,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const [scannerResult, setScannerResult] = React.useState<string | null>(null);
   const [zaloProfile, setZaloProfile] = React.useState(DEFAULT_ZALO_PROFILE);
   const [displayPhone, setDisplayPhone] = React.useState(DEFAULT_PHONE_DISPLAY);
+  const [miniAppLoading, setMiniAppLoading] = React.useState<boolean>(false);
 
   const toastTimer = React.useRef<number | null>(null);
 
@@ -288,10 +378,14 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const finalizeQr = (): void => {
     setPermissionStep(null);
     setQrGenerated(true);
-    markMissionComplete(`${tier}-b1`, 'QR đã được tạo thành công');
-    showToast('App đã sẵn sàng để check-in');
+    markMissionComplete(`${tier}-b1`, 'QR created successfully');
+    showToast('App is ready for check-in');
   };
   const handlePermissionDenied = async () => {
+    if (miniAppLoading) {
+      return;
+    }
+
     setPermissionStep(null);
     setPermissionIntent(null);
     setPermissionsGranted(false);
@@ -305,58 +399,76 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const handlePermissionApproved = async (): Promise<void> => {
     const intent = permissionIntent;
 
+    if (miniAppLoading) {
+      return;
+    }
+
     setPermissionStep(null);
     setPermissionIntent(null);
-    if (intent == 'generate-qr') {
+
+    if (intent === 'generate-qr') {
       setPermissionsGranted(true);
       finalizeQr();
       return;
-    } 
-
-    try {
-      const { userInfo } = await getUserInfo({
-        autoRequestPermission: true,
-      });
-      const userID = await getUserID({});
-      const phoneAuth = await getPhoneNumber({});
-      const accessToken = await getAccessToken({}); 
-      console.log('userId theo App:' + userID);
-      console.log('code:' + phoneAuth.token);
-      console.log('accessToken:' + accessToken);
-      console.log(userInfo);
-      setZaloProfile({
-        name: userInfo.name || DEFAULT_ZALO_PROFILE.name,
-        avatar: userInfo.avatar || DEFAULT_ZALO_PROFILE.avatar,
-      });
-      try {
-        const phoneNumber = await fetchZaloPhoneNumber(accessToken, phoneAuth.token);
-        if (phoneNumber) {
-          setDisplayPhone(formatPhoneDisplay(phoneNumber));
-        }
-      } catch (phoneError) {
-        console.log(phoneError);
-      }
-      //check số điện thoại tại đây
-      
-
-      setPermissionsGranted(true);
-
-      
-    } catch (error: any) {
-      if (error.code == -1401 || error.code == -201) {
-          // console.log(error);
-          // Người dùng từ chối quay về trang giới thiệu
-          setPermissionsGranted(false);
-          setAgreed(false);
-          setSlideIndex(0);
-          setScreen('onboarding');
-          return;
-        }
-
     }
 
-    setScreen('main');
-    showToast('Đã kích hoạt app thành công');
+    setMiniAppLoading(true);
+
+    try {
+      let resolvedUser = readCachedZaloUser();
+      if (!resolvedUser) {
+        const { userInfo } = await getUserInfo({
+          autoRequestPermission: true,
+        });
+        const userID = await getUserID({}).catch(() => '');
+        const resolvedId = userID || userInfo.id || '';
+        const phoneNumber = await resolveZaloPhoneNumber();
+
+        if (!resolvedId) {
+          throw new Error('Unable to load Zalo account id');
+        }
+
+        resolvedUser = {
+          id: resolvedId,
+          name: userInfo.name || DEFAULT_ZALO_PROFILE.name,
+          avatar: userInfo.avatar || DEFAULT_ZALO_PROFILE.avatar,
+          phone: normalizePhoneValue(phoneNumber),
+        };
+
+        writeCachedZaloUser(resolvedUser);
+      }
+
+      setZaloProfile({
+        name: resolvedUser.name || DEFAULT_ZALO_PROFILE.name,
+        avatar: resolvedUser.avatar || DEFAULT_ZALO_PROFILE.avatar,
+      });
+      setDisplayPhone(formatPhoneDisplay(resolvedUser.phone));
+
+      try {
+        await syncMiniAppUser(resolvedUser);
+      } catch (syncError) {
+        console.error(syncError);
+      }
+
+      setPermissionsGranted(true);
+      setScreen('main');
+      showToast('App activated successfully');
+      return;
+    } catch (error: any) {
+      if (error.code === -1401 || error.code === -201) {
+        setPermissionsGranted(false);
+        setAgreed(false);
+        setSlideIndex(0);
+        setScreen('onboarding');
+        return;
+      }
+
+      console.error(error);
+      showToast('Unable to load account information');
+      return;
+    } finally {
+      setMiniAppLoading(false);
+    }
   };
 
   const handleDemoCheckin = (zoneId: string): void => {
@@ -611,14 +723,18 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
             <button
               type="button"
               onClick={handlePermissionDenied}
-              className="rounded-2xl bg-white/8 px-4 py-3 text-sm font-semibold text-zinc-300"
+              disabled={miniAppLoading}
+              className="rounded-2xl bg-white/8 px-4 py-3 text-sm font-semibold text-zinc-300 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Từ chối
             </button>
             <button
               type="button"
               onClick={handlePermissionApproved}
-              className="rounded-2xl bg-[linear-gradient(135deg,#0ea5e9,#38bdf8)] px-4 py-3 text-sm font-semibold text-white"
+              disabled={miniAppLoading}
+              className={`relative rounded-2xl bg-[linear-gradient(135deg,#0ea5e9,#38bdf8)] px-4 py-3 text-sm font-semibold text-white disabled:cursor-wait disabled:opacity-70 ${
+                miniAppLoading ? 'text-transparent' : ''
+              }`}
             >
               {permissionIntent === 'activate' ? 'Về dashboard' : 'Cho phép'}
             </button>
@@ -666,7 +782,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const qrMarkup = generateQrMarkup(`BS26-${tier}-${orderCode || 'DEMO'}`);
 
   return (
-    <BeautyShell toast={toast}>
+    <BeautyShell loading={miniAppLoading} loadingLabel="Loading account..." toast={toast}>
       {screen === 'onboarding' ? (
         <OnboardingScreen
           slides={ONBOARDING_SLIDES}
@@ -806,3 +922,4 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
 };
 
 export default BeautySummitExperience;
+

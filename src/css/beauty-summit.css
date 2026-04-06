@@ -23,6 +23,10 @@
   animation: beauty-float 3s ease-in-out infinite;
 }
 
+.beauty-spinner {
+  animation: beauty-spin 0.9s linear infinite;
+}
+
 .beauty-press {
   transition:
     transform 120ms ease,
@@ -87,5 +91,15 @@
 
   50% {
     transform: translateY(-8px);
+  }
+}
+
+@keyframes beauty-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
   }
 }
