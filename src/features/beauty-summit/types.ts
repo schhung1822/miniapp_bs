@@ -2,7 +2,9 @@ export type ExperienceScreen = 'onboarding' | 'terms' | 'qr' | 'main' | 'reward'
 
 export type TierKey = 'STANDARD' | 'PREMIUM' | 'VIP';
 
-export type BeautyTab = 'missions' | 'vouchers' | 'vote' | 'policy';
+export type BeautyTab = 'missions' | 'vouchers' | 'vote' | 'profile';
+
+export type BeautyUserRole = 'guest' | 'receptionist';
 
 export type MissionPhase = 'before' | 'day1' | 'day2';
 

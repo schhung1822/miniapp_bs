@@ -1,6 +1,13 @@
 import React from 'react';
 
-import { AppError, configAppView, getAccessToken, getPhoneNumber, getUserID, getUserInfo } from 'zmp-sdk';
+import {
+  configAppView,
+  getAccessToken,
+  getPhoneNumber,
+  getUserID,
+  getUserInfo,
+  scanQRCode,
+} from 'zmp-sdk';
 
 import {
   BPOINT_VOUCHERS,
@@ -20,6 +27,8 @@ import OnboardingScreen from '@/features/beauty-summit/screens/OnboardingScreen'
 import QrScreen from '@/features/beauty-summit/screens/QrScreen';
 import TermsScreen from '@/features/beauty-summit/screens/TermsScreen';
 import type {
+  BeautyTab,
+  BeautyUserRole,
   CheckinLog,
   ExperienceScreen,
   Milestone,
@@ -36,6 +45,58 @@ interface BeautySummitExperienceProps {
   onHeaderChange: (config: HeaderProps) => void;
 }
 
+const DEFAULT_ZALO_PROFILE = {
+  name: 'User Name',
+  avatar: 'https://h5.zdn.vn/static/images/avatar.png',
+} as const;
+
+const DEFAULT_PHONE_DISPLAY = '0912 345 678';
+
+interface ZaloPhoneResponse {
+  data?: {
+    number?: string;
+  };
+  error?: number;
+  message?: string;
+}
+
+const formatPhoneDisplay = (value: string): string => {
+  const digits = value.replace(/\D/g, '');
+
+  if (digits.length === 11 && digits.startsWith('84')) {
+    const local = `0${digits.slice(2)}`;
+    return `${local.slice(0, 4)} ${local.slice(4, 7)} ${local.slice(7)}`;
+  }
+
+  if (digits.length === 10) {
+    return `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7)}`;
+  }
+
+  return value;
+};
+
+const fetchZaloPhoneNumber = async (accessToken: string, code: string): Promise<string | null> => {
+  const secretKey = import.meta.env.VITE_ZALO_SECRET_KEY?.trim();
+  if (!secretKey) {
+    return null;
+  }
+
+  const response = await fetch('https://graph.zalo.me/v2.0/me/info', {
+    headers: {
+      access_token: accessToken,
+      code,
+      secret_key: secretKey,
+    },
+  });
+
+  const payload = (await response.json()) as ZaloPhoneResponse;
+  if (!response.ok || payload.error !== 0) {
+    throw new Error(payload.message || 'Failed to fetch phone number');
+  }
+
+  return payload.data?.number ?? null;
+};
+
 const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeaderChange }) => {
   const [screen, setScreen] = React.useState<ExperienceScreen>('onboarding');
   const [slideIndex, setSlideIndex] = React.useState<number>(0);
@@ -43,9 +104,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const [agreed, setAgreed] = React.useState<boolean>(false);
   const [orderCode, setOrderCode] = React.useState<string>('');
   const [qrGenerated, setQrGenerated] = React.useState<boolean>(false);
-  const [activeTab, setActiveTab] = React.useState<'missions' | 'vouchers' | 'vote' | 'policy'>(
-    'missions',
-  );
+  const [activeTab, setActiveTab] = React.useState<BeautyTab>('missions');
   const [activePhase, setActivePhase] = React.useState<MissionPhase>('before');
   const [voucherTab, setVoucherTab] = React.useState<'bpoint' | 'free'>('bpoint');
   const [completedIds, setCompletedIds] = React.useState<string[]>([]);
@@ -71,6 +130,12 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     null,
   );
   const [permissionsGranted, setPermissionsGranted] = React.useState<boolean>(false);
+  const [policyOpen, setPolicyOpen] = React.useState<boolean>(false);
+  const [scannerOpen, setScannerOpen] = React.useState<boolean>(false);
+  const [scannerBusy, setScannerBusy] = React.useState<boolean>(false);
+  const [scannerResult, setScannerResult] = React.useState<string | null>(null);
+  const [zaloProfile, setZaloProfile] = React.useState(DEFAULT_ZALO_PROFILE);
+  const [displayPhone, setDisplayPhone] = React.useState(DEFAULT_PHONE_DISPLAY);
 
   const toastTimer = React.useRef<number | null>(null);
 
@@ -253,12 +318,24 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
         autoRequestPermission: true,
       });
       const userID = await getUserID({});
-      const userPhone = await getPhoneNumber({}); 
+      const phoneAuth = await getPhoneNumber({});
       const accessToken = await getAccessToken({}); 
-      // console.log('userId theo App:' + userID);
-      // console.log('code:' + userPhone.token);
-      // console.log('accessToken:' + accessToken);
-      // console.log(userInfo);
+      console.log('userId theo App:' + userID);
+      console.log('code:' + phoneAuth.token);
+      console.log('accessToken:' + accessToken);
+      console.log(userInfo);
+      setZaloProfile({
+        name: userInfo.name || DEFAULT_ZALO_PROFILE.name,
+        avatar: userInfo.avatar || DEFAULT_ZALO_PROFILE.avatar,
+      });
+      try {
+        const phoneNumber = await fetchZaloPhoneNumber(accessToken, phoneAuth.token);
+        if (phoneNumber) {
+          setDisplayPhone(formatPhoneDisplay(phoneNumber));
+        }
+      } catch (phoneError) {
+        console.log(phoneError);
+      }
       //check số điện thoại tại đây
       
 
@@ -352,7 +429,31 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     }
   };
 
+  const handleRunScanner = async (): Promise<void> => {
+    setScannerBusy(true);
+
+    try {
+      const { content } = await scanQRCode();
+      setScannerResult(content);
+      showToast('Đã quét mã thành công');
+    } catch {
+      showToast('Không thể mở trình quét trong môi trường hiện tại');
+    } finally {
+      setScannerBusy(false);
+    }
+  };
+
   const handleReturnToDashboard = React.useCallback((): void => {
+    if (scannerOpen) {
+      setScannerOpen(false);
+      return;
+    }
+
+    if (policyOpen) {
+      setPolicyOpen(false);
+      return;
+    }
+
     if (expandedMissionId) {
       setExpandedMissionId(null);
       return;
@@ -376,14 +477,29 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     if (screen === 'qr' || screen === 'reward') {
       setScreen('main');
     }
-  }, [expandedMissionId, screen, selectedBrandKey, selectedMilestonePct, selectedVoucherId]);
+  }, [
+    expandedMissionId,
+    policyOpen,
+    scannerOpen,
+    screen,
+    selectedBrandKey,
+    selectedMilestonePct,
+    selectedVoucherId,
+  ]);
 
   React.useEffect(() => {
     const openedFromDashboard =
       screen === 'qr' ||
       screen === 'reward' ||
       (screen === 'main' &&
-        Boolean(expandedMissionId || selectedVoucherId || selectedBrandKey || selectedMilestonePct));
+        Boolean(
+          expandedMissionId ||
+            selectedVoucherId ||
+            selectedBrandKey ||
+            selectedMilestonePct ||
+            policyOpen ||
+            scannerOpen,
+        ));
 
     if (openedFromDashboard) {
       onHeaderChange({
@@ -402,6 +518,8 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     selectedBrandKey,
     selectedMilestonePct,
     selectedVoucherId,
+    policyOpen,
+    scannerOpen,
   ]);
 
   React.useEffect(() => {
@@ -502,7 +620,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
               onClick={handlePermissionApproved}
               className="rounded-2xl bg-[linear-gradient(135deg,#0ea5e9,#38bdf8)] px-4 py-3 text-sm font-semibold text-white"
             >
-              {permissionIntent === 'activate' ? 'Vào dashboard' : 'Cho phép'}
+              {permissionIntent === 'activate' ? 'Về dashboard' : 'Cho phép'}
             </button>
           </div>
         </div>
@@ -541,7 +659,10 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   );
 
   let userName = 'Minh Hoàng';
-  let userPhone = '0912 345 678';
+  userName = zaloProfile.name || userName;
+  const userAvatar = zaloProfile.avatar || DEFAULT_ZALO_PROFILE.avatar;
+  const userPhone = displayPhone;
+  const userRole: BeautyUserRole = 'guest';
   const qrMarkup = generateQrMarkup(`BS26-${tier}-${orderCode || 'DEMO'}`);
 
   return (
@@ -584,6 +705,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           availablePoints={availablePoints}
           totalPoints={totalPoints}
           userName={userName}
+          userAvatar={userAvatar}
           userPhone={userPhone}
           qrMarkup={qrMarkup}
           zones={accessibleZones}
@@ -608,7 +730,9 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           availablePoints={availablePoints}
           qrGenerated={qrGenerated}
           userName={userName}
+          userAvatar={userAvatar}
           userPhone={userPhone}
+          userRole={userRole}
           orderCode={orderCode}
           qrMarkup={qrMarkup}
           currentPhaseMissions={currentPhaseMissions}
@@ -624,6 +748,10 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           selectedCategory={selectedCategory}
           selectedMilestone={selectedMilestone}
           expandedMission={expandedMission}
+          policyOpen={policyOpen}
+          scannerOpen={scannerOpen}
+          scannerBusy={scannerBusy}
+          scannerResult={scannerResult}
           phaseProgressMap={phaseProgressMap}
           onTabChange={setActiveTab}
           onPhaseChange={setActivePhase}
@@ -651,6 +779,11 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           onCloseMilestone={() => setSelectedMilestonePct(null)}
           onClaimMilestone={handleClaimMilestone}
           onOpenQr={() => setScreen('qr')}
+          onOpenPolicy={() => setPolicyOpen(true)}
+          onClosePolicy={() => setPolicyOpen(false)}
+          onOpenScanner={() => setScannerOpen(true)}
+          onCloseScanner={() => setScannerOpen(false)}
+          onRunScanner={handleRunScanner}
         />
       ) : null}
 
@@ -665,7 +798,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           onClick={() => setScreen('main')}
           className="absolute right-4 bottom-4 z-30 rounded-full bg-[linear-gradient(135deg,#ec4899,#f59e0b)] px-4 py-3 text-sm font-semibold text-white shadow-[0_16px_32px_rgba(236,72,153,0.28)]"
         >
-          Vào dashboard
+          Về dashboard
         </button>
       ) : null}
     </BeautyShell>

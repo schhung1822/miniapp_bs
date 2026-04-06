@@ -17,7 +17,7 @@ const Header: React.FC<HeaderProps> = (props) => {
         <div className="flex h-12 items-center gap-2 px-3">
           <BrandMark size={28} />
           <span className="whitespace-nowrap font-semibold text-title-lg text-primary">
-            BeatySubmit 2026
+            BeautySummit 2026
           </span>
         </div>
       ) : (

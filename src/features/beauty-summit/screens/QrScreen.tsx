@@ -10,6 +10,7 @@ interface QrScreenProps {
   availablePoints: number;
   totalPoints: number;
   userName: string;
+  userAvatar: string;
   userPhone: string;
   qrMarkup: string;
   zones: CheckinZone[];
@@ -27,6 +28,7 @@ const QrScreen: React.FC<QrScreenProps> = ({
   availablePoints,
   totalPoints,
   userName,
+  userAvatar,
   userPhone,
   qrMarkup,
   zones,
@@ -113,11 +115,18 @@ const QrScreen: React.FC<QrScreenProps> = ({
       >
         <div className="flex items-center gap-4">
           <div className="min-w-0 flex-1">
-            <div
-              className="mb-2 inline-flex rounded-full px-3 py-1 text-xs font-semibold text-[#170d1d]"
-              style={{ background: tier.gradient }}
-            >
-              {tier.icon} {tier.name} Pass
+            <div className="mb-2 flex items-center gap-3">
+              <div
+                className="inline-flex rounded-full px-3 py-1 text-xs font-semibold text-[#170d1d]"
+                style={{ background: tier.gradient }}
+              >
+                {tier.icon} {tier.name} Pass
+              </div>
+              <img
+                src={userAvatar}
+                alt={userName}
+                className="h-11 w-11 shrink-0 rounded-full border border-white/12 object-cover"
+              />
             </div>
             <div className="text-lg font-bold text-white">{userName}</div>
             <div className="mt-1 text-sm text-zinc-300">{userPhone}</div>

@@ -1,7 +1,7 @@
 import React from 'react';
 
+import { MissionIcon, ProfileIcon, VoucherIcon, VoteIcon } from '@/features/beauty-summit/icons';
 import type { BeautyTab } from '@/features/beauty-summit/types';
-import { MissionIcon, PolicyIcon, VoucherIcon, VoteIcon } from '@/features/beauty-summit/icons';
 
 interface InternalTabBarProps {
   activeTab: BeautyTab;
@@ -32,9 +32,9 @@ const tabs: Array<{
     renderIcon: (active) => <VoteIcon size={15} color={active ? '#fff' : '#71717a'} />,
   },
   {
-    key: 'policy',
-    label: 'Chính sách',
-    renderIcon: (active) => <PolicyIcon size={15} color={active ? '#fff' : '#71717a'} />,
+    key: 'profile',
+    label: 'Profile',
+    renderIcon: (active) => <ProfileIcon size={15} color={active ? '#fff' : '#71717a'} />,
   },
 ];
 

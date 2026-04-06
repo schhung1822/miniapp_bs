@@ -57,6 +57,13 @@ export const PolicyIcon: React.FC<IconProps> = ({ size = 18, color = '#fff', cla
   </svg>
 );
 
+export const ProfileIcon: React.FC<IconProps> = ({ size = 18, color = '#fff', className }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
+    <circle cx="12" cy="8" r="3.5" />
+    <path d="M5 20a7 7 0 0 1 14 0" />
+  </svg>
+);
+
 export const SearchIcon: React.FC<IconProps> = ({ size = 16, color = '#778', className }) => (
   <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
     <circle cx="11" cy="11" r="7.5" />

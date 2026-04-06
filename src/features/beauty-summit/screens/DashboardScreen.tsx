@@ -4,31 +4,28 @@ import {
   BPOINT_VOUCHERS,
   FREE_VOUCHERS,
   MILESTONES,
-  POLICY_SECTIONS,
   VOTE_CATEGORIES,
 } from '@/features/beauty-summit/data';
 import type {
   BeautyTab,
+  BeautyUserRole,
   Milestone,
   Mission,
   MissionPhase,
-  PolicySection,
   TierMeta,
   Voucher,
   VoucherTab,
   VoteBrand,
   VoteCategory,
 } from '@/features/beauty-summit/types';
-import { getToneClasses, normalizeQuery } from '@/features/beauty-summit/utils';
+import { normalizeQuery } from '@/features/beauty-summit/utils';
 import {
   CalendarIcon,
   ClockIcon,
   GiftIcon,
-  PolicyIcon,
   QrIcon,
   SearchIcon,
   StarIcon,
-  VoucherIcon,
   VoteIcon,
 } from '@/features/beauty-summit/icons';
 import BrandDetailDrawer from '@/features/beauty-summit/components/BrandDetailDrawer';
@@ -36,6 +33,9 @@ import InternalTabBar from '@/features/beauty-summit/components/InternalTabBar';
 import MilestoneModal from '@/features/beauty-summit/components/MilestoneModal';
 import MissionCard from '@/features/beauty-summit/components/MissionCard';
 import MissionDrawer from '@/features/beauty-summit/components/MissionDrawer';
+import PolicyDrawer from '@/features/beauty-summit/components/PolicyDrawer';
+import ProfilePanel from '@/features/beauty-summit/components/ProfilePanel';
+import ScanDrawer from '@/features/beauty-summit/components/ScanDrawer';
 import VoucherCodeModal from '@/features/beauty-summit/components/VoucherCodeModal';
 
 interface DashboardScreenProps {
@@ -50,7 +50,9 @@ interface DashboardScreenProps {
   availablePoints: number;
   qrGenerated: boolean;
   userName: string;
+  userAvatar: string;
   userPhone: string;
+  userRole: BeautyUserRole;
   orderCode: string;
   qrMarkup: string;
   currentPhaseMissions: Mission[];
@@ -66,6 +68,10 @@ interface DashboardScreenProps {
   selectedCategory: VoteCategory | null;
   selectedMilestone: Milestone | null;
   expandedMission: Mission | null;
+  policyOpen: boolean;
+  scannerOpen: boolean;
+  scannerBusy: boolean;
+  scannerResult: string | null;
   phaseProgressMap: Record<MissionPhase, number>;
   onTabChange: (tab: BeautyTab) => void;
   onPhaseChange: (phase: MissionPhase) => void;
@@ -86,6 +92,11 @@ interface DashboardScreenProps {
   onCloseMilestone: () => void;
   onClaimMilestone: () => void;
   onOpenQr: () => void;
+  onOpenPolicy: () => void;
+  onClosePolicy: () => void;
+  onOpenScanner: () => void;
+  onCloseScanner: () => void;
+  onRunScanner: () => void;
 }
 
 const phaseItems: Array<{
@@ -125,7 +136,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
   availablePoints,
   qrGenerated,
   userName,
+  userAvatar,
   userPhone,
+  userRole,
   orderCode,
   qrMarkup,
   currentPhaseMissions,
@@ -141,6 +154,10 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
   selectedCategory,
   selectedMilestone,
   expandedMission,
+  policyOpen,
+  scannerOpen,
+  scannerBusy,
+  scannerResult,
   phaseProgressMap,
   onTabChange,
   onPhaseChange,
@@ -161,6 +178,11 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
   onCloseMilestone,
   onClaimMilestone,
   onOpenQr,
+  onOpenPolicy,
+  onClosePolicy,
+  onOpenScanner,
+  onCloseScanner,
+  onRunScanner,
 }) => {
   const completedSet = new Set(completedIds);
   const claimedFreeSet = new Set(claimedFreeVoucherIds);
@@ -187,9 +209,16 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
         <div className="pointer-events-none absolute right-7 top-4 h-20 w-20 rounded-full bg-[#ff3bb1]/14 blur-[42px]" />
         <div className="grid grid-cols-[minmax(0,1fr)_104px] items-start gap-3 sm:grid-cols-[minmax(0,1fr)_118px]">
           <div className="min-w-0 pt-1">
-            <div className="mb-3 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[#f4c50a] px-3.5 py-2 text-[9px] font-black text-white">
-              <StarIcon size={15} color="#ffffff" />
-              <span className='text-[12px]'>{tier.name} Pass</span>
+            <div className="mb-3 flex items-center gap-2.5">
+              <div className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[#f4c50a] px-3.5 py-2 text-[9px] font-black text-white">
+                <StarIcon size={15} color="#ffffff" />
+                <span className="text-[12px]">{tier.name} Pass</span>
+              </div>
+              <img
+                src={userAvatar}
+                alt={userName}
+                className="h-10 w-10 shrink-0 rounded-full border border-white/18 object-cover shadow-[0_8px_20px_rgba(0,0,0,0.18)]"
+              />
             </div>
             <div className="text-[19px] font-black leading-[0.95] text-white sm:text-[23px]">
               {userName}
@@ -640,46 +669,30 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
     );
   };
 
-  const renderPolicyTab = (): React.ReactNode => (
-    <div className="space-y-3">
-      {POLICY_SECTIONS.map((section: PolicySection) => {
-        const tone = getToneClasses(section.tone);
-        const bulletColor =
-          section.tone === 'gold'
-            ? '#ffd36c'
-            : section.tone === 'green'
-              ? '#5fe0b4'
-              : section.tone === 'blue'
-                ? '#62b7ff'
-                : section.tone === 'red'
-                  ? '#ff7878'
-                  : '#ff70b8';
-
-        return (
-          <div key={section.id} className="overflow-hidden rounded-[1.1rem] border border-white/6 bg-white/[0.03]">
-            <div className={`flex items-center gap-2 border-b border-white/6 px-4 py-3 text-sm font-bold ${tone}`}>
-              <PolicyIcon color="currentColor" />
-              {section.title}
-            </div>
-            <div className="space-y-3 px-4 py-4">
-              {section.items.map((item) => (
-                <div key={item} className="flex items-start gap-3 text-sm leading-6 text-zinc-300">
-                  <span className="mt-2 h-1.5 w-1.5 rounded-full" style={{ background: bulletColor }} />
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      })}
-    </div>
+  const renderProfileTab = (): React.ReactNode => (
+    <ProfilePanel
+      userName={userName}
+      userAvatar={userAvatar}
+      userPhone={userPhone}
+      tier={tier}
+      availablePoints={availablePoints}
+      completedCount={completedIds.length}
+      totalMissionCount={allMissionCount}
+      userRole={userRole}
+      onOpenPolicy={onOpenPolicy}
+      onOpenScanner={onOpenScanner}
+    />
   );
 
   return (
     <div className="relative h-full">
       <div ref={scrollContainerRef} className="beauty-scroll h-full overflow-y-auto px-4 pb-40 pt-5">
-        {renderPassCard()}
-        {renderProgressCard()}
+        {activeTab !== 'profile' ? (
+          <>
+            {renderPassCard()}
+            {renderProgressCard()}
+          </>
+        ) : null}
 
         {activeTab === 'missions'
           ? renderMissionsTab()
@@ -687,7 +700,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
             ? renderVoucherTab()
             : activeTab === 'vote'
               ? renderVoteTab()
-              : renderPolicyTab()}
+              : renderProfileTab()}
       </div>
 
       <MissionDrawer
@@ -725,12 +738,30 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
         onClaim={onClaimMilestone}
       />
 
+      <PolicyDrawer open={policyOpen} onClose={onClosePolicy} />
+
+      <ScanDrawer
+        open={scannerOpen}
+        userRole={userRole}
+        isLoading={scannerBusy}
+        result={scannerResult}
+        onClose={onCloseScanner}
+        onScan={onRunScanner}
+      />
+
       <InternalTabBar
         activeTab={activeTab}
         completedCount={completedIds.length}
         totalCount={allMissionCount}
         onChange={onTabChange}
-        hidden={Boolean(expandedMission || selectedVoucher || selectedBrand || selectedMilestone)}
+        hidden={Boolean(
+          expandedMission ||
+            selectedVoucher ||
+            selectedBrand ||
+            selectedMilestone ||
+            policyOpen ||
+            scannerOpen,
+        )}
       />
     </div>
   );
