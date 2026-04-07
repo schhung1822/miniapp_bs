@@ -2,9 +2,88 @@
 
 .beauty-shell {
   background:
-    radial-gradient(circle at top, rgba(236, 72, 153, 0.12), transparent 24rem),
-    linear-gradient(180deg, #090913 0%, #0f1020 42%, #090913 100%);
+    radial-gradient(circle at top left, rgba(255, 238, 205, 0.96), transparent 21rem),
+    radial-gradient(circle at top right, rgba(255, 220, 234, 0.78), transparent 20rem),
+    linear-gradient(180deg, #fffaf1 0%, #fff7fb 45%, #f7fbff 100%);
   font-family: "Be Vietnam Pro", sans-serif;
+}
+
+.beauty-light {
+  color: #241629;
+}
+
+.beauty-light .text-white,
+.beauty-light .text-zinc-200,
+.beauty-light .text-zinc-300 {
+  color: #241629 !important;
+}
+
+.beauty-light .text-zinc-400,
+.beauty-light .text-zinc-500 {
+  color: #7a7280 !important;
+}
+
+.beauty-light .text-amber-200,
+.beauty-light .text-amber-300 {
+  color: #b8860b !important;
+}
+
+.beauty-light .placeholder\:text-zinc-500::placeholder {
+  color: #a69ba8 !important;
+}
+
+.beauty-light [class*="border-white/"],
+.beauty-light [class*="border-white["] {
+  border-color: rgba(184, 134, 11, 0.16) !important;
+}
+
+.beauty-light [class*="bg-white/"],
+.beauty-light [class*="bg-white["] {
+  background-color: rgba(255, 255, 255, 0.72) !important;
+}
+
+.beauty-light [class*="bg-[#121320]"],
+.beauty-light [class*="bg-[#141626]"],
+.beauty-light [class*="bg-[#151624]"],
+.beauty-light [class*="bg-[#15161f]"],
+.beauty-light [class*="bg-[#161720]"],
+.beauty-light [class*="bg-[#10111a]"],
+.beauty-light [class*="bg-[#12141d]"],
+.beauty-light [class*="bg-[#13141d]"],
+.beauty-light [class*="bg-[#191923]"],
+.beauty-light [class*="bg-[#0b0d14]"] {
+  background-color: rgba(255, 255, 255, 0.88) !important;
+}
+
+.beauty-light [class*="bg-[linear-gradient(135deg,#241d12"],
+.beauty-light [class*="bg-[linear-gradient(145deg,rgba(20,21,34"],
+.beauty-light [class*="bg-[linear-gradient(145deg,rgba(8,34,30"] {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(255, 248, 233, 0.94)) !important;
+}
+
+.beauty-light [class*="bg-[linear-gradient(145deg,rgba(245,158,11"],
+.beauty-light [class*="bg-[linear-gradient(145deg,rgba(167,139,250"],
+.beauty-light [class*="bg-[linear-gradient(145deg,rgba(236,72,153"] {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(255, 242, 224, 0.82)) !important;
+}
+
+.beauty-light [class*="bg-[linear-gradient(135deg,#fff,#ffd970"] {
+  background-image: linear-gradient(135deg, #3a2231, #b8860b, #ec4899) !important;
+}
+
+.beauty-light input,
+.beauty-light textarea {
+  background: rgba(255, 255, 255, 0.82) !important;
+  color: #241629 !important;
+  border-color: rgba(184, 134, 11, 0.18) !important;
+}
+
+.beauty-light .beauty-toast {
+  color: #ffffff !important;
+}
+
+.beauty-fade-in {
+  animation: beauty-fade-in 420ms ease both;
 }
 
 .beauty-slide-up {
@@ -94,6 +173,16 @@
   }
 }
 
+@keyframes beauty-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes beauty-spin {
   from {
     transform: rotate(0deg);
@@ -101,5 +190,56 @@
 
   to {
     transform: rotate(360deg);
+  }
+}
+
+.footer-qr-scan {
+  position: relative;
+  isolation: isolate;
+}
+
+.footer-qr-scan::after {
+  content: "";
+  position: absolute;
+  inset: 8px 10px;
+  z-index: 1;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.78) 48%,
+    transparent 100%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-145%);
+  animation: footer-qr-scan 2.4s ease-in-out infinite;
+}
+
+.footer-qr-scan > svg {
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes footer-qr-scan {
+  0%,
+  24% {
+    opacity: 0;
+    transform: translateY(-145%);
+  }
+
+  35% {
+    opacity: 1;
+  }
+
+  58% {
+    opacity: 1;
+    transform: translateY(145%);
+  }
+
+  70%,
+  100% {
+    opacity: 0;
+    transform: translateY(145%);
   }
 }

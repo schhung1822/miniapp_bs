@@ -2,7 +2,7 @@ import React from 'react';
 import { Icon } from 'zmp-ui';
 import { useNavigate } from 'react-router-dom';
 
-import { BrandMark } from '@/features/beauty-summit/icons';
+import beautySummitIcon from '@/assets/icon.png';
 
 export type HeaderProps =
   | { variant: 'logo' }
@@ -15,9 +15,13 @@ const Header: React.FC<HeaderProps> = (props) => {
     <div className="z-10 bg-white">
       {props.variant === 'logo' ? (
         <div className="flex h-12 items-center gap-2 px-3">
-          <BrandMark size={28} />
-          <span className="whitespace-nowrap font-semibold text-title-lg text-primary">
-            BeautySummit 2026
+          <img
+            src={beautySummitIcon}
+            alt="Beauty Summit"
+            className="h-8 w-8 rounded-lg object-contain"
+          />
+          <span className="whitespace-nowrap text-base font-semibold text-primary">
+            Beauty Summit 2026
           </span>
         </div>
       ) : (

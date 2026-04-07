@@ -22,6 +22,7 @@ import { normalizeQuery } from '@/features/beauty-summit/utils';
 import {
   CalendarIcon,
   ClockIcon,
+  CloseIcon,
   GiftIcon,
   QrIcon,
   SearchIcon,
@@ -29,7 +30,7 @@ import {
   VoteIcon,
 } from '@/features/beauty-summit/icons';
 import BrandDetailDrawer from '@/features/beauty-summit/components/BrandDetailDrawer';
-import InternalTabBar from '@/features/beauty-summit/components/InternalTabBar';
+import FooterNav from '@/features/beauty-summit/components/FooterNav';
 import MilestoneModal from '@/features/beauty-summit/components/MilestoneModal';
 import MissionCard from '@/features/beauty-summit/components/MissionCard';
 import MissionDrawer from '@/features/beauty-summit/components/MissionDrawer';
@@ -108,19 +109,19 @@ const phaseItems: Array<{
   {
     key: 'before',
     label: 'Nhiệm vụ trước sự kiện',
-    renderIcon: (active) => <ClockIcon size={19} color={active ? '#fff' : '#696a73'} />,
+    renderIcon: (active) => <ClockIcon size={19} color={active ? '#b8860b' : '#9a8f9d'} />,
   },
   {
     key: 'day1',
     label: 'Nhiệm vụ ngày 1',
     sub: '19/06/2026',
-    renderIcon: (active) => <CalendarIcon size={19} color={active ? '#fff' : '#696a73'} />,
+    renderIcon: (active) => <CalendarIcon size={19} color={active ? '#b8860b' : '#9a8f9d'} />,
   },
   {
     key: 'day2',
     label: 'Nhiệm vụ ngày 2',
     sub: '20/06/2026',
-    renderIcon: (active) => <CalendarIcon size={19} color={active ? '#fff' : '#696a73'} />,
+    renderIcon: (active) => <CalendarIcon size={19} color={active ? '#b8860b' : '#9a8f9d'} />,
   },
 ];
 
@@ -190,6 +191,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
   const milestoneSet = new Set(claimedMilestonePcts);
   const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
   const previousTabRef = React.useRef<BeautyTab>(activeTab);
+  const [qrPreviewOpen, setQrPreviewOpen] = React.useState<boolean>(false);
   const hasQr = qrGenerated && orderCode.trim().length > 0;
   const ticketCode = hasQr ? orderCode.trim().slice(-3) || 'KKK' : 'KKK';
 
@@ -210,7 +212,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
         <div className="grid grid-cols-[minmax(0,1fr)_104px] items-start gap-3 sm:grid-cols-[minmax(0,1fr)_118px]">
           <div className="min-w-0 pt-1">
             <div className="mb-3 flex items-center gap-2.5">
-              <div className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[#f4c50a] px-3.5 py-2 text-[9px] font-black text-white">
+              <div className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[#f4c50a] px-3.5 py-2 text-[9px] font-black !text-white">
                 <StarIcon size={15} color="#ffffff" />
                 <span className="text-[12px]">{tier.name} Pass</span>
               </div>
@@ -248,7 +250,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   </p>
                 </div>
               )}
-              {hasQr ? ( <div className="absolute bottom-[-10px] px-2 left-4.5 rounded-full bg-gradient-to-br from-[#b8860b] to-[#ffd700] text-[9px] font-black text-white">
+              {hasQr ? ( <div className="absolute bottom-[-10px] px-2 left-4.5 rounded-full bg-gradient-to-br from-[#b8860b] to-[#ffd700] text-[9px] font-black !text-white">
                 CHECK-IN
               </div> ) : null}
             </div>
@@ -270,7 +272,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
     ];
 
     return (
-      <div className="mb-4 rounded-[1.55rem] border border-white/8 bg-[#161720] px-4 py-4 shadow-[0_12px_28px_rgba(0,0,0,0.15)]">
+      <div className="mb-4 rounded-[1.55rem] border border-[#eadfd2] bg-white px-4 py-4 shadow-[0_12px_28px_rgba(184,134,11,0.08)]">
         <div className="mb-4 flex items-center justify-between gap-4">
           <div className="text-[14px] font-semibold text-[#9ba1b2]">Tiến độ nhiệm vụ</div>
           <div className="text-[15px] font-black text-[#ff58ba]">
@@ -293,12 +295,12 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                         ? 'border-dashed' : ''
                     }`}
                     style={{
-                      borderColor: item.unlocked ? '#a88312' : isFinal ? 'rgba(168,131,18,0.7)' : '#3a3b44',
+                      borderColor: item.unlocked ? '#c99b17' : isFinal ? 'rgba(201,155,23,0.55)' : '#d7ced9',
                       background: item.unlocked
-                        ? 'rgba(168,131,18,0.14)'
+                        ? 'rgba(255,214,102,0.24)'
                         : isFinal
-                          ? 'rgba(168,131,18,0.06)'
-                          : 'rgba(32,33,41,0.9)',
+                          ? 'rgba(255,214,102,0.12)'
+                          : '#f4f1f5',
                     }}
                   >
                     <GiftIcon size={20} color={iconColor} />
@@ -307,10 +309,10 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   <div
                     className="flex h-[33px] w-[33px] items-center justify-center rounded-[1rem]"
                     style={{
-                      background: item.unlocked ? 'linear-gradient(135deg, #b88908, #e5b61a)' : 'rgba(32,33,41,0.9)',
+                      background: item.unlocked ? 'linear-gradient(135deg, #b88908, #e5b61a)' : '#f4f1f5',
                     }}
                   >
-                    <span className={`text-[18px] leading-none ${item.unlocked ? 'text-white' : 'text-[#646572]'}`}>
+                    <span className={`text-[18px] leading-none ${item.unlocked ? '!text-white' : 'text-[#9a8f9d]'}`}>
                       ✓
                     </span>
                   </div>
@@ -331,7 +333,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
             return (
               <React.Fragment key={item.pct}>
                 {node}
-                <div className="mt-[15px] h-[5px] flex-1 rounded-full bg-[#2a2b33]">
+                <div className="mt-[15px] h-[5px] flex-1 rounded-full bg-[#e8e1ea]">
                   <div
                     className="h-full rounded-full"
                     style={{
@@ -362,13 +364,13 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 type="button"
                 onClick={() => onPhaseChange(item.key)}
                 className={`rounded-[1.2rem] border px-2 py-3 text-center transition ${
-                  active ? 'text-white' : 'border-white/8 bg-[#10111a] text-zinc-500'
+                  active ? 'border-[#d8b45b] bg-[#fff5d6] text-[#7a5200]' : 'border-[#eadfd2] bg-white text-[#7a7280]'
                 }`}
                 style={
                   active
                     ? {
-                        borderColor: '#7d5e19',
-                        background: 'linear-gradient(180deg, rgba(39,30,18,0.96), rgba(28,23,15,0.96))',
+                        borderColor: '#d8b45b',
+                        background: 'linear-gradient(180deg, #fff8df, #ffffff)',
                       }
                     : undefined
                 }
@@ -377,13 +379,13 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   <span className='h-[19px]'>{item.renderIcon(active)}</span>
                   <div
                     className={`inline-flex rounded-full px-2.5 py-1 text-[12px] font-black ${
-                      active ? 'bg-[#3d2f14] text-[#e7b317]' : 'bg-[#191923] text-[#767680]'
+                      active ? 'bg-[#f2c94c] !text-white' : 'bg-[#f4edf2] text-[#8b8790]'
                     }`}
                   >
                     {percent}%
                   </div>
                 </div>
-                <div className={`text-[11px] font-semibold leading-4 ${active ? 'text-white' : 'text-[#73737c]'}`}>
+                <div className={`text-[11px] font-semibold leading-4 ${active ? 'text-[#7a5200]' : 'text-[#73737c]'}`}>
                   {item.label}
                 </div>
                 {item.sub ? <div className="mt-1 text-[11px] text-[#73737c]">{item.sub}</div> : null}
@@ -425,7 +427,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 rounded-[1rem] border border-white/6 bg-white/[0.03] p-1">
+      <div className="grid grid-cols-2 gap-2 rounded-[1rem] border border-[#eadfd2] bg-[#fffaf2] p-1">
         {(
           [
             { key: 'bpoint', label: `Đổi BPoint (${BPOINT_VOUCHERS.length})` },
@@ -437,7 +439,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
             type="button"
             onClick={() => onVoucherTabChange(item.key)}
             className={`rounded-[0.85rem] px-3 py-3 text-sm font-semibold transition ${
-              voucherTab === item.key ? 'text-white' : 'text-zinc-500'
+              voucherTab === item.key ? '!text-white' : 'text-[#7a7280]'
             }`}
             style={voucherTab === item.key ? { background: 'linear-gradient(135deg, #ec4899, #f59e0b)' } : undefined}
           >
@@ -461,17 +463,17 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                     ? 'rgba(74,222,128,0.2)'
                     : voucher.isGrand
                       ? 'rgba(255,215,0,0.2)'
-                      : 'rgba(255,255,255,0.06)',
+                      : 'rgba(184,134,11,0.14)',
                   background: redeemed
                     ? 'rgba(74,222,128,0.08)'
                     : voucher.isGrand
                       ? 'rgba(236,72,153,0.08)'
-                      : 'rgba(255,255,255,0.03)',
+                      : 'rgba(255,255,255,0.86)',
                 }}
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-sm font-black text-white"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-sm font-black !text-white"
                     style={{ background: `linear-gradient(135deg, ${voucher.color}, ${voucher.color}bb)` }}
                   >
                     {voucher.logo}
@@ -480,19 +482,19 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                     <div className="text-[11px] font-semibold" style={{ color: voucher.color }}>
                       {voucher.brand}
                     </div>
-                    <div className="text-sm font-bold text-white">{voucher.discount}</div>
-                    <div className="mt-1 truncate text-xs text-zinc-400">{voucher.desc}</div>
+                    <div className="text-sm font-bold text-[#241629]">{voucher.discount}</div>
+                    <div className="mt-1 truncate text-xs text-[#7a7280]">{voucher.desc}</div>
                   </div>
                   {redeemed ? (
                     <button
                       type="button"
                       onClick={() => onOpenVoucher(voucher)}
-                      className="rounded-full bg-emerald-400/12 px-3 py-2 text-xs font-semibold text-emerald-300"
+                      className="rounded-full bg-emerald-100 px-3 py-2 text-xs font-semibold text-emerald-700"
                     >
                       Xem mã
                     </button>
                   ) : voucher.isGrand ? (
-                    <div className="rounded-full bg-amber-300/12 px-3 py-2 text-xs font-bold text-amber-200">
+                    <div className="rounded-full bg-amber-100 px-3 py-2 text-xs font-bold text-amber-700">
                       MAX
                     </div>
                   ) : (
@@ -500,7 +502,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                       type="button"
                       onClick={() => onRedeemVoucher(voucher)}
                       disabled={!canAfford}
-                      className="rounded-full px-3 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:bg-white/8 disabled:text-zinc-500"
+                      className="rounded-full px-3 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:bg-[#f1edf2] disabled:text-[#a69ba8]"
                       style={
                         canAfford
                           ? { background: `linear-gradient(135deg, ${voucher.color}, ${voucher.color}bb)`, color: '#fff' }
@@ -525,10 +527,10 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 key={voucher.id}
                 type="button"
                 onClick={() => (claimed ? onOpenVoucher(voucher) : onClaimVoucher(voucher))}
-                className="flex w-full items-center gap-3 rounded-[1.1rem] border border-white/6 bg-white/[0.03] p-4 text-left"
+                className="flex w-full items-center gap-3 rounded-[1.1rem] border border-[#eadfd2] bg-white p-4 text-left"
               >
                 <div
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-sm font-black text-white"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-sm font-black !text-white"
                   style={{ background: `linear-gradient(135deg, ${voucher.color}, ${voucher.color}bb)` }}
                 >
                   {voucher.logo}
@@ -537,12 +539,12 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   <div className="text-[11px] font-semibold" style={{ color: voucher.color }}>
                     {voucher.brand}
                   </div>
-                  <div className="text-sm font-bold text-white">{voucher.discount}</div>
-                  <div className="mt-1 truncate text-xs text-zinc-400">{voucher.desc}</div>
+                  <div className="text-sm font-bold text-[#241629]">{voucher.discount}</div>
+                  <div className="mt-1 truncate text-xs text-[#7a7280]">{voucher.desc}</div>
                 </div>
                 <div
                   className={`rounded-full px-3 py-2 text-xs font-semibold ${
-                    claimed ? 'bg-emerald-400/12 text-emerald-300' : 'text-white'
+                    claimed ? 'bg-emerald-100 text-emerald-700' : '!text-white'
                   }`}
                   style={claimed ? undefined : { background: `linear-gradient(135deg, ${voucher.color}, ${voucher.color}bb)` }}
                 >
@@ -561,12 +563,12 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
     return (
       <div className="space-y-4">
-        <div className="rounded-[1.2rem] border border-violet-300/18 bg-[linear-gradient(145deg,rgba(167,139,250,0.16),rgba(167,139,250,0.04))] p-4">
+        <div className="rounded-[1.2rem] border border-violet-200 bg-[linear-gradient(145deg,rgba(255,255,255,0.96),rgba(245,240,255,0.9))] p-4">
           <div className="mb-2 flex items-center gap-2">
-            <VoteIcon color="#d8b4fe" size={20} />
-            <div className="text-base font-bold text-white">Bình chọn nhãn hàng</div>
+            <VoteIcon color="#8b5cf6" size={20} />
+            <div className="text-base font-bold text-[#241629]">Bình chọn nhãn hàng</div>
           </div>
-          <div className="text-sm leading-6 text-zinc-300">
+          <div className="text-sm leading-6 text-[#6f6572]">
             Chọn thương hiệu hoặc sản phẩm yêu thích trong từng hạng mục. Hoàn thành ít nhất 2 hạng mục để mở khóa nhiệm vụ vote.
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -577,8 +579,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   key={category.id}
                   className="rounded-full border px-3 py-1 text-[11px] font-semibold"
                   style={{
-                    borderColor: voted ? `${category.color}33` : 'rgba(255,255,255,0.08)',
-                    background: voted ? `${category.color}18` : 'rgba(255,255,255,0.04)',
+                    borderColor: voted ? `${category.color}33` : 'rgba(184,134,11,0.14)',
+                    background: voted ? `${category.color}18` : 'rgba(255,255,255,0.74)',
                     color: voted ? category.color : '#71717a',
                   }}
                 >
@@ -623,18 +625,18 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
             const selectedBrandName = category.brands.find((brand) => brand.id === selectedId)?.name;
 
             return (
-              <div key={category.id} className="rounded-[1.1rem] border border-white/6 bg-white/[0.03] p-4">
-                <div className="mb-3 flex items-start justify-between gap-4">
-                  <div>
-                    <div className="mb-1 flex items-center gap-2">
-                      <span className="h-2.5 w-2.5 rounded-full" style={{ background: category.color }} />
-                      <span className="text-sm font-bold text-white">{category.title}</span>
+              <div key={category.id} className="rounded-[1.1rem] border border-[#eadfd2] bg-white p-4 shadow-[0_10px_24px_rgba(184,134,11,0.06)]">
+                <div className="mb-3 grid grid-cols-[minmax(0,1fr)_4.75rem] items-start gap-2">
+                  <div className="min-w-0">
+                    <div className="mb-1 flex min-w-0 items-center gap-2">
+                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: category.color }} />
+                      <span className="truncate text-sm font-bold text-[#241629]">{category.title}</span>
                     </div>
-                    <div className="text-xs leading-5 text-zinc-400">
+                    <div className="truncate text-xs leading-5 text-zinc-400">
                       {selectedBrandName ? `Đã chọn: ${selectedBrandName}` : category.desc}
                     </div>
                   </div>
-                  <div className="rounded-full bg-white/6 px-2 py-1 text-[10px] font-semibold text-zinc-500">
+                  <div className="whitespace-nowrap rounded-full bg-[#f4edf2] px-2 py-1 text-center text-[10px] font-semibold text-[#8b8790]">
                     {category.brands.length} ứng viên
                   </div>
                 </div>
@@ -648,11 +650,12 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                         type="button"
                         onClick={() => onOpenBrand(category, brand)}
                         className={`rounded-full border px-3 py-2 text-xs font-medium transition ${
-                          selected ? 'text-white' : 'text-zinc-300'
+                          selected ? 'font-semibold' : 'text-[#5f5662]'
                         }`}
                         style={{
-                          borderColor: selected ? category.color : 'rgba(255,255,255,0.08)',
-                          background: selected ? `linear-gradient(135deg, ${category.color}30, ${category.color}14)` : 'rgba(255,255,255,0.03)',
+                          borderColor: selected ? category.color : 'rgba(184,134,11,0.16)',
+                          background: selected ? `${category.color}18` : 'rgba(255,250,242,0.9)',
+                          color: selected ? category.color : undefined,
                         }}
                       >
                         {selected ? '✓ ' : ''}
@@ -683,6 +686,40 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
       onOpenScanner={onOpenScanner}
     />
   );
+
+  const renderQrPreviewModal = (): React.ReactNode => {
+    if (!qrPreviewOpen) {
+      return null;
+    }
+
+    return (
+      <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/45 px-5 backdrop-blur-sm">
+        <div className="w-full max-w-[22rem] rounded-[1.6rem] bg-white p-5 text-center shadow-[0_24px_70px_rgba(15,23,42,0.2)]">
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <div className="text-left">
+              <div className="text-base font-bold text-[#241629]">Mã QR check-in</div>
+              <div className="mt-1 text-xs text-[#7a7280]">{orderCode}</div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setQrPreviewOpen(false)}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f4edf2] text-[#7a7280]"
+            >
+              <CloseIcon size={16} color="currentColor" />
+            </button>
+          </div>
+          <div className="mx-auto flex h-[260px] w-[260px] items-center justify-center rounded-[1.35rem] border border-[#eadfd2] bg-white p-4 shadow-inner shadow-[#eadfd2]/40 [&>svg]:h-full [&>svg]:w-full">
+            <div
+              className="h-full w-full [&>svg]:h-full [&>svg]:w-full"
+              dangerouslySetInnerHTML={{ __html: qrMarkup }}
+            />
+          </div>
+          <div className="mt-4 text-sm font-semibold text-[#241629]">{userName}</div>
+          <div className="mt-1 text-xs text-[#7a7280]">{userPhone}</div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="relative h-full">
@@ -749,18 +786,26 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
         onScan={onRunScanner}
       />
 
-      <InternalTabBar
+      {renderQrPreviewModal()}
+
+      <FooterNav
         activeTab={activeTab}
-        completedCount={completedIds.length}
-        totalCount={allMissionCount}
         onChange={onTabChange}
+        onQrClick={() => {
+          if (hasQr) {
+            setQrPreviewOpen(true);
+            return;
+          }
+          onOpenQr();
+        }}
         hidden={Boolean(
           expandedMission ||
             selectedVoucher ||
             selectedBrand ||
             selectedMilestone ||
             policyOpen ||
-            scannerOpen,
+            scannerOpen ||
+            qrPreviewOpen,
         )}
       />
     </div>

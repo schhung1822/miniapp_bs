@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import {
   configAppView,
@@ -8,7 +9,7 @@ import {
   getUserInfo,
   scanQRCode,
 } from 'zmp-sdk';
-import { nativeStorage } from 'zmp-sdk/apis';
+import { authorize, nativeStorage, showOAWidget } from 'zmp-sdk/apis';
 
 import {
   BPOINT_VOUCHERS,
@@ -58,6 +59,12 @@ const ZALO_USER_STORAGE_KEY =
   import.meta.env.VITE_ZALO_USER_STORAGE_KEY?.trim() || 'beauty-summit.zalo-user';
 const ZALO_QR_STORAGE_KEY =
   import.meta.env.VITE_ZALO_QR_STORAGE_KEY?.trim() || 'beauty-summit.qr-checkin';
+const OA_WIDGET_ID = 'beautySummitOaWidget';
+const FORCE_ONBOARDING_PERMISSION_TEST = true;
+const BEAUTY_TABS: readonly BeautyTab[] = ['missions', 'vouchers', 'vote', 'profile'];
+
+const isBeautyTab = (value: string | null): value is BeautyTab =>
+  Boolean(value && BEAUTY_TABS.includes(value as BeautyTab));
 
 interface CachedZaloUser {
   id: string;
@@ -108,6 +115,11 @@ const isCompleteCachedQrTicket = (
   Boolean(value?.userId?.trim() && value?.ticketCode?.trim() && value?.qrValue?.trim());
 
 const readCachedZaloUser = (): CachedZaloUser | null => {
+  if (FORCE_ONBOARDING_PERMISSION_TEST) {
+    console.log('[BeautySummit] nativeStorage user cache disabled for permission test');
+    return null;
+  }
+
   try {
     console.log('[BeautySummit] checking nativeStorage key:', ZALO_USER_STORAGE_KEY);
     const rawValue = nativeStorage.getItem(ZALO_USER_STORAGE_KEY);
@@ -216,6 +228,17 @@ const clearCachedQrTicket = (): void => {
   nativeStorage.removeItem(ZALO_QR_STORAGE_KEY);
 };
 
+const requestZaloPermissions = async (): Promise<void> => {
+  const permissions = await authorize({
+    scopes: ['scope.userInfo', 'scope.userPhonenumber'],
+  });
+  console.log('[BeautySummit] Zalo permissions granted:', permissions);
+
+  if (!permissions['scope.userInfo'] || !permissions['scope.userPhonenumber']) {
+    throw new Error('Required Zalo permissions were not granted');
+  }
+};
+
 const resolveZaloPhoneNumber = async (): Promise<string> => {
   try {
     const phoneAuth = await getPhoneNumber({});
@@ -268,6 +291,7 @@ const syncMiniAppUser = async (user: CachedZaloUser): Promise<void> => {
 };
 
 const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeaderChange }) => {
+  const [searchParams] = useSearchParams();
   const [screen, setScreen] = React.useState<ExperienceScreen>('onboarding');
   const [slideIndex, setSlideIndex] = React.useState<number>(0);
   const [tier, setTier] = React.useState<TierKey>('PREMIUM');
@@ -295,6 +319,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const [toast, setToast] = React.useState<string | null>(null);
   const [checkinLog, setCheckinLog] = React.useState<CheckinLog[]>([]);
   const [ticketHelpOpen, setTicketHelpOpen] = React.useState<boolean>(false);
+  const [oaPromptOpen, setOaPromptOpen] = React.useState<boolean>(false);
   const [permissionStep, setPermissionStep] = React.useState<'profile' | null>(null);
   const [permissionIntent, setPermissionIntent] = React.useState<'activate' | 'generate-qr' | null>(
     null,
@@ -312,6 +337,13 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const [appBootstrapping, setAppBootstrapping] = React.useState<boolean>(true);
 
   const toastTimer = React.useRef<number | null>(null);
+
+  React.useEffect(() => {
+    const tabFromUrl = searchParams.get('tab');
+    if (isBeautyTab(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams]);
 
   React.useEffect(() => {
     configAppView({
@@ -375,6 +407,35 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       }
     };
   }, []);
+
+  const openPermissionNotice = React.useCallback((): void => {
+    setOaPromptOpen(false);
+    setPermissionIntent('activate');
+    setPermissionStep('profile');
+  }, []);
+
+  React.useEffect(() => {
+    if (!oaPromptOpen) {
+      return;
+    }
+
+    showOAWidget({
+      id: OA_WIDGET_ID,
+      guidingText: 'Quan tâm Beauty Summit Vietnam trên Zalo',
+      color: '#0068FF',
+      onStatusChange: (status) => {
+        console.log('[BeautySummit] OA widget status:', status);
+        if (status === true) {
+          openPermissionNotice();
+        }
+      },
+      onError: (error) => {
+        console.warn('[BeautySummit] OA widget error:', error);
+      },
+    }).catch((error) => {
+      console.warn('[BeautySummit] showOAWidget failed:', error);
+    });
+  }, [oaPromptOpen, openPermissionNotice]);
 
   const missions = buildMissions(tier);
   const allMissions = [...missions.before, ...missions.day1, ...missions.day2];
@@ -492,6 +553,14 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     showToast(`Đã cập nhật vote cho ${brand.name}`);
   };
 
+  const handleTermsContinue = async (): Promise<void> => {
+    if (!agreed || miniAppLoading) {
+      return;
+    }
+
+    setOaPromptOpen(true);
+  };
+
   const handleGenerateQr = (): void => {
     const normalizedCode = normalizeTicketCode(orderCode);
     if (!normalizedCode) {
@@ -577,9 +646,11 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     try {
       let resolvedUser = readCachedZaloUser();
       if (!resolvedUser) {
-        // console.log('[BeautySummit] cache not ready, requesting Zalo profile and phone');
+        if (window.zalo) {
+          await requestZaloPermissions();
+        }
         const { userInfo } = await getUserInfo({
-          autoRequestPermission: true,
+          autoRequestPermission: false,
         });
         const userID = await getUserID({}).catch(() => '');
         const resolvedId = userID || userInfo.id || '';
@@ -847,58 +918,115 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     }
 
     return (
-      <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-sm">
-        <div className="absolute inset-x-0 bottom-0 rounded-t-[1.75rem] border-t border-white/8 bg-[#121320] px-5 pb-8 pt-3 shadow-[0_-24px_60px_rgba(0,0,0,0.45)]">
-          <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-white/12" />
-          <div className="mb-5 text-center">
-            <div className="mb-4 flex justify-center">
-              <BrandMark size={56} />
+      <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/45 px-5 backdrop-blur-sm">
+        <div className="w-full max-w-[21rem] rounded-[1.5rem] bg-white px-4 py-7 text-center shadow-[0_24px_70px_rgba(15,23,42,0.18)]">
+          <div className="mb-4 flex justify-center">
+            <BrandMark size={36} />
+          </div>
+          <div className="whitespace-pre-line text-[1.45rem] font-black leading-tight text-[#111827]">
+            {'Chào mừng bạn đến với\nBeauty Summit'}
+          </div>
+          <div className="mt-6 space-y-3 text-left">
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center text-lg text-[#0d7cff]">
+                📱
+              </div>
+              <div className="whitespace-nowrap text-[13px] font-medium leading-5 text-[#2f3137]">
+                Tạo mã QR để check-in nhanh chóng
+              </div>
             </div>
-            <div className="text-lg font-bold text-white">Cho phép nhận thông tin từ Zalo</div>
-            <div className="mt-2 text-sm leading-6 text-zinc-300">
-              App sẽ lấy tên và số điện thoại của bạn để hiển thị thẻ check-in trong app.
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center text-lg text-[#0d7cff]">
+                🎁
+              </div>
+              <div className="whitespace-nowrap text-[13px] font-medium leading-5 text-[#2f3137]">
+                Làm nhiệm vụ tích điểm nhận voucher
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center text-lg text-[#0d7cff]">
+                🪪
+              </div>
+              <div className="whitespace-nowrap text-[13px] font-medium leading-5 text-[#2f3137]">
+                Định danh khách hàng xuyên suốt sự kiện
+              </div>
             </div>
           </div>
-          <div className="mb-6 space-y-3">
-            <div className="flex items-center justify-between rounded-[1rem] border border-white/8 bg-white/[0.03] px-4 py-3">
-              <div>
-                <div className="text-sm font-semibold text-white">Tên Zalo</div>
-                <div className="text-xs text-zinc-500">Hiển thị trên thẻ check-in</div>
-              </div>
-              <div className="rounded-full bg-sky-500/15 px-3 py-1 text-xs font-semibold text-sky-300">
-                Đang bật
-              </div>
-            </div>
-            <div className="flex items-center justify-between rounded-[1rem] border border-white/8 bg-white/[0.03] px-4 py-3">
-              <div>
-                <div className="text-sm font-semibold text-white">Số điện thoại Zalo</div>
-                <div className="text-xs text-zinc-500">Dùng để xác nhận check-in</div>
-              </div>
-              <div className="rounded-full bg-sky-500/15 px-3 py-1 text-xs font-semibold text-sky-300">
-                Đang bật
-              </div>
-            </div>
+          <div className="mt-5 text-left text-[13px] leading-5 text-[#2f3137]">
+            Vui lòng đồng ý chia sẻ số điện thoại để liên kết với tài khoản của bạn trên hệ thống
+            Beauty Summit.
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={handlePermissionDenied}
-              disabled={miniAppLoading}
-              className="rounded-2xl bg-white/8 px-4 py-3 text-sm font-semibold text-zinc-300 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Từ chối
-            </button>
+          <div className="mt-7 flex flex-col items-center gap-4">
             <button
               type="button"
               onClick={handlePermissionApproved}
               disabled={miniAppLoading}
-              className={`relative rounded-2xl bg-[linear-gradient(135deg,#0ea5e9,#38bdf8)] px-4 py-3 text-sm font-semibold text-white disabled:cursor-wait disabled:opacity-70 ${
+              className={`relative w-full rounded-full bg-[#0d7cff] px-4 py-4 text-base font-bold !text-white shadow-[0_12px_30px_rgba(13,124,255,0.25)] disabled:cursor-wait disabled:opacity-70 ${
                 miniAppLoading ? 'text-transparent' : ''
               }`}
             >
-              {permissionIntent === 'activate' ? 'Về dashboard' : 'Cho phép'}
+              Liên kết số điện thoại
+            </button>
+            <button
+              type="button"
+              onClick={handlePermissionDenied}
+              disabled={miniAppLoading}
+              className="px-4 py-1 text-base font-bold text-[#ef4444] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Từ chối và Thoát
             </button>
           </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderOaWidgetModal = (): React.ReactNode => {
+    if (!oaPromptOpen) {
+      return null;
+    }
+
+    return (
+      <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/45 px-5 backdrop-blur-sm">
+        <div className="w-full max-w-[24rem] overflow-hidden rounded-[1.4rem] bg-white text-center shadow-[0_24px_70px_rgba(15,23,42,0.2)]">
+          <div className="bg-white px-5 py-4">
+            <div id={OA_WIDGET_ID} className="min-h-[82px] w-full" />
+          </div>
+          <div className="px-5 pb-4 pt-2 text-left">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="w-5 shrink-0 text-center text-lg">🔔</span>
+                <span className="whitespace-nowrap text-[13px] font-semibold leading-5 text-[#374151]">
+                  Nhận thông báo check-in & nhiệm vụ realtime
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-5 shrink-0 text-center text-lg">🎁</span>
+                <span className="whitespace-nowrap text-[13px] font-semibold leading-5 text-[#374151]">
+                  Voucher & ưu đãi gửi trực tiếp qua Zalo
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-5 shrink-0 text-center text-lg">🗓️</span>
+                <span className="whitespace-nowrap text-[13px] font-semibold leading-5 text-[#374151]">
+                  Cập nhật lịch trình & thay đổi sự kiện
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-5 shrink-0 text-center text-lg">📸</span>
+                <span className="whitespace-nowrap text-[13px] font-semibold leading-5 text-[#374151]">
+                  Thông báo phần thưởng & hình ảnh sự kiện
+                </span>
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={openPermissionNotice}
+            className="w-full border-t border-[#eef0f4] bg-white px-4 py-4 text-[15px] font-bold text-[#ef4444]"
+          >
+            Để sau
+          </button>
         </div>
       </div>
     );
@@ -967,13 +1095,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
         <TermsScreen
           agreed={agreed}
           onToggleAgree={() => setAgreed((current) => !current)}
-          onContinue={() => {
-            if (!agreed) {
-              return;
-            }
-            setPermissionIntent('activate');
-            setPermissionStep('profile');
-          }}
+          onContinue={handleTermsContinue}
         />
       ) : null}
 
@@ -1071,6 +1193,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       {screen === 'reward' ? renderRewardScreen() : null}
 
       {renderTicketHelp()}
+      {renderOaWidgetModal()}
       {renderPermissionModal()}
 
       {screen === 'qr' && qrGenerated ? (

@@ -1,24 +1,28 @@
 import React from 'react';
 
+import beautySummitLogo from '@/assets/logo.png';
+
 interface IconProps {
   size?: number;
   color?: string;
   className?: string;
 }
 
-export const BrandMark: React.FC<{ size?: number }> = ({ size = 34 }) => (
-  <div
-    className="flex items-center justify-center rounded-xl text-white font-extrabold tracking-[0.18em]"
+export const BrandMark: React.FC<{ size?: number; className?: string }> = ({
+  size = 34,
+  className,
+}) => (
+  <img
+    src={beautySummitLogo}
+    alt="Beauty Summit"
+    className={className}
     style={{
-      width: size,
       height: size,
-      background: 'linear-gradient(135deg, #ec4899, #f59e0b)',
-      boxShadow: '0 10px 22px rgba(236,72,153,0.28)',
-      fontSize: size * 0.32,
+      width: 'auto',
+      maxWidth: size * 4.2,
+      objectFit: 'contain',
     }}
-  >
-    BS
-  </div>
+  />
 );
 
 export const MissionIcon: React.FC<IconProps> = ({ size = 18, color = '#fff', className }) => (

@@ -16,15 +16,15 @@ const BeautyShell: React.FC<BeautyShellProps> = ({
   toast,
 }) => {
   return (
-    <div className="beauty-shell relative h-full overflow-hidden text-white">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_top,_rgba(236,72,153,0.2),_transparent_60%)]" />
-      <div className="pointer-events-none absolute inset-x-0 top-24 h-48 bg-[radial-gradient(circle_at_center,_rgba(245,158,11,0.12),_transparent_60%)]" />
+    <div className="beauty-shell beauty-light relative h-full overflow-hidden text-[#241629]">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_top,_rgba(255,236,200,0.92),_transparent_62%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-24 h-48 bg-[radial-gradient(circle_at_center,_rgba(255,198,220,0.46),_transparent_62%)]" />
       {children}
       {loading ? (
-        <div className="absolute inset-0 z-[60] flex items-center justify-center bg-[#090913]/78 backdrop-blur-sm">
-          <div className="flex min-w-[11rem] flex-col items-center gap-3 rounded-[1.4rem] border border-white/10 bg-[#151624]/92 px-6 py-5 shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
-            <div className="beauty-spinner h-9 w-9 rounded-full border-[3px] border-white/15 border-t-[#f59e0b]" />
-            <div className="text-center text-sm font-medium text-zinc-200">{loadingLabel}</div>
+        <div className="absolute inset-0 z-[60] flex items-center justify-center bg-white/72 backdrop-blur-sm">
+          <div className="flex min-w-[11rem] flex-col items-center gap-3 rounded-[1.4rem] border border-[#eadfd2] bg-white/95 px-6 py-5 shadow-[0_24px_60px_rgba(184,134,11,0.16)]">
+            <div className="beauty-spinner h-9 w-9 rounded-full border-[3px] border-[#eadfd2] border-t-[#b8860b]" />
+            <div className="text-center text-sm font-medium text-[#241629]">{loadingLabel}</div>
           </div>
         </div>
       ) : null}

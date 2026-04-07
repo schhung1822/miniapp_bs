@@ -23,37 +23,37 @@ const TermsScreen: React.FC<TermsScreenProps> = ({ agreed, onToggleAgree, onCont
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col rounded-[1.35rem] border border-white/8 bg-white/[0.04] p-5">
+      <div className="flex min-h-0 flex-1 flex-col rounded-[1.35rem] border border-[#eadfd2] bg-white/90 p-5 shadow-[0_18px_42px_rgba(184,134,11,0.12)]">
         <div className="shrink-0">
-          <div className="mb-1 text-base font-bold text-white">Điều khoản & điều kiện</div>
-          <div className="mb-4 text-[13px] text-zinc-400">
+          <div className="mb-1 text-base font-bold text-[#241629]">Điều khoản & điều kiện</div>
+          <div className="mb-4 text-[13px] text-[#7a7280]">
             Vui lòng đọc và xác nhận trước khi kích hoạt app.
           </div>
         </div>
 
-        <div className="beauty-scroll mb-5 min-h-0 flex-1 space-y-3 overflow-y-auto rounded-[1rem] border border-white/6 bg-black/20 p-4 text-[13px] leading-6 text-zinc-300">
+        <div className="beauty-scroll mb-5 min-h-0 flex-1 space-y-3 overflow-y-auto rounded-[1rem] border border-[#efe4d6] bg-[#fffaf2] p-4 text-[13px] leading-6 text-[#4d4350] shadow-inner shadow-[#eadfd2]/40">
           <div>
-            <div className="mb-1 text-[13px] font-semibold text-white">1. Quy định chung</div>
+            <div className="mb-1 text-[13px] font-semibold text-[#241629]">1. Quy định chung</div>
             Mini App chỉ áp dụng cho khách tham dự Beauty Summit 2026. Mỗi số điện thoại chỉ
             dùng một tài khoản duy nhất.
           </div>
           <div>
-            <div className="mb-1 text-[13px] font-semibold text-white">2. Thu thập dữ liệu</div>
+            <div className="mb-1 text-[13px] font-semibold text-[#241629]">2. Thu thập dữ liệu</div>
             Số điện thoại và tên Zalo được dùng để định danh tài khoản, check-in và gửi thông báo
             trong sự kiện.
           </div>
           <div>
-            <div className="mb-1 text-[13px] font-semibold text-white">3. BPoint & voucher</div>
+            <div className="mb-1 text-[13px] font-semibold text-[#241629]">3. BPoint & voucher</div>
             Điểm tích lũy dùng để đổi voucher. BPoint đã tiêu không được hoàn lại và voucher
             không quy đổi thành tiền mặt.
           </div>
           <div>
-            <div className="mb-1 text-[13px] font-semibold text-white">4. Nhiệm vụ & phần thưởng</div>
+            <div className="mb-1 text-[13px] font-semibold text-[#241629]">4. Nhiệm vụ & phần thưởng</div>
             Nhiệm vụ chia theo từng giai đoạn. Ban tổ chức có quyền từ chối bằng chứng không hợp
             lệ hoặc có dấu hiệu gian lận.
           </div>
           <div>
-            <div className="mb-1 text-[13px] font-semibold text-white">5. Quyết định cuối cùng</div>
+            <div className="mb-1 text-[13px] font-semibold text-[#241629]">5. Quyết định cuối cùng</div>
             Mọi tranh chấp hoặc vi phạm sẽ được xử lý theo quyết định cuối cùng của Ban tổ chức.
           </div>
         </div>
@@ -61,16 +61,16 @@ const TermsScreen: React.FC<TermsScreenProps> = ({ agreed, onToggleAgree, onCont
         <button
           type="button"
           onClick={onToggleAgree}
-          className="mb-5 flex w-full shrink-0 items-start gap-3 rounded-[1rem] border border-white/8 bg-black/20 p-4 text-left"
+          className="mb-5 flex w-full shrink-0 items-start gap-3 rounded-[1rem] border border-[#eadfd2] bg-[#fffaf2] p-4 text-left"
         >
           <div
             className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border ${
-              agreed ? 'border-amber-300 bg-amber-300 text-[#140b18]' : 'border-white/15 bg-white/[0.03]'
+              agreed ? 'border-amber-300 bg-amber-300 text-[#140b18]' : 'border-[#cfc6d0] bg-[#f1f1f2]'
             }`}
           >
             {agreed ? '✓' : null}
           </div>
-          <span className="text-[13px] leading-5 text-zinc-300">
+          <span className="text-[13px] leading-5 text-[#4d4350]">
             Tôi đã đọc, hiểu và đồng ý với toàn bộ điều khoản của Beauty Summit 2026.
           </span>
         </button>
@@ -79,8 +79,12 @@ const TermsScreen: React.FC<TermsScreenProps> = ({ agreed, onToggleAgree, onCont
           type="button"
           onClick={onContinue}
           disabled={!agreed}
-          className="w-full shrink-0 rounded-[1.15rem] px-4 py-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:bg-white/8 disabled:text-zinc-500"
-          style={agreed ? { background: 'linear-gradient(135deg, #f59e0b, #ffd970)', color: '#160c1d' } : undefined}
+          className="w-full shrink-0 rounded-[1.15rem] px-4 py-4 text-sm font-bold disabled:cursor-not-allowed"
+          style={
+            agreed
+              ? { background: 'linear-gradient(135deg, #f59e0b, #ffd970)', color: '#160c1d' }
+              : { background: '#d1d5db', color: '#6b7280' }
+          }
         >
           Đồng ý và tiếp tục
         </button>

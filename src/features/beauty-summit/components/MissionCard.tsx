@@ -62,10 +62,10 @@ const MissionCard: React.FC<MissionCardProps> = ({
           onOpen(mission);
         }
       }}
-      className={`beauty-slide-up flex w-full items-center gap-3 rounded-[1.4rem] border px-4 py-3.5 text-left transition ${
+      className={`beauty-slide-up flex w-full items-center gap-3 rounded-[1.4rem] border px-4 py-3.5 text-left shadow-[0_10px_24px_rgba(184,134,11,0.07)] transition ${
         completed
-          ? 'border-[#1d5b45] bg-[#0d211a]'
-          : 'border-white/8 bg-[#15161f] hover:border-white/12 hover:bg-[#191a24]'
+          ? 'border-[#bce8cb] bg-[#effdf5]'
+          : 'border-[#eadfd2] bg-white hover:border-[#e0c79b] hover:bg-[#fffaf2]'
       }`}
       style={{ animationDelay: `${delay}ms` }}
     >
@@ -87,22 +87,22 @@ const MissionCard: React.FC<MissionCardProps> = ({
       <div className="min-w-0 flex-1">
         <div
           className={`text-[13px] font-bold ${
-            completed ? 'text-[#4ddd87] line-through decoration-[#4ddd87]/80 decoration-[1.5px]' : 'text-white'
+            completed ? 'text-[#16a05d] line-through decoration-[#16a05d]/70 decoration-[1.5px]' : 'text-[#2f2433]'
           }`}
         >
           {mission.title}
         </div>
-        <div className="mt-0.5 truncate text-[11px] font-normal text-zinc-500">{mission.desc}</div>
+        <div className="mt-0.5 truncate text-[11px] font-normal text-[#7a7280]">{mission.desc}</div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
         <div
           className={`rounded-[0.75rem] px-2.5 py-1.5 text-[11px] font-black leading-none ${
-            completed ? 'bg-[#163a29] text-[#4ddd87]' : 'bg-[#2c2510] text-[#ffd44d]'
+            completed ? 'bg-[#dff8e9] text-[#16a05d]' : 'bg-[#fff2cc] text-[#b8860b]'
           }`}
         >
           +{mission.points}
         </div>
-        {!completed ? <ChevronRightIcon color="#4f5059" /> : null}
+        {!completed ? <ChevronRightIcon color="#a69ba8" /> : null}
       </div>
     </button>
   );
