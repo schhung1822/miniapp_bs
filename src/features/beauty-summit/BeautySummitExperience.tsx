@@ -56,12 +56,20 @@ const DEFAULT_PHONE_DISPLAY = import.meta.env.VITE_DEFAULT_PHONE_DISPLAY?.trim()
 const FALLBACK_ZALO_PHONE = import.meta.env.VITE_FALLBACK_ZALO_PHONE?.trim() || '84123456789';
 const ZALO_USER_STORAGE_KEY =
   import.meta.env.VITE_ZALO_USER_STORAGE_KEY?.trim() || 'beauty-summit.zalo-user';
+const ZALO_QR_STORAGE_KEY =
+  import.meta.env.VITE_ZALO_QR_STORAGE_KEY?.trim() || 'beauty-summit.qr-checkin';
 
 interface CachedZaloUser {
   id: string;
   name: string;
   avatar: string;
   phone: string;
+}
+
+interface CachedQrTicket {
+  userId: string;
+  ticketCode: string;
+  qrValue: string;
 }
 
 interface ZaloPhoneResponse {
@@ -88,9 +96,16 @@ const formatPhoneDisplay = (value: string): string => {
 };
 
 const normalizePhoneValue = (value: string): string => value.replace(/\s/g, '');
+const normalizeTicketCode = (value: string): string => value.trim().toUpperCase();
+const buildCheckinQrValue = (userId: string, ticketCode: string): string =>
+  `${userId.trim()}|${normalizeTicketCode(ticketCode)}`;
 
 const isCompleteZaloUser = (value: Partial<CachedZaloUser> | null | undefined): value is CachedZaloUser =>
   Boolean(value?.id?.trim() && value?.avatar?.trim() && value?.phone?.trim());
+const isCompleteCachedQrTicket = (
+  value: Partial<CachedQrTicket> | null | undefined,
+): value is CachedQrTicket =>
+  Boolean(value?.userId?.trim() && value?.ticketCode?.trim() && value?.qrValue?.trim());
 
 const readCachedZaloUser = (): CachedZaloUser | null => {
   try {
@@ -119,8 +134,10 @@ const readCachedZaloUser = (): CachedZaloUser | null => {
     console.log('[BeautySummit] nativeStorage cache hit:', cachedUser);
     return cachedUser;
   } catch {
-    nativeStorage.clear();
-    console.log('[BeautySummit] nativeStorage parse failed, cache cleared');
+    // Kiểm tra object window.zalo
+    if (window.zalo) {
+      nativeStorage.clear();
+    } 
     return null;
   }
 };
@@ -133,6 +150,70 @@ const writeCachedZaloUser = (value: CachedZaloUser): void => {
       phone: normalizePhoneValue(value.phone),
     }),
   );
+};
+
+const readCachedQrTicket = (expectedUserId?: string | null): CachedQrTicket | null => {
+  try {
+    const rawValue = nativeStorage.getItem(ZALO_QR_STORAGE_KEY);
+    console.log('[BeautySummit] nativeStorage raw qr:', rawValue);
+
+    if (!rawValue) {
+      console.log('[BeautySummit] QR cache miss');
+      return null;
+    }
+
+    const parsedValue = JSON.parse(rawValue) as Partial<CachedQrTicket>;
+    if (!isCompleteCachedQrTicket(parsedValue)) {
+      console.log('[BeautySummit] QR cache incomplete:', parsedValue);
+      nativeStorage.removeItem(ZALO_QR_STORAGE_KEY);
+      return null;
+    }
+
+    const cachedQr = {
+      userId: parsedValue.userId.trim(),
+      ticketCode: normalizeTicketCode(parsedValue.ticketCode),
+      qrValue: parsedValue.qrValue.trim(),
+    };
+
+    if (expectedUserId?.trim() && cachedQr.userId !== expectedUserId.trim()) {
+      console.log('[BeautySummit] QR cache user mismatch, clearing cache');
+      nativeStorage.removeItem(ZALO_QR_STORAGE_KEY);
+      return null;
+    }
+
+    const expectedQrValue = buildCheckinQrValue(cachedQr.userId, cachedQr.ticketCode);
+    if (cachedQr.qrValue !== expectedQrValue) {
+      const normalizedCachedQr = {
+        ...cachedQr,
+        qrValue: expectedQrValue,
+      };
+      writeCachedQrTicket(normalizedCachedQr);
+      console.log('[BeautySummit] QR cache normalized:', normalizedCachedQr);
+      return normalizedCachedQr;
+    }
+
+    console.log('[BeautySummit] QR cache hit:', cachedQr);
+    return cachedQr;
+  } catch {
+    nativeStorage.removeItem(ZALO_QR_STORAGE_KEY);
+    console.log('[BeautySummit] QR cache parse failed, cache cleared');
+    return null;
+  };
+};
+
+const writeCachedQrTicket = (value: CachedQrTicket): void => {
+  nativeStorage.setItem(
+    ZALO_QR_STORAGE_KEY,
+    JSON.stringify({
+      userId: value.userId.trim(),
+      ticketCode: normalizeTicketCode(value.ticketCode),
+      qrValue: value.qrValue.trim(),
+    }),
+  );
+};
+
+const clearCachedQrTicket = (): void => {
+  nativeStorage.removeItem(ZALO_QR_STORAGE_KEY);
 };
 
 const resolveZaloPhoneNumber = async (): Promise<string> => {
@@ -225,7 +306,10 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const [scannerResult, setScannerResult] = React.useState<string | null>(null);
   const [zaloProfile, setZaloProfile] = React.useState(DEFAULT_ZALO_PROFILE);
   const [displayPhone, setDisplayPhone] = React.useState(DEFAULT_PHONE_DISPLAY);
+  const [zaloUserId, setZaloUserId] = React.useState<string>('');
+  const [qrValue, setQrValue] = React.useState<string>('');
   const [miniAppLoading, setMiniAppLoading] = React.useState<boolean>(false);
+  const [appBootstrapping, setAppBootstrapping] = React.useState<boolean>(true);
 
   const toastTimer = React.useRef<number | null>(null);
 
@@ -236,6 +320,53 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       actionBar: { hide: true },
     }).catch(() => {});
   }, []);
+
+  const applyResolvedUser = React.useCallback((user: CachedZaloUser): void => {
+    const resolvedId = user.id.trim();
+    setZaloUserId(resolvedId);
+    setZaloProfile({
+      name: user.name || DEFAULT_ZALO_PROFILE.name,
+      avatar: user.avatar || DEFAULT_ZALO_PROFILE.avatar,
+    });
+    setDisplayPhone(formatPhoneDisplay(user.phone));
+
+    // Kiểm tra object window.zalo
+    if (window.zalo) {
+      // Zalo Mini App đang chạy trên ứng dụng Zalo thực
+      const cachedQr = readCachedQrTicket(resolvedId);
+      if (cachedQr) {
+        setOrderCode(cachedQr.ticketCode);
+        setQrValue(cachedQr.qrValue);
+        setQrGenerated(true);
+        return;
+      }
+    }
+
+    setOrderCode('');
+    setQrValue('');
+    setQrGenerated(false);
+  }, []);
+
+  React.useEffect(() => {
+    const cachedUser = readCachedZaloUser();
+
+    if (cachedUser) {
+      applyResolvedUser(cachedUser);
+      setPermissionsGranted(true);
+      setScreen('main');
+      console.log('[BeautySummit] bootstrap cache hit, opening dashboard');
+    } else {
+      setZaloUserId('');
+      setOrderCode('');
+      setQrValue('');
+      setQrGenerated(false);
+      setPermissionsGranted(false);
+      setScreen('onboarding');
+      console.log('[BeautySummit] bootstrap cache miss, opening onboarding');
+    }
+
+    setAppBootstrapping(false);
+  }, [applyResolvedUser]);
 
   React.useEffect(() => {
     return () => {
@@ -362,12 +493,15 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   };
 
   const handleGenerateQr = (): void => {
-    if (!orderCode.trim()) {
+    const normalizedCode = normalizeTicketCode(orderCode);
+    if (!normalizedCode) {
       return;
     }
 
+    setOrderCode(normalizedCode);
+
     if (permissionsGranted) {
-      finalizeQr();
+      finalizeQr(normalizedCode);
       return;
     }
 
@@ -375,11 +509,33 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     setPermissionStep('profile');
   };
 
-  const finalizeQr = (): void => {
+  const finalizeQr = (nextTicketCode?: string, nextUserId?: string): void => {
+    const normalizedCode = normalizeTicketCode(nextTicketCode ?? orderCode);
+    const resolvedUserId = nextUserId?.trim() || zaloUserId.trim();
+
+    if (!normalizedCode || !resolvedUserId) {
+      showToast('Unable to load account information');
+      return;
+    }
+
+    const nextQrValue = buildCheckinQrValue(resolvedUserId, normalizedCode);
+    writeCachedQrTicket({
+      userId: resolvedUserId,
+      ticketCode: normalizedCode,
+      qrValue: nextQrValue,
+    });
+
     setPermissionStep(null);
+    setOrderCode(normalizedCode);
+    setQrValue(nextQrValue);
     setQrGenerated(true);
     markMissionComplete(`${tier}-b1`, 'QR created successfully');
     showToast('App is ready for check-in');
+  };
+  const handleEditTicketCode = (): void => {
+    clearCachedQrTicket();
+    setQrGenerated(false);
+    setQrValue('');
   };
   const handlePermissionDenied = async () => {
     if (miniAppLoading) {
@@ -398,7 +554,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   }
   const handlePermissionApproved = async (): Promise<void> => {
     const intent = permissionIntent;
-
+    debugger;
     if (miniAppLoading) {
       return;
     }
@@ -407,9 +563,13 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     setPermissionIntent(null);
 
     if (intent === 'generate-qr') {
-      setPermissionsGranted(true);
-      finalizeQr();
-      return;
+      const cachedUser = readCachedZaloUser();
+      if (cachedUser) {
+        applyResolvedUser(cachedUser);
+        setPermissionsGranted(true);
+        finalizeQr(undefined, cachedUser.id);
+        return;
+      }
     }
 
     setMiniAppLoading(true);
@@ -417,6 +577,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     try {
       let resolvedUser = readCachedZaloUser();
       if (!resolvedUser) {
+        // console.log('[BeautySummit] cache not ready, requesting Zalo profile and phone');
         const { userInfo } = await getUserInfo({
           autoRequestPermission: true,
         });
@@ -425,7 +586,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
         const phoneNumber = await resolveZaloPhoneNumber();
 
         if (!resolvedId) {
-          throw new Error('Unable to load Zalo account id');
+          throw new Error('Không thể xác định ID người dùng Zalo!');
         }
 
         resolvedUser = {
@@ -434,25 +595,24 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           avatar: userInfo.avatar || DEFAULT_ZALO_PROFILE.avatar,
           phone: normalizePhoneValue(phoneNumber),
         };
-
-        writeCachedZaloUser(resolvedUser);
+        // Kiểm tra object window.zalo
+        if (window.zalo) {
+          writeCachedZaloUser(resolvedUser);
+          
+        }
       }
 
-      setZaloProfile({
-        name: resolvedUser.name || DEFAULT_ZALO_PROFILE.name,
-        avatar: resolvedUser.avatar || DEFAULT_ZALO_PROFILE.avatar,
-      });
-      setDisplayPhone(formatPhoneDisplay(resolvedUser.phone));
+      applyResolvedUser(resolvedUser);
 
       try {
         await syncMiniAppUser(resolvedUser);
       } catch (syncError) {
-        console.error(syncError);
+        showToast('Lỗi đồng bộ tài khoản, vui lòng thử lại!');
       }
 
       setPermissionsGranted(true);
       setScreen('main');
-      showToast('App activated successfully');
+      showToast('Đã kích hoạt app thành công');
       return;
     } catch (error: any) {
       if (error.code === -1401 || error.code === -201) {
@@ -463,8 +623,8 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
         return;
       }
 
-      console.error(error);
-      showToast('Unable to load account information');
+      // console.error(error);
+      showToast('Không thể kích hoạt app trong môi trường hiện tại');
       return;
     } finally {
       setMiniAppLoading(false);
@@ -779,7 +939,11 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const userAvatar = zaloProfile.avatar || DEFAULT_ZALO_PROFILE.avatar;
   const userPhone = displayPhone;
   const userRole: BeautyUserRole = 'guest';
-  const qrMarkup = generateQrMarkup(`BS26-${tier}-${orderCode || 'DEMO'}`);
+  const qrMarkup = generateQrMarkup(qrValue || `BS26-${tier}-${orderCode || 'DEMO'}`);
+
+  if (appBootstrapping) {
+    return <BeautyShell loading loadingLabel="Checking account..." toast={toast} />;
+  }
 
   return (
     <BeautyShell loading={miniAppLoading} loadingLabel="Loading account..." toast={toast}>
@@ -828,6 +992,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           checkinLog={checkinLog}
           onOrderCodeChange={setOrderCode}
           onGenerate={handleGenerateQr}
+          onEditTicketCode={handleEditTicketCode}
           onDemoCheckin={handleDemoCheckin}
           onOpenTicketHelp={() => setTicketHelpOpen(true)}
         />

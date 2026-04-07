@@ -190,8 +190,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
   const milestoneSet = new Set(claimedMilestonePcts);
   const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
   const previousTabRef = React.useRef<BeautyTab>(activeTab);
-  const ticketCode = orderCode.trim().slice(-3) || 'KKK';
   const hasQr = qrGenerated && orderCode.trim().length > 0;
+  const ticketCode = hasQr ? orderCode.trim().slice(-3) || 'KKK' : 'KKK';
 
   React.useEffect(() => {
     if (previousTabRef.current !== activeTab) {

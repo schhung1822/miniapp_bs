@@ -17,6 +17,7 @@ interface QrScreenProps {
   checkinLog: CheckinLog[];
   onOrderCodeChange: (value: string) => void;
   onGenerate: () => void;
+  onEditTicketCode: () => void;
   onDemoCheckin: (zoneId: string) => void;
   onOpenTicketHelp: () => void;
 }
@@ -35,6 +36,7 @@ const QrScreen: React.FC<QrScreenProps> = ({
   checkinLog,
   onOrderCodeChange,
   onGenerate,
+  onEditTicketCode,
   onDemoCheckin,
   onOpenTicketHelp,
 }) => {
@@ -69,7 +71,7 @@ const QrScreen: React.FC<QrScreenProps> = ({
                 onGenerate();
               }
             }}
-            placeholder="VD: BS2026-PRE-12345"
+            placeholder="DHMN4S154"
             className="mb-3 w-full rounded-[1.1rem] border border-white/10 bg-black/20 px-4 py-4 text-center text-base font-semibold tracking-[0.24em] text-white placeholder:text-zinc-500"
           />
           <div className="mb-4 text-center text-xs text-zinc-500">
@@ -131,6 +133,13 @@ const QrScreen: React.FC<QrScreenProps> = ({
             <div className="text-lg font-bold text-white">{userName}</div>
             <div className="mt-1 text-sm text-zinc-300">{userPhone}</div>
             <div className="mt-2 text-xs tracking-[0.22em] text-zinc-500">{orderCode}</div>
+            <button
+              type="button"
+              onClick={onEditTicketCode}
+              className="mt-3 inline-flex rounded-full border border-white/10 bg-white/8 px-3 py-1.5 text-[11px] font-semibold text-zinc-200"
+            >
+              Edit ticket code
+            </button>
           </div>
           <div className="h-24 w-24 shrink-0 rounded-[1rem] bg-white p-2 shadow-[0_18px_40px_rgba(0,0,0,0.24)]">
             <div

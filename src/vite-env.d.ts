@@ -6,6 +6,7 @@ interface ImportMetaEnv {
   readonly VITE_DEFAULT_PHONE_DISPLAY?: string;
   readonly VITE_FALLBACK_ZALO_PHONE?: string;
   readonly VITE_ZALO_USER_STORAGE_KEY?: string;
+  readonly VITE_ZALO_QR_STORAGE_KEY?: string;
   readonly VITE_ZALO_SECRET_KEY?: string;
 }
 
