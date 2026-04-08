@@ -31,6 +31,7 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
   const isVoteAction = mission.proofType === 'vote';
   const isSurveyAction = mission.proofType === 'survey';
   const isReferralAction = mission.proofType === 'referral';
+  const disableSubmit = showInput && value.trim().length === 0;
 
   const renderMissionIcon = (): React.ReactNode => {
     if (mission.proofType === 'image') {
@@ -47,35 +48,41 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
 
   return (
     <div className="absolute inset-0 z-40 bg-black/55 backdrop-blur-sm">
-      <div className="absolute inset-x-0 bottom-0 rounded-t-[1.75rem] border-t border-white/8 bg-[#121320] px-5 pb-8 pt-3 shadow-[0_-24px_60px_rgba(0,0,0,0.45)]">
-        <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-white/12" />
+      <div className="absolute inset-x-0 bottom-0 rounded-t-[1.75rem] border-t border-[#eadfd2] bg-[#fffdf9] px-4 pb-7 pt-3 shadow-[0_-24px_60px_rgba(36,22,41,0.18)]">
+        <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-[#e3d8df]" />
+
         <div className="mb-5 flex items-start justify-between gap-4">
-          <div className="flex gap-3">
+          <div className="flex min-w-0 gap-3">
             <div
-              className="flex h-14 w-14 items-center justify-center rounded-2xl"
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl"
               style={{
-                background: `linear-gradient(135deg, ${accentColor}2d, rgba(255,255,255,0.04))`,
+                background: `linear-gradient(135deg, ${accentColor}1e, #ffffff)`,
                 border: `1px solid ${accentColor}33`,
               }}
             >
               {renderMissionIcon()}
             </div>
-            <div>
-              <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-400">
-                Chi tiết nhiệm vụ
+            <div className="min-w-0">
+              <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9a8f9d]">
+                Chi tiet nhiem vu
               </div>
-              <div className="text-lg font-bold text-white">{mission.title}</div>
-              <div className="mt-1 max-w-[18rem] text-sm text-zinc-400">{mission.desc}</div>
+              <div className="text-[1.05rem] font-bold text-[#241629]">{mission.title}</div>
+              <div className="mt-1 text-sm leading-6 text-[#7a7280]">{mission.desc}</div>
             </div>
           </div>
-          <button type="button" onClick={onClose} className="rounded-full bg-white/6 p-2 text-zinc-400">
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-[#eadfd2] bg-white p-2 text-[#8a7e8b]"
+          >
             <CloseIcon />
           </button>
         </div>
 
-        <div className="mb-5 rounded-[1.15rem] border border-white/6 bg-white/[0.03] p-4">
-          <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
-            Cách thực hiện
+        <div className="mb-4 rounded-[1.15rem] border border-[#eadfd2] bg-white p-4 shadow-[0_10px_22px_rgba(184,134,11,0.06)]">
+          <div className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#9a8f9d]">
+            Cach thuc hien
           </div>
           <div className="space-y-3">
             {mission.steps.map((step, index) => (
@@ -83,14 +90,14 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
                 <div
                   className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold"
                   style={{
-                    background: `${accentColor}2d`,
+                    background: `${accentColor}1c`,
                     border: `1px solid ${accentColor}38`,
                     color: accentColor,
                   }}
                 >
                   {index + 1}
                 </div>
-                <div className="text-sm leading-6 text-zinc-300">{step}</div>
+                <div className="text-sm leading-6 text-[#534a56]">{step}</div>
               </div>
             ))}
           </div>
@@ -98,12 +105,14 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
 
         {showInput ? (
           <div className="mb-4">
-            <label className="mb-2 block text-xs font-semibold text-zinc-300">{mission.proofLabel}</label>
+            <label className="mb-2 block text-xs font-semibold text-[#5f5662]">
+              {mission.proofLabel}
+            </label>
             <input
               value={value}
               onChange={(event) => onChange(event.target.value)}
               placeholder={mission.proofPlaceholder ?? mission.proofLabel}
-              className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white placeholder:text-zinc-500"
+              className="w-full rounded-2xl border border-[#eadfd2] bg-white px-4 py-3 text-sm text-[#241629] placeholder:text-[#a69ba8]"
             />
           </div>
         ) : null}
@@ -112,13 +121,15 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
           <button
             type="button"
             onClick={() => onChange('uploaded')}
-            className="mb-4 flex w-full flex-col items-center rounded-[1.15rem] border border-dashed px-4 py-6 text-center"
+            className="mb-4 flex w-full flex-col items-center rounded-[1.15rem] border border-dashed px-4 py-5 text-center"
             style={{ borderColor: `${accentColor}38`, background: `${accentColor}0d` }}
           >
             <CameraIcon color={accentColor} size={26} />
-            <div className="mt-3 text-sm font-semibold text-white">{mission.proofLabel}</div>
-            <div className="mt-1 text-xs text-zinc-400">
-              {value ? 'Ảnh giả lập đã được gắn sẵn. Bấm xác nhận để hoàn thành.' : 'Nhấn để giả lập upload ảnh.'}
+            <div className="mt-3 text-sm font-semibold text-[#241629]">{mission.proofLabel}</div>
+            <div className="mt-1 text-xs text-[#7a7280]">
+              {value
+                ? 'Da gan bang chung. Bam xac nhan de hoan thanh.'
+                : 'Nhan de gia lap upload anh.'}
             </div>
           </button>
         ) : null}
@@ -127,10 +138,15 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
           <button
             type="button"
             onClick={onGoVote}
-            className="mb-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-violet-300/20 bg-violet-300/10 px-4 py-3 text-sm font-semibold text-violet-200"
+            className="mb-4 flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold"
+            style={{
+              borderColor: `${accentColor}2e`,
+              background: `${accentColor}12`,
+              color: accentColor,
+            }}
           >
-            <VoteIcon color="#d8b4fe" />
-            Chuyển sang tab Vote
+            <VoteIcon color={accentColor} />
+            Chuyen sang tab Vote
           </button>
         ) : null}
 
@@ -138,9 +154,9 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
           <button
             type="button"
             onClick={() => onChange('survey')}
-            className="mb-4 flex w-full items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white"
+            className="mb-4 flex w-full items-center justify-center rounded-2xl border border-[#eadfd2] bg-white px-4 py-3 text-sm font-semibold text-[#241629]"
           >
-            Mở khảo sát giả lập
+            Mo khao sat
           </button>
         ) : null}
 
@@ -148,25 +164,24 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
           <button
             type="button"
             onClick={() => onChange('https://beautysummit.vn/ref/invite')}
-            className="mb-4 flex w-full items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white"
+            className="mb-4 flex w-full items-center justify-center rounded-2xl border border-[#eadfd2] bg-white px-4 py-3 text-sm font-semibold text-[#241629]"
           >
-            Sao chép link giới thiệu
+            Sao chep link gioi thieu
           </button>
         ) : null}
 
         <button
           type="button"
           onClick={onSubmit}
-          disabled={showInput && value.trim().length === 0}
-          className="w-full rounded-2xl px-4 py-3 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:bg-white/8 disabled:text-zinc-500"
+          disabled={disableSubmit}
+          className="w-full rounded-2xl px-4 py-3 text-sm font-bold !text-white transition disabled:cursor-not-allowed disabled:bg-[#ece7ec] disabled:!text-[#a69ba8]"
           style={{
-            background:
-              showInput && value.trim().length === 0
-                ? undefined
-                : `linear-gradient(135deg, ${accentColor}, ${accentColor}cc)`,
+            background: disableSubmit
+              ? undefined
+              : `linear-gradient(135deg, ${accentColor}, ${accentColor}cc)`,
           }}
         >
-          Xác nhận hoàn thành
+          Xac nhan hoan thanh
         </button>
       </div>
     </div>

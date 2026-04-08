@@ -26,6 +26,17 @@ const MissionCard: React.FC<MissionCardProps> = ({
   delay,
   onOpen,
 }) => {
+  const actionLabel =
+    mission.auto || mission.checkin
+      ? 'Tu dong'
+      : mission.proofType === 'vote'
+        ? 'Vote'
+        : mission.proofType === 'image'
+          ? 'Upload'
+          : mission.proofType === 'survey'
+            ? 'Khao sat'
+            : 'Gui bang chung';
+
   const renderIcon = (): React.ReactNode => {
     if (completed) {
       return <MissionIcon size={22} color="#fff" />;
@@ -62,7 +73,7 @@ const MissionCard: React.FC<MissionCardProps> = ({
           onOpen(mission);
         }
       }}
-      className={`beauty-slide-up flex w-full items-center gap-3 rounded-[1.4rem] border px-4 py-3.5 text-left shadow-[0_10px_24px_rgba(184,134,11,0.07)] transition ${
+      className={`beauty-slide-up flex w-full items-center gap-3 rounded-[1.25rem] border px-3.5 py-3 text-left shadow-[0_10px_22px_rgba(184,134,11,0.06)] transition ${
         completed
           ? 'border-[#bce8cb] bg-[#effdf5]'
           : 'border-[#eadfd2] bg-white hover:border-[#e0c79b] hover:bg-[#fffaf2]'
@@ -70,7 +81,7 @@ const MissionCard: React.FC<MissionCardProps> = ({
       style={{ animationDelay: `${delay}ms` }}
     >
       <div
-        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[1rem] ${
+        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.95rem] ${
           completed ? 'bg-[linear-gradient(135deg,#2fd36f,#30c96f)]' : ''
         }`}
         style={
@@ -85,14 +96,23 @@ const MissionCard: React.FC<MissionCardProps> = ({
         {renderIcon()}
       </div>
       <div className="min-w-0 flex-1">
-        <div
-          className={`text-[13px] font-bold ${
-            completed ? 'text-[#16a05d] line-through decoration-[#16a05d]/70 decoration-[1.5px]' : 'text-[#2f2433]'
-          }`}
-        >
-          {mission.title}
+        <div className="mb-1 flex items-center gap-2">
+          <div
+            className={`min-w-0 truncate text-[13px] font-bold ${
+              completed ? 'text-[#16a05d]' : 'text-[#2f2433]'
+            }`}
+          >
+            {mission.title}
+          </div>
+          <span
+            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+              completed ? 'bg-[#dff8e9] text-[#16a05d]' : 'bg-[#f7f0f7] text-[#8c7990]'
+            }`}
+          >
+            {completed ? 'Da xong' : actionLabel}
+          </span>
         </div>
-        <div className="mt-0.5 truncate text-[11px] font-normal text-[#7a7280]">{mission.desc}</div>
+        <div className="truncate text-[11px] font-normal text-[#7a7280]">{mission.desc}</div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
         <div

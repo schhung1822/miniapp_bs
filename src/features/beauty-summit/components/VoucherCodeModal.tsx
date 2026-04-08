@@ -1,7 +1,7 @@
 import React from 'react';
 
 import type { Voucher } from '@/features/beauty-summit/types';
-import { CloseIcon } from '@/features/beauty-summit/icons';
+import { CloseIcon, CopyIcon } from '@/features/beauty-summit/icons';
 
 interface VoucherCodeModalProps {
   voucher: Voucher | null;
@@ -9,56 +9,104 @@ interface VoucherCodeModalProps {
 }
 
 const VoucherCodeModal: React.FC<VoucherCodeModalProps> = ({ voucher, onClose }) => {
+  const [copied, setCopied] = React.useState(false);
+
+  React.useEffect(() => {
+    setCopied(false);
+  }, [voucher]);
+
   if (!voucher) {
     return null;
   }
 
+  const handleCopy = async (): Promise<void> => {
+    if (!voucher.code) {
+      return;
+    }
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(voucher.code);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = voucher.code;
+        textarea.setAttribute('readonly', 'true');
+        textarea.style.position = 'absolute';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setCopied(false);
+    }
+  };
+
   return (
-    <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-sm">
-      <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 rounded-[1.6rem] border border-white/8 bg-[#141626] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.5)]">
+    <div className="absolute inset-0 z-40 bg-black/55 backdrop-blur-sm">
+      <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 rounded-[1.6rem] border border-[#eadfd2] bg-[#fffdf9] p-5 shadow-[0_24px_80px_rgba(36,22,41,0.22)]">
         <div className="mb-5 flex items-start justify-between gap-4">
-          <div>
-            <div className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
-              Voucher đã nhận
+          <div className="min-w-0">
+            <div className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#9a8f9d]">
+              Voucher da nhan
             </div>
-            <div className="text-lg font-bold text-white">{voucher.brand}</div>
-            <div className="mt-1 text-sm text-zinc-400">{voucher.desc}</div>
+            <div className="truncate text-lg font-bold text-[#241629]">{voucher.brand}</div>
+            <div className="mt-1 text-sm leading-6 text-[#7a7280]">{voucher.desc}</div>
           </div>
-          <button type="button" onClick={onClose} className="rounded-full bg-white/6 p-2 text-zinc-400">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-[#eadfd2] bg-white p-2 text-[#8a7e8b]"
+          >
             <CloseIcon />
           </button>
         </div>
 
         <div
-          className="mb-5 rounded-[1.25rem] border px-4 py-5 text-center"
+          className="mb-5 rounded-[1.25rem] border px-4 py-5"
           style={{
             borderColor: `${voucher.color}33`,
-            background: `linear-gradient(145deg, ${voucher.color}22, rgba(255,255,255,0.03))`,
+            background: `linear-gradient(145deg, ${voucher.color}12, rgba(255,255,255,0.96))`,
           }}
         >
-          <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-300">
-            Mã voucher
+          <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8b7b8e]">
+            Ma voucher
           </div>
           <div
-            className="rounded-2xl border border-white/10 bg-black/20 px-4 py-4 text-lg font-black tracking-[0.3em] text-white"
-            style={{ color: voucher.code ? '#fff' : '#ffd700' }}
+            className="rounded-2xl border border-[#eadfd2] bg-white px-4 py-4 text-center text-[1.05rem] font-black tracking-[0.24em]"
+            style={{ color: voucher.code ? '#241629' : '#b8860b' }}
           >
             {voucher.code ?? 'GRAND PRIZE'}
           </div>
-          <div className="mt-3 text-xs text-zinc-400">
+          <div className="mt-3 text-xs leading-5 text-[#7a7280]">
             {voucher.code
-              ? 'Xuất trình mã này tại quầy nhãn hàng để nhận ưu đãi.'
-              : 'Grand prize chỉ mở khóa khi đạt 100% nhiệm vụ.'}
+              ? 'Xuat trinh ma nay tai quay nhan hang de nhan uu dai.'
+              : 'Grand prize chi mo khoa khi dat 100% nhiem vu.'}
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={onClose}
-          className="w-full rounded-2xl bg-white/8 px-4 py-3 text-sm font-semibold text-white"
-        >
-          Đóng
-        </button>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={handleCopy}
+            disabled={!voucher.code}
+            className="flex items-center justify-center gap-2 rounded-2xl border border-[#eadfd2] bg-white px-4 py-3 text-sm font-semibold text-[#241629] disabled:cursor-not-allowed disabled:text-[#a69ba8]"
+          >
+            <CopyIcon color={voucher.code ? '#241629' : '#a69ba8'} size={16} />
+            {copied ? 'Da copy' : 'Copy ma'}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-2xl bg-[linear-gradient(135deg,#ec4899,#f59e0b)] px-4 py-3 text-sm font-semibold !text-white"
+          >
+            Dong
+          </button>
+        </div>
       </div>
     </div>
   );

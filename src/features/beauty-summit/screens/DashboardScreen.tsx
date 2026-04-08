@@ -111,110 +111,136 @@ const phaseItems: Array<{
 }> = [
   {
     key: 'before',
-    label: 'Nhiệm vụ trước sự kiện',
-    renderIcon: (active) => <ClockIcon size={19} color={active ? '#b8860b' : '#9a8f9d'} />,
+    label: 'Truoc su kien',
+    renderIcon: (active) => <ClockIcon size={18} color={active ? '#b8860b' : '#9a8f9d'} />,
   },
   {
     key: 'day1',
-    label: 'Nhiệm vụ ngày 1',
+    label: 'Ngay 1',
     sub: '19/06/2026',
-    renderIcon: (active) => <CalendarIcon size={19} color={active ? '#b8860b' : '#9a8f9d'} />,
+    renderIcon: (active) => <CalendarIcon size={18} color={active ? '#b8860b' : '#9a8f9d'} />,
   },
   {
     key: 'day2',
-    label: 'Nhiệm vụ ngày 2',
+    label: 'Ngay 2',
     sub: '20/06/2026',
-    renderIcon: (active) => <CalendarIcon size={19} color={active ? '#b8860b' : '#9a8f9d'} />,
+    renderIcon: (active) => <CalendarIcon size={18} color={active ? '#b8860b' : '#9a8f9d'} />,
   },
 ];
 
-const DashboardScreen: React.FC<DashboardScreenProps> = ({
-  tier,
-  ticketLabel,
-  activeTab,
-  activePhase,
-  voucherTab,
-  proofValue,
-  progress,
-  totalPoints,
-  spentPoints,
-  availablePoints,
-  qrGenerated,
-  userName,
-  userAvatar,
-  userPhone,
-  userRole,
-  orderCode,
-  qrValue,
-  currentPhaseMissions,
-  allMissionCount,
-  completedIds,
-  claimedFreeVoucherIds,
-  redeemedVoucherIds,
-  claimedMilestonePcts,
-  votes,
-  voteQuery,
-  selectedVoucher,
-  selectedBrand,
-  selectedCategory,
-  selectedMilestone,
-  expandedMission,
-  policyOpen,
-  scannerOpen,
-  scannerBusy,
-  scannerResult,
-  phaseProgressMap,
-  onTabChange,
-  onPhaseChange,
-  onVoucherTabChange,
-  onProofValueChange,
-  onOpenMission,
-  onCloseMission,
-  onSubmitMission,
-  onVoteQueryChange,
-  onToggleVote,
-  onOpenBrand,
-  onCloseBrand,
-  onOpenVoucher,
-  onCloseVoucher,
-  onRedeemVoucher,
-  onClaimVoucher,
-  onOpenMilestone,
-  onCloseMilestone,
-  onClaimMilestone,
-  onOpenQr,
-  onChangeTicket,
-  onOpenPolicy,
-  onClosePolicy,
-  onOpenScanner,
-  onCloseScanner,
-  onRunScanner,
-}) => {
-  const completedSet = new Set(completedIds);
-  const claimedFreeSet = new Set(claimedFreeVoucherIds);
-  const redeemedSet = new Set(redeemedVoucherIds);
-  const milestoneSet = new Set(claimedMilestonePcts);
+const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
+  const {
+    tier,
+    ticketLabel,
+    activeTab,
+    activePhase,
+    voucherTab,
+    proofValue,
+    progress,
+    totalPoints,
+    spentPoints,
+    availablePoints,
+    qrGenerated,
+    userName,
+    userAvatar,
+    userPhone,
+    userRole,
+    orderCode,
+    qrValue,
+    currentPhaseMissions,
+    allMissionCount,
+    completedIds,
+    claimedFreeVoucherIds,
+    redeemedVoucherIds,
+    claimedMilestonePcts,
+    votes,
+    voteQuery,
+    selectedVoucher,
+    selectedBrand,
+    selectedCategory,
+    selectedMilestone,
+    expandedMission,
+    policyOpen,
+    scannerOpen,
+    scannerBusy,
+    scannerResult,
+    phaseProgressMap,
+    onTabChange,
+    onPhaseChange,
+    onVoucherTabChange,
+    onProofValueChange,
+    onOpenMission,
+    onCloseMission,
+    onSubmitMission,
+    onVoteQueryChange,
+    onToggleVote,
+    onOpenBrand,
+    onCloseBrand,
+    onOpenVoucher,
+    onCloseVoucher,
+    onRedeemVoucher,
+    onClaimVoucher,
+    onOpenMilestone,
+    onCloseMilestone,
+    onClaimMilestone,
+    onOpenQr,
+    onChangeTicket,
+    onOpenPolicy,
+    onClosePolicy,
+    onCloseScanner,
+    onRunScanner,
+  } = props;
+
+  const completedSet = React.useMemo(() => new Set(completedIds), [completedIds]);
+  const claimedFreeSet = React.useMemo(
+    () => new Set(claimedFreeVoucherIds),
+    [claimedFreeVoucherIds]
+  );
+  const redeemedSet = React.useMemo(() => new Set(redeemedVoucherIds), [redeemedVoucherIds]);
+  const milestoneSet = React.useMemo(() => new Set(claimedMilestonePcts), [claimedMilestonePcts]);
   const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
   const previousTabRef = React.useRef<BeautyTab>(activeTab);
-  const [qrPreviewOpen, setQrPreviewOpen] = React.useState<boolean>(false);
+  const [qrPreviewOpen, setQrPreviewOpen] = React.useState(false);
   const hasQr = qrGenerated && orderCode.trim().length > 0;
+
   const maskedPhone = React.useMemo(() => {
     const digits = userPhone.replace(/\D/g, '');
-    const localDigits = digits.length === 11 && digits.startsWith('84') ? `0${digits.slice(2)}` : digits;
-
-    if (localDigits.length !== 10) {
-      return userPhone;
-    }
-
+    const localDigits =
+      digits.length === 11 && digits.startsWith('84') ? `0${digits.slice(2)}` : digits;
+    if (localDigits.length !== 10) return userPhone;
     return `${localDigits.slice(0, 4)} *** ${localDigits.slice(7)}`;
   }, [userPhone]);
 
+  const phaseMissionsPending = React.useMemo(
+    () => currentPhaseMissions.filter((mission) => !completedSet.has(mission.id)),
+    [completedSet, currentPhaseMissions]
+  );
+  const phaseMissionsDone = React.useMemo(
+    () => currentPhaseMissions.filter((mission) => completedSet.has(mission.id)),
+    [completedSet, currentPhaseMissions]
+  );
+  const votedCount = React.useMemo(
+    () => VOTE_CATEGORIES.filter((category) => Boolean(votes[category.id])).length,
+    [votes]
+  );
+  const redeemableVoucherCount = React.useMemo(
+    () =>
+      BPOINT_VOUCHERS.filter(
+        (voucher) =>
+          !voucher.isGrand &&
+          !redeemedSet.has(voucher.id) &&
+          availablePoints >= (voucher.cost ?? Number.POSITIVE_INFINITY)
+      ).length,
+    [availablePoints, redeemedSet]
+  );
+  const freeVoucherClaimedCount = React.useMemo(
+    () => FREE_VOUCHERS.filter((voucher) => claimedFreeSet.has(voucher.id)).length,
+    [claimedFreeSet]
+  );
+
   React.useEffect(() => {
     if (previousTabRef.current !== activeTab) {
-      scrollContainerRef.current?.scrollTo({
-        top: 0,
-        behavior: 'smooth',
-      });
+      scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
       previousTabRef.current = activeTab;
     }
   }, [activeTab]);
@@ -226,9 +252,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
         <div className="grid grid-cols-[minmax(0,1fr)_104px] items-start gap-3 sm:grid-cols-[minmax(0,1fr)_118px]">
           <div className="min-w-0 pt-1">
             <div className="mb-3 flex items-center gap-2.5">
-              <div className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[#f4c50a] px-3.5 py-2 text-[9px] font-black !text-white">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-[#f4c50a] px-3.5 py-2 text-[12px] font-black !text-white">
                 <StarIcon size={15} color="#ffffff" />
-                <span className="text-[12px]">{ticketLabel}</span>
+                <span>{ticketLabel}</span>
               </div>
               <img
                 src={userAvatar}
@@ -249,13 +275,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              onOpenQr();
-            }}
-            className="shrink-0 text-center"
-          >
+          <button type="button" onClick={onOpenQr} className="shrink-0 text-center">
             <div className="beauty-crisp-edge relative rounded-[1.45rem] border-[3px] border-[#d4be83] bg-white p-2.5 shadow-[0_10px_20px_rgba(211,80,168,0.14)]">
               {hasQr ? (
                 <BeautyQrCode
@@ -267,16 +287,16 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   logoRingClassName="border-[4px] shadow-[0_4px_12px_rgba(178,71,125,0.12)]"
                 />
               ) : (
-                <div className="flex flex-col h-[82px] w-[82px] items-center justify-center rounded-[0.8rem] bg-white sm:h-[92px] sm:w-[92px]">
+                <div className="flex h-[82px] w-[82px] flex-col items-center justify-center rounded-[0.8rem] bg-white sm:h-[92px] sm:w-[92px]">
                   <QrIcon size={36} color="#1c1530" />
-                  <p className='text-[#000]'>
-                    Tạo mã QR
-                  </p>
+                  <p className="text-[#000]">Tao ma QR</p>
                 </div>
               )}
-              {hasQr ? ( <div className="absolute bottom-[-10px] px-2 left-4.5 rounded-full bg-gradient-to-br from-[#b8860b] to-[#ffd700] text-[9px] font-black !text-white">
-                CHECK-IN
-              </div> ) : null}
+              {hasQr ? (
+                <div className="absolute bottom-[-10px] left-4.5 rounded-full bg-gradient-to-br from-[#b8860b] to-[#ffd700] px-2 text-[9px] font-black !text-white">
+                  CHECK-IN
+                </div>
+              ) : null}
             </div>
           </button>
         </div>
@@ -286,19 +306,25 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
   const renderProgressCard = (): React.ReactNode => {
     const trackItems = [
-      { pct: 0, label: '0%', unlocked: completedIds.length > 0, milestone: null as Milestone | null },
-      ...MILESTONES.map((milestone) => ({
+      {
+        pct: 0,
+        label: '0%',
+        unlocked: completedIds.length > 0,
+        milestone: null as Milestone | null,
+      },
+    ].concat(
+      MILESTONES.map((milestone) => ({
         pct: milestone.pct,
         label: `${milestone.pct}%`,
         unlocked: progress >= milestone.pct,
         milestone,
-      })),
-    ];
+      }))
+    );
 
     return (
       <div className="mb-4 rounded-[1.55rem] border border-[#eadfd2] bg-white px-4 py-4 shadow-[0_12px_28px_rgba(184,134,11,0.08)]">
         <div className="mb-4 flex items-center justify-between gap-4">
-          <div className="text-[14px] font-semibold text-[#9ba1b2]">Tiến độ nhiệm vụ</div>
+          <div className="text-[14px] font-semibold text-[#9ba1b2]">Tien do nhiem vu</div>
           <div className="text-[15px] font-black text-[#ff58ba]">
             {completedIds.length}/{allMissionCount}
           </div>
@@ -309,17 +335,18 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
             const isFinal = item.pct === 100;
             const iconColor = item.unlocked || isFinal ? '#c89d10' : '#5b5c67';
             const node = (
-              <div className={`flex w-[36px] flex-col items-center`}>
+              <div className="flex w-[36px] flex-col items-center">
                 {item.milestone ? (
                   <button
                     type="button"
                     onClick={() => onOpenMilestone(item.milestone)}
-                    className={`flex items-center justify-center transition h-[33px] w-[33px] rounded-[0.4rem] border-2 ${
-                      isFinal
-                        ? 'border-dashed' : ''
-                    }`}
+                    className={`flex h-[33px] w-[33px] items-center justify-center rounded-[0.4rem] border-2 transition ${isFinal ? 'border-dashed' : ''}`}
                     style={{
-                      borderColor: item.unlocked ? '#c99b17' : isFinal ? 'rgba(201,155,23,0.55)' : '#d7ced9',
+                      borderColor: item.unlocked
+                        ? '#c99b17'
+                        : isFinal
+                          ? 'rgba(201,155,23,0.55)'
+                          : '#d7ced9',
                       background: item.unlocked
                         ? 'rgba(255,214,102,0.24)'
                         : isFinal
@@ -333,10 +360,14 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   <div
                     className="flex h-[33px] w-[33px] items-center justify-center rounded-[1rem]"
                     style={{
-                      background: item.unlocked ? 'linear-gradient(135deg, #b88908, #e5b61a)' : '#f4f1f5',
+                      background: item.unlocked
+                        ? 'linear-gradient(135deg, #b88908, #e5b61a)'
+                        : '#f4f1f5',
                     }}
                   >
-                    <span className={`text-[18px] leading-none ${item.unlocked ? '!text-white' : 'text-[#9a8f9d]'}`}>
+                    <span
+                      className={`text-[18px] leading-none ${item.unlocked ? '!text-white' : 'text-[#9a8f9d]'}`}
+                    >
                       ✓
                     </span>
                   </div>
@@ -350,10 +381,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
               </div>
             );
 
-            if (index === trackItems.length - 1) {
-              return <div key={item.pct}>{node}</div>;
-            }
-
+            if (index === trackItems.length - 1) return <div key={item.pct}>{node}</div>;
             return (
               <React.Fragment key={item.pct}>
                 {node}
@@ -373,80 +401,169 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
       </div>
     );
   };
+  const renderMissionsTab = (): React.ReactNode => (
+    <>
+      <div className="mb-4 grid grid-cols-3 gap-2">
+        {[
+          { label: 'Da xong', value: completedIds.length, tone: 'bg-[#fef3c7] text-[#9a6700]' },
+          {
+            label: 'Dang mo',
+            value: phaseMissionsPending.length,
+            tone: 'bg-[#fce7f3] text-[#b83280]',
+          },
+          { label: 'BPoint', value: availablePoints, tone: 'bg-[#ecfdf3] text-[#15803d]' },
+        ].map((item) => (
+          <div
+            key={item.label}
+            className="rounded-[1rem] border border-[#eadfd2] bg-white px-3 py-3 text-center"
+          >
+            <div
+              className={`mx-auto mb-2 inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold ${item.tone}`}
+            >
+              {item.label}
+            </div>
+            <div className="text-lg font-black text-[#241629]">{item.value}</div>
+          </div>
+        ))}
+      </div>
 
-  const renderMissionsTab = (): React.ReactNode => {
-    return (
-      <>
-        <div className="mb-4 grid grid-cols-3 gap-2">
+      <div className="mb-4 rounded-[1.2rem] border border-[#eadfd2] bg-white p-3.5 shadow-[0_10px_24px_rgba(184,134,11,0.06)]">
+        <div className="mb-3 flex items-center justify-between">
+          <div>
+            <div className="text-[12px] font-semibold text-[#8a7e8b]">Giai doan nhiem vu</div>
+            <div className="mt-1 text-[14px] font-bold text-[#241629]">
+              {phaseItems.find((item) => item.key === activePhase)?.label}
+            </div>
+          </div>
+          <div className="rounded-full bg-[#fff2cc] px-3 py-1.5 text-[12px] font-black text-[#b8860b]">
+            {phaseProgressMap[activePhase]}%
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
           {phaseItems.map((item) => {
             const active = item.key === activePhase;
             const percent = phaseProgressMap[item.key];
-
             return (
               <button
                 key={item.key}
                 type="button"
                 onClick={() => onPhaseChange(item.key)}
-                className={`rounded-[1.2rem] border px-2 py-3 text-center transition ${
-                  active ? 'border-[#d8b45b] bg-[#fff5d6] text-[#7a5200]' : 'border-[#eadfd2] bg-white text-[#7a7280]'
-                }`}
-                style={
-                  active
-                    ? {
-                        borderColor: '#d8b45b',
-                        background: 'linear-gradient(180deg, #fff8df, #ffffff)',
-                      }
-                    : undefined
-                }
+                className={`rounded-[1rem] border px-2 py-3 text-center transition ${active ? 'border-[#d8b45b] bg-[#fff8df]' : 'border-[#eadfd2] bg-[#fffdf9]'}`}
               >
-                <div className="flex items-center justify-center gap-1">
-                  <span className='h-[19px]'>{item.renderIcon(active)}</span>
-                  <div
-                    className={`inline-flex rounded-full px-2.5 py-1 text-[12px] font-black ${
-                      active ? 'bg-[#f2c94c] !text-white' : 'bg-[#f4edf2] text-[#8b8790]'
-                    }`}
+                <div className="mb-2 flex items-center justify-center gap-1.5">
+                  <span className="flex h-5 items-center">{item.renderIcon(active)}</span>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[10px] font-black ${active ? 'bg-[#f2c94c] !text-white' : 'bg-[#f4edf2] text-[#8b8790]'}`}
                   >
                     {percent}%
-                  </div>
+                  </span>
                 </div>
-                <div className={`text-[11px] font-semibold leading-4 ${active ? 'text-[#7a5200]' : 'text-[#73737c]'}`}>
+                <div
+                  className={`text-[11px] font-semibold leading-4 ${active ? 'text-[#7a5200]' : 'text-[#73737c]'}`}
+                >
                   {item.label}
                 </div>
-                {item.sub ? <div className="mt-1 text-[11px] text-[#73737c]">{item.sub}</div> : null}
+                {item.sub ? (
+                  <div className="mt-1 text-[10px] text-[#8a7e8b]">{item.sub}</div>
+                ) : null}
               </button>
             );
           })}
         </div>
-        <div className="space-y-2.5">
-          {currentPhaseMissions.map((mission, index) => (
+      </div>
+
+      {phaseMissionsPending.length > 0 ? (
+        <div className="mb-3 flex items-center justify-between">
+          <div className="text-[13px] font-bold text-[#241629]">Can lam ngay</div>
+          <div className="rounded-full bg-[#fff5d6] px-2.5 py-1 text-[10px] font-semibold text-[#9a6700]">
+            {phaseMissionsPending.length} nhiem vu
+          </div>
+        </div>
+      ) : null}
+      <div className="space-y-2.5">
+        {phaseMissionsPending.length > 0 ? (
+          phaseMissionsPending.map((mission, index) => (
             <MissionCard
               key={mission.id}
               mission={mission}
-              completed={completedSet.has(mission.id)}
+              completed={false}
               accentColor={tier.color}
               delay={index * 60}
               onOpen={onOpenMission}
             />
-          ))}
+          ))
+        ) : (
+          <div className="rounded-[1.15rem] border border-dashed border-[#e8d9c0] bg-[#fffdf9] px-4 py-5 text-center">
+            <div className="text-[13px] font-semibold text-[#241629]">
+              Khong con nhiem vu dang mo
+            </div>
+            <div className="mt-1 text-[11px] text-[#8a7e8b]">
+              Ban da hoan thanh het nhiem vu trong giai doan nay.
+            </div>
+          </div>
+        )}
+      </div>
+
+      {phaseMissionsDone.length > 0 ? (
+        <div className="mt-5">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="text-[13px] font-bold text-[#241629]">Da hoan thanh</div>
+            <div className="rounded-full bg-[#ecfdf3] px-2.5 py-1 text-[10px] font-semibold text-[#15803d]">
+              {phaseMissionsDone.length} muc
+            </div>
+          </div>
+          <div className="space-y-2.5">
+            {phaseMissionsDone.map((mission, index) => (
+              <MissionCard
+                key={mission.id}
+                mission={mission}
+                completed
+                accentColor={tier.color}
+                delay={index * 40}
+                onOpen={onOpenMission}
+              />
+            ))}
+          </div>
         </div>
-      </>
-    );
-  };
+      ) : null}
+    </>
+  );
 
   const renderVoucherTab = (): React.ReactNode => (
     <div className="space-y-4">
-      <div className="rounded-[1.2rem] border border-amber-300/18 bg-[linear-gradient(145deg,rgba(245,158,11,0.15),rgba(245,158,11,0.04))] p-4">
-        <div className="flex items-center justify-between gap-4">
+      <div className="rounded-[1.2rem] border border-[#eadfd2] bg-[linear-gradient(145deg,#fffdf8,#fff6ea)] p-4 shadow-[0_10px_24px_rgba(184,134,11,0.06)]">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-xs uppercase tracking-[0.18em] text-zinc-400">BPoint khả dụng</div>
+            <div className="text-[12px] font-semibold text-[#8a7e8b]">Vi voucher</div>
             <div className="mt-1 flex items-end gap-2">
-              <span className="text-3xl font-black text-amber-200">{availablePoints}</span>
-              <span className="pb-1 text-xs text-zinc-500">/ {totalPoints} tổng</span>
+              <span className="text-[1.75rem] font-black text-[#241629]">{availablePoints}</span>
+              <span className="pb-1 text-[12px] font-semibold text-[#b8860b]">BP kha dung</span>
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-xs text-zinc-500">Đã dùng</div>
-            <div className="mt-1 text-xl font-black text-pink-300">{spentPoints}</div>
+          <div className="rounded-full bg-[#fff2cc] px-3 py-1.5 text-[11px] font-black text-[#9a6700]">
+            {redeemableVoucherCount} co the doi
+          </div>
+        </div>
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          <div className="rounded-[0.95rem] bg-white px-3 py-3 text-center">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a7e8b]">
+              Tong
+            </div>
+            <div className="mt-1 text-[15px] font-black text-[#241629]">{totalPoints}</div>
+          </div>
+          <div className="rounded-[0.95rem] bg-white px-3 py-3 text-center">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a7e8b]">
+              Da dung
+            </div>
+            <div className="mt-1 text-[15px] font-black text-[#db2777]">{spentPoints}</div>
+          </div>
+          <div className="rounded-[0.95rem] bg-white px-3 py-3 text-center">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a7e8b]">
+              Da nhan
+            </div>
+            <div className="mt-1 text-[15px] font-black text-[#15803d]">
+              {voucherTab === 'bpoint' ? redeemedVoucherIds.length : freeVoucherClaimedCount}
+            </div>
           </div>
         </div>
       </div>
@@ -454,18 +571,20 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
       <div className="grid grid-cols-2 gap-2 rounded-[1rem] border border-[#eadfd2] bg-[#fffaf2] p-1">
         {(
           [
-            { key: 'bpoint', label: `Đổi BPoint (${BPOINT_VOUCHERS.length})` },
-            { key: 'free', label: `Miễn phí (${FREE_VOUCHERS.length})` },
+            { key: 'bpoint', label: `Doi BPoint (${BPOINT_VOUCHERS.length})` },
+            { key: 'free', label: `Mien phi (${FREE_VOUCHERS.length})` },
           ] as const
         ).map((item) => (
           <button
             key={item.key}
             type="button"
             onClick={() => onVoucherTabChange(item.key)}
-            className={`rounded-[0.85rem] px-3 py-3 text-sm font-semibold transition ${
-              voucherTab === item.key ? '!text-white' : 'text-[#7a7280]'
-            }`}
-            style={voucherTab === item.key ? { background: 'linear-gradient(135deg, #ec4899, #f59e0b)' } : undefined}
+            className={`rounded-[0.85rem] px-3 py-2.5 text-sm font-semibold transition ${voucherTab === item.key ? '!text-white' : 'text-[#7a7280]'}`}
+            style={
+              voucherTab === item.key
+                ? { background: 'linear-gradient(135deg, #ec4899, #f59e0b)' }
+                : undefined
+            }
           >
             {item.label}
           </button>
@@ -477,65 +596,76 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
           {BPOINT_VOUCHERS.map((voucher) => {
             const redeemed = redeemedSet.has(voucher.id);
             const canAfford = availablePoints >= (voucher.cost ?? 0);
-
             return (
               <div
                 key={voucher.id}
-                className="rounded-[1.1rem] border p-4"
+                className="rounded-[1.1rem] border bg-white p-3.5 shadow-[0_10px_22px_rgba(184,134,11,0.05)]"
                 style={{
                   borderColor: redeemed
-                    ? 'rgba(74,222,128,0.2)'
+                    ? 'rgba(74,222,128,0.24)'
                     : voucher.isGrand
-                      ? 'rgba(255,215,0,0.2)'
+                      ? 'rgba(236,72,153,0.24)'
                       : 'rgba(184,134,11,0.14)',
-                  background: redeemed
-                    ? 'rgba(74,222,128,0.08)'
-                    : voucher.isGrand
-                      ? 'rgba(236,72,153,0.08)'
-                      : 'rgba(255,255,255,0.86)',
                 }}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-start gap-3">
                   <div
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-sm font-black !text-white"
-                    style={{ background: `linear-gradient(135deg, ${voucher.color}, ${voucher.color}bb)` }}
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[1rem] text-sm font-black !text-white"
+                    style={{
+                      background: `linear-gradient(135deg, ${voucher.color}, ${voucher.color}bb)`,
+                    }}
                   >
                     {voucher.logo}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[11px] font-semibold" style={{ color: voucher.color }}>
-                      {voucher.brand}
+                    <div className="mb-1 flex items-center gap-2">
+                      <span
+                        className="truncate text-[12px] font-semibold"
+                        style={{ color: voucher.color }}
+                      >
+                        {voucher.brand}
+                      </span>
+                      {voucher.isGrand ? (
+                        <span className="rounded-full bg-[#fce7f3] px-2 py-0.5 text-[10px] font-semibold text-[#be185d]">
+                          Grand prize
+                        </span>
+                      ) : null}
                     </div>
-                    <div className="text-sm font-bold text-[#241629]">{voucher.discount}</div>
-                    <div className="mt-1 truncate text-xs text-[#7a7280]">{voucher.desc}</div>
+                    <div className="text-[14px] font-bold text-[#241629]">{voucher.discount}</div>
+                    <div className="mt-1 text-[11px] leading-5 text-[#7a7280]">{voucher.desc}</div>
                   </div>
-                  {redeemed ? (
-                    <button
-                      type="button"
-                      onClick={() => onOpenVoucher(voucher)}
-                      className="rounded-full bg-emerald-100 px-3 py-2 text-xs font-semibold text-emerald-700"
-                    >
-                      Xem mã
-                    </button>
-                  ) : voucher.isGrand ? (
-                    <div className="rounded-full bg-amber-100 px-3 py-2 text-xs font-bold text-amber-700">
-                      MAX
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => onRedeemVoucher(voucher)}
-                      disabled={!canAfford}
-                      className="rounded-full px-3 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:bg-[#f1edf2] disabled:text-[#a69ba8]"
-                      style={
-                        canAfford
-                          ? { background: `linear-gradient(135deg, ${voucher.color}, ${voucher.color}bb)`, color: '#fff' }
-                          : undefined
-                      }
-                    >
-                      {voucher.cost} BP
-                    </button>
-                  )}
+                  <div className="shrink-0 text-right">
+                    {redeemed ? (
+                      <button
+                        type="button"
+                        onClick={() => onOpenVoucher(voucher)}
+                        className="rounded-full bg-[#ecfdf3] px-3 py-2 text-[11px] font-semibold text-[#15803d]"
+                      >
+                        Xem ma
+                      </button>
+                    ) : voucher.isGrand ? (
+                      <div className="rounded-full bg-[#fff2cc] px-3 py-2 text-[11px] font-bold text-[#9a6700]">
+                        100%
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => onRedeemVoucher(voucher)}
+                        disabled={!canAfford}
+                        className="rounded-full px-3 py-2 text-[11px] font-semibold disabled:cursor-not-allowed disabled:bg-[#f1edf2] disabled:text-[#a69ba8]"
+                        style={
+                          canAfford
+                            ? {
+                                background: `linear-gradient(135deg, ${voucher.color}, ${voucher.color}bb)`,
+                                color: '#fff',
+                              }
+                            : undefined
+                        }
+                      >
+                        {voucher.cost} BP
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -545,34 +675,41 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
         <div className="space-y-3">
           {FREE_VOUCHERS.map((voucher) => {
             const claimed = claimedFreeSet.has(voucher.id);
-
             return (
               <button
                 key={voucher.id}
                 type="button"
                 onClick={() => (claimed ? onOpenVoucher(voucher) : onClaimVoucher(voucher))}
-                className="flex w-full items-center gap-3 rounded-[1.1rem] border border-[#eadfd2] bg-white p-4 text-left"
+                className="flex w-full items-start gap-3 rounded-[1.1rem] border border-[#eadfd2] bg-white p-3.5 text-left shadow-[0_10px_22px_rgba(184,134,11,0.05)]"
               >
                 <div
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-sm font-black !text-white"
-                  style={{ background: `linear-gradient(135deg, ${voucher.color}, ${voucher.color}bb)` }}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[1rem] text-sm font-black !text-white"
+                  style={{
+                    background: `linear-gradient(135deg, ${voucher.color}, ${voucher.color}bb)`,
+                  }}
                 >
                   {voucher.logo}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[11px] font-semibold" style={{ color: voucher.color }}>
+                  <div className="text-[12px] font-semibold" style={{ color: voucher.color }}>
                     {voucher.brand}
                   </div>
-                  <div className="text-sm font-bold text-[#241629]">{voucher.discount}</div>
-                  <div className="mt-1 truncate text-xs text-[#7a7280]">{voucher.desc}</div>
+                  <div className="mt-0.5 text-[14px] font-bold text-[#241629]">
+                    {voucher.discount}
+                  </div>
+                  <div className="mt-1 text-[11px] leading-5 text-[#7a7280]">{voucher.desc}</div>
                 </div>
                 <div
-                  className={`rounded-full px-3 py-2 text-xs font-semibold ${
-                    claimed ? 'bg-emerald-100 text-emerald-700' : '!text-white'
-                  }`}
-                  style={claimed ? undefined : { background: `linear-gradient(135deg, ${voucher.color}, ${voucher.color}bb)` }}
+                  className={`shrink-0 rounded-full px-3 py-2 text-[11px] font-semibold ${claimed ? 'bg-[#ecfdf3] text-[#15803d]' : '!text-white'}`}
+                  style={
+                    claimed
+                      ? undefined
+                      : {
+                          background: `linear-gradient(135deg, ${voucher.color}, ${voucher.color}bb)`,
+                        }
+                  }
                 >
-                  {claimed ? 'Đã nhận' : 'Nhận'}
+                  {claimed ? 'Da nhan' : 'Nhan ma'}
                 </div>
               </button>
             );
@@ -584,35 +721,40 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
   const renderVoteTab = (): React.ReactNode => {
     const query = normalizeQuery(voteQuery);
-
     return (
       <div className="space-y-4">
-        <div className="rounded-[1.2rem] border border-violet-200 bg-[linear-gradient(145deg,rgba(255,255,255,0.96),rgba(245,240,255,0.9))] p-4">
+        <div className="rounded-[1.2rem] border border-[#eadfd2] bg-[linear-gradient(145deg,#fffdf8,#fff6ff)] p-4 shadow-[0_10px_24px_rgba(184,134,11,0.06)]">
           <div className="mb-2 flex items-center gap-2">
             <VoteIcon color="#8b5cf6" size={20} />
-            <div className="text-base font-bold text-[#241629]">Bình chọn nhãn hàng</div>
+            <div className="text-base font-bold text-[#241629]">Vote nhanh</div>
           </div>
           <div className="text-sm leading-6 text-[#6f6572]">
-            Chọn thương hiệu hoặc sản phẩm yêu thích trong từng hạng mục. Hoàn thành ít nhất 2 hạng mục để mở khóa nhiệm vụ vote.
+            Chon 1 ung vien trong moi hang muc. Giao dien nay uu tien thao tac nhanh, neu can xem
+            chi tiet thi bam vao thuong hieu.
           </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {VOTE_CATEGORIES.map((category) => {
-              const voted = Boolean(votes[category.id]);
-              return (
-                <div
-                  key={category.id}
-                  className="rounded-full border px-3 py-1 text-[11px] font-semibold"
-                  style={{
-                    borderColor: voted ? `${category.color}33` : 'rgba(184,134,11,0.14)',
-                    background: voted ? `${category.color}18` : 'rgba(255,255,255,0.74)',
-                    color: voted ? category.color : '#71717a',
-                  }}
-                >
-                  {voted ? '✓ ' : ''}
-                  {category.title.split(' ')[0]}
-                </div>
-              );
-            })}
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            <div className="rounded-[0.95rem] bg-white px-3 py-3 text-center">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a7e8b]">
+                Da vote
+              </div>
+              <div className="mt-1 text-[15px] font-black text-[#241629]">{votedCount}</div>
+            </div>
+            <div className="rounded-[0.95rem] bg-white px-3 py-3 text-center">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a7e8b]">
+                Con lai
+              </div>
+              <div className="mt-1 text-[15px] font-black text-[#db2777]">
+                {VOTE_CATEGORIES.length - votedCount}
+              </div>
+            </div>
+            <div className="rounded-[0.95rem] bg-white px-3 py-3 text-center">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a7e8b]">
+                Hang muc
+              </div>
+              <div className="mt-1 text-[15px] font-black text-[#8b5cf6]">
+                {VOTE_CATEGORIES.length}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -620,15 +762,15 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
           <input
             value={voteQuery}
             onChange={(event) => onVoteQueryChange(event.target.value)}
-            placeholder="Tìm nhãn hàng..."
-            className="w-full rounded-[1rem] border border-white/8 bg-white/[0.03] px-10 py-3 text-sm text-white placeholder:text-zinc-500"
+            placeholder="Tim nhan hang..."
+            className="w-full rounded-[1rem] border border-[#eadfd2] bg-white px-10 py-3 text-sm text-[#241629] placeholder:text-[#a69ba8]"
           />
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2" />
           {voteQuery ? (
             <button
               type="button"
               onClick={() => onVoteQueryChange('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/8 px-2 py-1 text-xs text-zinc-400"
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-[#f4edf2] px-2 py-1 text-xs text-[#8b8790]"
             >
               x
             </button>
@@ -640,50 +782,74 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
             const filteredBrands = query
               ? category.brands.filter((brand) => normalizeQuery(brand.name).includes(query))
               : category.brands;
-
-            if (filteredBrands.length === 0) {
-              return null;
-            }
-
+            if (filteredBrands.length === 0) return null;
             const selectedId = votes[category.id];
-            const selectedBrandName = category.brands.find((brand) => brand.id === selectedId)?.name;
-
+            const selectedBrandName = category.brands.find(
+              (brand) => brand.id === selectedId
+            )?.name;
             return (
-              <div key={category.id} className="rounded-[1.1rem] border border-[#eadfd2] bg-white p-4 shadow-[0_10px_24px_rgba(184,134,11,0.06)]">
-                <div className="mb-3 grid grid-cols-[minmax(0,1fr)_4.75rem] items-start gap-2">
+              <div
+                key={category.id}
+                className="rounded-[1.1rem] border border-[#eadfd2] bg-white p-3.5 shadow-[0_10px_22px_rgba(184,134,11,0.05)]"
+              >
+                <div className="mb-3 flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="mb-1 flex min-w-0 items-center gap-2">
-                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: category.color }} />
-                      <span className="truncate text-sm font-bold text-[#241629]">{category.title}</span>
+                    <div className="mb-1 flex items-center gap-2">
+                      <span
+                        className="h-2.5 w-2.5 shrink-0 rounded-full"
+                        style={{ background: category.color }}
+                      />
+                      <span className="truncate text-sm font-bold text-[#241629]">
+                        {category.title}
+                      </span>
                     </div>
-                    <div className="truncate text-xs leading-5 text-zinc-400">
-                      {selectedBrandName ? `Đã chọn: ${selectedBrandName}` : category.desc}
+                    <div className="text-[11px] leading-5 text-[#7a7280]">
+                      {selectedBrandName ? `Da chon: ${selectedBrandName}` : category.desc}
                     </div>
                   </div>
-                  <div className="whitespace-nowrap rounded-full bg-[#f4edf2] px-2 py-1 text-center text-[10px] font-semibold text-[#8b8790]">
-                    {category.brands.length} ứng viên
+                  <div
+                    className="shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-semibold"
+                    style={{
+                      background: selectedBrandName ? `${category.color}18` : '#f4edf2',
+                      color: selectedBrandName ? category.color : '#8b8790',
+                    }}
+                  >
+                    {selectedBrandName ? 'Da vote' : `${category.brands.length} ung vien`}
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="space-y-2">
                   {filteredBrands.map((brand) => {
                     const selected = selectedId === brand.id;
-
                     return (
                       <button
                         key={brand.id}
                         type="button"
                         onClick={() => onOpenBrand(category, brand)}
-                        className={`rounded-full border px-3 py-2 text-xs font-medium transition ${
-                          selected ? 'font-semibold' : 'text-[#5f5662]'
-                        }`}
+                        className="flex w-full items-center justify-between gap-3 rounded-[0.95rem] border px-3 py-2.5 text-left transition"
                         style={{
-                          borderColor: selected ? category.color : 'rgba(184,134,11,0.16)',
-                          background: selected ? `${category.color}18` : 'rgba(255,250,242,0.9)',
-                          color: selected ? category.color : undefined,
+                          borderColor: selected ? category.color : 'rgba(184,134,11,0.14)',
+                          background: selected ? `${category.color}12` : '#fffdfa',
                         }}
                       >
-                        {selected ? '✓ ' : ''}
-                        {brand.name}
+                        <div className="min-w-0">
+                          <div
+                            className={`truncate text-[13px] font-semibold ${selected ? '' : 'text-[#241629]'}`}
+                            style={selected ? { color: category.color } : undefined}
+                          >
+                            {brand.name}
+                          </div>
+                          <div className="mt-0.5 text-[11px] text-[#8a7e8b]">
+                            {selected ? 'Dang la lua chon hien tai' : 'Bam de xem va vote'}
+                          </div>
+                        </div>
+                        <div
+                          className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold ${selected ? '' : 'bg-[#f4edf2] text-[#8b8790]'}`}
+                          style={
+                            selected ? { background: category.color, color: '#fff' } : undefined
+                          }
+                        >
+                          {selected ? 'Da chon' : 'Xem'}
+                        </div>
                       </button>
                     );
                   })}
@@ -710,25 +876,12 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
     />
   );
 
-  const renderQrPreviewModal = (): React.ReactNode => {
-    return (
-      <QrPreviewModal
-        open={qrPreviewOpen}
-        userName={userName}
-        orderCode={orderCode}
-        qrValue={qrValue}
-        onClose={() => setQrPreviewOpen(false)}
-        onChangeTicket={() => {
-          setQrPreviewOpen(false);
-          onChangeTicket();
-        }}
-      />
-    );
-  };
-
   return (
     <div className="relative h-full">
-      <div ref={scrollContainerRef} className="beauty-scroll h-full overflow-y-auto px-4 pb-40 pt-5">
+      <div
+        ref={scrollContainerRef}
+        className="beauty-scroll h-full overflow-y-auto px-4 pb-40 pt-5"
+      >
         {activeTab !== 'profile' ? (
           <>
             {renderPassCard()}
@@ -763,12 +916,12 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
       <BrandDetailDrawer
         brand={selectedBrand}
         category={selectedCategory}
-        voted={Boolean(selectedCategory && selectedBrand && votes[selectedCategory.id] === selectedBrand.id)}
+        voted={Boolean(
+          selectedCategory && selectedBrand && votes[selectedCategory.id] === selectedBrand.id
+        )}
         onClose={onCloseBrand}
         onVote={() => {
-          if (selectedCategory && selectedBrand) {
-            onToggleVote(selectedCategory, selectedBrand);
-          }
+          if (selectedCategory && selectedBrand) onToggleVote(selectedCategory, selectedBrand);
         }}
       />
 
@@ -779,9 +932,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
         onClose={onCloseMilestone}
         onClaim={onClaimMilestone}
       />
-
       <PolicyDrawer open={policyOpen} onClose={onClosePolicy} />
-
       <ScanDrawer
         open={scannerOpen}
         userRole={userRole}
@@ -791,7 +942,17 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
         onScan={onRunScanner}
       />
 
-      {renderQrPreviewModal()}
+      <QrPreviewModal
+        open={qrPreviewOpen}
+        userName={userName}
+        orderCode={orderCode}
+        qrValue={qrValue}
+        onClose={() => setQrPreviewOpen(false)}
+        onChangeTicket={() => {
+          setQrPreviewOpen(false);
+          onChangeTicket();
+        }}
+      />
 
       <FooterNav
         activeTab={activeTab}
@@ -805,12 +966,12 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
         }}
         hidden={Boolean(
           expandedMission ||
-            selectedVoucher ||
-            selectedBrand ||
-            selectedMilestone ||
-            policyOpen ||
-            scannerOpen ||
-            qrPreviewOpen,
+          selectedVoucher ||
+          selectedBrand ||
+          selectedMilestone ||
+          policyOpen ||
+          scannerOpen ||
+          qrPreviewOpen
         )}
       />
     </div>
