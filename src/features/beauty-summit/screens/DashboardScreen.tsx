@@ -22,7 +22,6 @@ import { normalizeQuery } from '@/features/beauty-summit/utils';
 import {
   CalendarIcon,
   ClockIcon,
-  CloseIcon,
   GiftIcon,
   QrIcon,
   SearchIcon,
@@ -36,6 +35,7 @@ import MissionCard from '@/features/beauty-summit/components/MissionCard';
 import MissionDrawer from '@/features/beauty-summit/components/MissionDrawer';
 import PolicyDrawer from '@/features/beauty-summit/components/PolicyDrawer';
 import ProfilePanel from '@/features/beauty-summit/components/ProfilePanel';
+import QrPreviewModal from '@/features/beauty-summit/components/QrPreviewModal';
 import ScanDrawer from '@/features/beauty-summit/components/ScanDrawer';
 import VoucherCodeModal from '@/features/beauty-summit/components/VoucherCodeModal';
 
@@ -55,6 +55,7 @@ interface DashboardScreenProps {
   userPhone: string;
   userRole: BeautyUserRole;
   orderCode: string;
+  qrValue: string;
   qrMarkup: string;
   currentPhaseMissions: Mission[];
   allMissionCount: number;
@@ -93,6 +94,7 @@ interface DashboardScreenProps {
   onCloseMilestone: () => void;
   onClaimMilestone: () => void;
   onOpenQr: () => void;
+  onChangeTicket: () => void;
   onOpenPolicy: () => void;
   onClosePolicy: () => void;
   onOpenScanner: () => void;
@@ -141,6 +143,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
   userPhone,
   userRole,
   orderCode,
+  qrValue,
   qrMarkup,
   currentPhaseMissions,
   allMissionCount,
@@ -179,6 +182,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
   onCloseMilestone,
   onClaimMilestone,
   onOpenQr,
+  onChangeTicket,
   onOpenPolicy,
   onClosePolicy,
   onOpenScanner,
@@ -698,36 +702,18 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
   );
 
   const renderQrPreviewModal = (): React.ReactNode => {
-    if (!qrPreviewOpen) {
-      return null;
-    }
-
     return (
-      <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/45 px-5 backdrop-blur-sm">
-        <div className="w-full max-w-[22rem] rounded-[1.6rem] bg-white p-5 text-center shadow-[0_24px_70px_rgba(15,23,42,0.2)]">
-          <div className="mb-4 flex items-center justify-between gap-4">
-            <div className="text-left">
-              <div className="text-base font-bold text-[#241629]">Mã QR check-in</div>
-              <div className="mt-1 text-xs text-[#7a7280]">{orderCode}</div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setQrPreviewOpen(false)}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f4edf2] text-[#7a7280]"
-            >
-              <CloseIcon size={16} color="currentColor" />
-            </button>
-          </div>
-          <div className="mx-auto flex h-[260px] w-[260px] items-center justify-center rounded-[1.35rem] border border-[#eadfd2] bg-white p-4 shadow-inner shadow-[#eadfd2]/40 [&>svg]:h-full [&>svg]:w-full">
-            <div
-              className="h-full w-full [&>svg]:h-full [&>svg]:w-full"
-              dangerouslySetInnerHTML={{ __html: qrMarkup }}
-            />
-          </div>
-          <div className="mt-4 text-sm font-semibold text-[#241629]">{userName}</div>
-          <div className="mt-1 text-xs text-[#7a7280]">{userPhone}</div>
-        </div>
-      </div>
+      <QrPreviewModal
+        open={qrPreviewOpen}
+        userName={userName}
+        orderCode={orderCode}
+        qrValue={qrValue}
+        onClose={() => setQrPreviewOpen(false)}
+        onChangeTicket={() => {
+          setQrPreviewOpen(false);
+          onChangeTicket();
+        }}
+      />
     );
   };
 

@@ -1271,6 +1271,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           userName={userName}
           userAvatar={userAvatar}
           userPhone={userPhone}
+          qrValue={qrValue}
           qrMarkup={qrMarkup}
           zones={accessibleZones}
           checkinLog={checkinLog}
@@ -1305,6 +1306,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           userPhone={userPhone}
           userRole={userRole}
           orderCode={orderCode}
+          qrValue={qrValue}
           qrMarkup={qrMarkup}
           currentPhaseMissions={currentPhaseMissions}
           allMissionCount={allMissions.length}
@@ -1350,6 +1352,10 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           onCloseMilestone={() => setSelectedMilestonePct(null)}
           onClaimMilestone={handleClaimMilestone}
           onOpenQr={() => setScreen('qr')}
+          onChangeTicket={() => {
+            handleEditTicketCode();
+            setScreen('qr');
+          }}
           onOpenPolicy={() => setPolicyOpen(true)}
           onClosePolicy={() => setPolicyOpen(false)}
           onOpenScanner={() => setScannerOpen(true)}

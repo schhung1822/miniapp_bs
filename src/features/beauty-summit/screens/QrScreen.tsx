@@ -1,5 +1,6 @@
 import React from 'react';
 
+import QrPreviewModal from '@/features/beauty-summit/components/QrPreviewModal';
 import { CopyIcon, QrIcon } from '@/features/beauty-summit/icons';
 import type { CheckinLog, CheckinZone, MiniAppTicketOrder, TierMeta } from '@/features/beauty-summit/types';
 
@@ -12,6 +13,7 @@ interface QrScreenProps {
   userName: string;
   userAvatar: string;
   userPhone: string;
+  qrValue: string;
   qrMarkup: string;
   zones: CheckinZone[];
   checkinLog: CheckinLog[];
@@ -37,6 +39,7 @@ const QrScreen: React.FC<QrScreenProps> = ({
   userName,
   userAvatar,
   userPhone,
+  qrValue,
   qrMarkup,
   zones,
   checkinLog,
@@ -207,30 +210,18 @@ const QrScreen: React.FC<QrScreenProps> = ({
   );
 
   const renderQrPreview = (): React.ReactNode => {
-    if (!qrPreviewOpen) {
-      return null;
-    }
-
     return (
-      <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/45 px-5 backdrop-blur-sm">
-        <div className="w-full max-w-[22rem] rounded-[1.6rem] bg-white p-5 text-center shadow-[0_24px_70px_rgba(15,23,42,0.2)]">
-          <div className="text-base font-bold text-[#241629]">Mã QR check-in</div>
-          <div className="mt-1 text-xs tracking-[0.2em] text-[#7a7280]">{orderCode}</div>
-          <div className="mx-auto mt-5 flex h-[260px] w-[260px] items-center justify-center rounded-[1.35rem] border border-[#eadfd2] bg-white p-4 shadow-inner shadow-[#eadfd2]/40 [&>svg]:h-full [&>svg]:w-full">
-            <div
-              className="h-full w-full [&>svg]:h-full [&>svg]:w-full"
-              dangerouslySetInnerHTML={{ __html: qrMarkup }}
-            />
-          </div>
-          <button
-            type="button"
-            onClick={() => setQrPreviewOpen(false)}
-            className="mt-5 w-full rounded-2xl bg-[#241629] px-4 py-3 text-sm font-bold !text-white"
-          >
-            Đóng
-          </button>
-        </div>
-      </div>
+      <QrPreviewModal
+        open={qrPreviewOpen}
+        userName={userName}
+        orderCode={orderCode}
+        qrValue={qrValue}
+        onClose={() => setQrPreviewOpen(false)}
+        onChangeTicket={() => {
+          setQrPreviewOpen(false);
+          onEditTicketCode();
+        }}
+      />
     );
   };
 
@@ -335,7 +326,7 @@ const QrScreen: React.FC<QrScreenProps> = ({
               onClick={onEditTicketCode}
               className="mt-3 inline-flex rounded-full border border-[#eadfd2] bg-[#fffaf2] px-3 py-1.5 text-[11px] font-semibold text-[#7a5200]"
             >
-              Sửa mã vé
+              Đổi vé
             </button>
           </div>
           <button

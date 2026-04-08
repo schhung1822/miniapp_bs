@@ -92,6 +92,14 @@ export const CopyIcon: React.FC<IconProps> = ({ size = 18, color = '#fff', class
   </svg>
 );
 
+export const DownloadIcon: React.FC<IconProps> = ({ size = 18, color = '#fff', className }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 3v11" />
+    <path d="m7 10 5 5 5-5" />
+    <path d="M4 20h16" />
+  </svg>
+);
+
 export const CameraIcon: React.FC<IconProps> = ({ size = 18, color = '#fff', className }) => (
   <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
     <path d="M3 8.5h4l1.8-2.5h6.4L17 8.5h4a1.5 1.5 0 0 1 1.5 1.5V19a2 2 0 0 1-2 2H3.5a2 2 0 0 1-2-2v-9a1.5 1.5 0 0 1 1.5-1.5Z" />
