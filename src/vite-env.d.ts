@@ -8,6 +8,7 @@ interface ImportMetaEnv {
   readonly VITE_ZALO_USER_STORAGE_KEY?: string;
   readonly VITE_ZALO_QR_STORAGE_KEY?: string;
   readonly VITE_ZALO_SECRET_KEY?: string;
+  readonly VITE_FORCE_ONBOARDING_PERMISSION_TEST?: string;
 }
 
 interface ImportMeta {

@@ -92,6 +92,18 @@ export interface CheckinLog {
   day: string;
 }
 
+export interface MiniAppTicketOrder {
+  code: string;
+  name: string;
+  phone: string;
+  ticketClass: string;
+  status: string;
+  statusLabel: string;
+  checkedIn: boolean;
+  checkinTime: string | null;
+  createdAt: string | null;
+}
+
 export interface PolicySection {
   id: string;
   title: string;

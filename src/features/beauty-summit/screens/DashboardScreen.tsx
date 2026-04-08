@@ -235,7 +235,17 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
             </div>
           </div>
 
-          <button type="button" onClick={onOpenQr} className="shrink-0 text-center">
+          <button
+            type="button"
+            onClick={() => {
+              if (hasQr) {
+                setQrPreviewOpen(true);
+                return;
+              }
+              onOpenQr();
+            }}
+            className="shrink-0 text-center"
+          >
             <div className="relative rounded-[1.45rem] border-[3px] border-[#d4be83] bg-white p-2.5 shadow-[0_0_0_3px_rgba(255,255,255,0.05),0_14px_28px_rgba(211,80,168,0.16)]">
               {hasQr ? (
                 <div

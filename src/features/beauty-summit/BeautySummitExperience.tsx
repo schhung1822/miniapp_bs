@@ -34,6 +34,7 @@ import type {
   CheckinLog,
   ExperienceScreen,
   Milestone,
+  MiniAppTicketOrder,
   Mission,
   MissionPhase,
   TierKey,
@@ -60,7 +61,8 @@ const ZALO_USER_STORAGE_KEY =
 const ZALO_QR_STORAGE_KEY =
   import.meta.env.VITE_ZALO_QR_STORAGE_KEY?.trim() || 'beauty-summit.qr-checkin';
 const OA_WIDGET_ID = 'beautySummitOaWidget';
-const FORCE_ONBOARDING_PERMISSION_TEST = true;
+const FORCE_ONBOARDING_PERMISSION_TEST =
+  import.meta.env.VITE_FORCE_ONBOARDING_PERMISSION_TEST === 'true';
 const BEAUTY_TABS: readonly BeautyTab[] = ['missions', 'vouchers', 'vote', 'profile'];
 
 const isBeautyTab = (value: string | null): value is BeautyTab =>
@@ -87,6 +89,16 @@ interface ZaloPhoneResponse {
   message?: string;
 }
 
+interface MiniAppTicketsResponse {
+  data?: MiniAppTicketOrder[];
+  message?: string;
+}
+
+interface ClaimMiniAppTicketResponse {
+  data?: MiniAppTicketOrder;
+  message?: string;
+}
+
 const formatPhoneDisplay = (value: string): string => {
   const digits = value.replace(/\D/g, '');
 
@@ -104,8 +116,7 @@ const formatPhoneDisplay = (value: string): string => {
 
 const normalizePhoneValue = (value: string): string => value.replace(/\s/g, '');
 const normalizeTicketCode = (value: string): string => value.trim().toUpperCase();
-const buildCheckinQrValue = (userId: string, ticketCode: string): string =>
-  `${userId.trim()}|${normalizeTicketCode(ticketCode)}`;
+const buildCheckinQrValue = (_userId: string, ticketCode: string): string => normalizeTicketCode(ticketCode);
 
 const isCompleteZaloUser = (value: Partial<CachedZaloUser> | null | undefined): value is CachedZaloUser =>
   Boolean(value?.id?.trim() && value?.avatar?.trim() && value?.phone?.trim());
@@ -290,6 +301,41 @@ const syncMiniAppUser = async (user: CachedZaloUser): Promise<void> => {
   }
 };
 
+const fetchMiniAppTicketOrders = async (zid: string, phone: string): Promise<MiniAppTicketOrder[]> => {
+  const response = await apiClient.post<MiniAppTicketsResponse>('/api/tickets', {
+    action: 'list',
+    id: zid.trim(),
+    phone: normalizePhoneValue(phone),
+  });
+
+  return response.data.data ?? [];
+};
+
+const claimMiniAppTicketOrder = async (
+  ticketCode: string,
+  user: CachedZaloUser,
+): Promise<MiniAppTicketOrder> => {
+  const response = await apiClient.post<ClaimMiniAppTicketResponse>('/api/tickets', {
+    action: 'claim',
+    code: normalizeTicketCode(ticketCode),
+    id: user.id,
+    name: user.name,
+    phone: normalizePhoneValue(user.phone),
+    avatar: user.avatar,
+  });
+
+  if (!response.data.data) {
+    throw new Error(response.data.message || 'Unable to claim ticket');
+  }
+
+  return response.data.data;
+};
+
+const readApiErrorMessage = (error: unknown, fallback: string): string => {
+  const response = (error as { response?: { data?: { message?: string } } } | null)?.response;
+  return response?.data?.message || (error instanceof Error ? error.message : fallback);
+};
+
 const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeaderChange }) => {
   const [searchParams] = useSearchParams();
   const [screen, setScreen] = React.useState<ExperienceScreen>('onboarding');
@@ -331,8 +377,12 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const [scannerResult, setScannerResult] = React.useState<string | null>(null);
   const [zaloProfile, setZaloProfile] = React.useState(DEFAULT_ZALO_PROFILE);
   const [displayPhone, setDisplayPhone] = React.useState(DEFAULT_PHONE_DISPLAY);
+  const [zaloPhone, setZaloPhone] = React.useState<string>('');
   const [zaloUserId, setZaloUserId] = React.useState<string>('');
   const [qrValue, setQrValue] = React.useState<string>('');
+  const [ticketOrders, setTicketOrders] = React.useState<MiniAppTicketOrder[]>([]);
+  const [ticketsLoading, setTicketsLoading] = React.useState<boolean>(false);
+  const [ticketsError, setTicketsError] = React.useState<string | null>(null);
   const [miniAppLoading, setMiniAppLoading] = React.useState<boolean>(false);
   const [appBootstrapping, setAppBootstrapping] = React.useState<boolean>(true);
 
@@ -355,12 +405,14 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
 
   const applyResolvedUser = React.useCallback((user: CachedZaloUser): void => {
     const resolvedId = user.id.trim();
+    const normalizedPhone = normalizePhoneValue(user.phone);
     setZaloUserId(resolvedId);
     setZaloProfile({
       name: user.name || DEFAULT_ZALO_PROFILE.name,
       avatar: user.avatar || DEFAULT_ZALO_PROFILE.avatar,
     });
-    setDisplayPhone(formatPhoneDisplay(user.phone));
+    setZaloPhone(normalizedPhone);
+    setDisplayPhone(formatPhoneDisplay(normalizedPhone));
 
     // Kiểm tra object window.zalo
     if (window.zalo) {
@@ -389,6 +441,9 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       console.log('[BeautySummit] bootstrap cache hit, opening dashboard');
     } else {
       setZaloUserId('');
+      setZaloPhone('');
+      setTicketOrders([]);
+      setTicketsError(null);
       setOrderCode('');
       setQrValue('');
       setQrGenerated(false);
@@ -488,6 +543,38 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     toastTimer.current = window.setTimeout(() => setToast(null), 2200);
   }, []);
 
+  const loadTicketOrders = React.useCallback(async (zid: string, phone: string): Promise<void> => {
+    const normalizedZid = zid.trim();
+    const normalizedPhone = normalizePhoneValue(phone);
+    if (!normalizedZid || !normalizedPhone) {
+      return;
+    }
+
+    setTicketsLoading(true);
+    setTicketsError(null);
+    setMiniAppLoading(true);
+
+    try {
+      const orders = await fetchMiniAppTicketOrders(normalizedZid, normalizedPhone);
+      setTicketOrders(orders);
+    } catch (error) {
+      console.warn('[BeautySummit] unable to fetch ticket orders:', error);
+      setTicketOrders([]);
+      setTicketsError('Không thể tải danh sách vé. Vui lòng thử lại.');
+    } finally {
+      setTicketsLoading(false);
+      setMiniAppLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (screen !== 'main' || !permissionsGranted || !zaloPhone || !zaloUserId) {
+      return;
+    }
+
+    void loadTicketOrders(zaloUserId, zaloPhone);
+  }, [loadTicketOrders, permissionsGranted, screen, zaloPhone, zaloUserId]);
+
   const markMissionComplete = React.useCallback(
     (missionId: string, message = 'Nhiệm vụ đã hoàn thành') => {
       setCompletedIds((current) => {
@@ -561,9 +648,84 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     setOaPromptOpen(true);
   };
 
-  const handleGenerateQr = (): void => {
+  const handleSelectTicket = (ticketCode: string): void => {
+    setOrderCode(normalizeTicketCode(ticketCode));
+  };
+
+  const handleRefreshTicketOrders = (): void => {
+    if (!zaloPhone || !zaloUserId) {
+      setTicketsError('Không thấy số điện thoại để tải danh sách vé.');
+      return;
+    }
+
+    void loadTicketOrders(zaloUserId, zaloPhone);
+  };
+
+  const handleCopyTicketCode = async (ticketCode: string): Promise<void> => {
+    const normalizedCode = normalizeTicketCode(ticketCode);
+    if (!normalizedCode) {
+      return;
+    }
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(normalizedCode);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = normalizedCode;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+
+      showToast('Đã copy mã vé');
+    } catch {
+      showToast('Không thể copy mã vé');
+    }
+  };
+
+  const handleGenerateQr = async (): Promise<void> => {
     const normalizedCode = normalizeTicketCode(orderCode);
     if (!normalizedCode) {
+      return;
+    }
+
+    let selectedTicket = ticketOrders.find((ticket) => ticket.code === normalizedCode);
+    if (!selectedTicket) {
+      const resolvedUserId = zaloUserId.trim();
+      const resolvedPhone = normalizePhoneValue(zaloPhone);
+      if (!resolvedUserId || !resolvedPhone) {
+        showToast('Unable to load account information');
+        return;
+      }
+
+      setMiniAppLoading(true);
+
+      try {
+        selectedTicket = await claimMiniAppTicketOrder(normalizedCode, {
+          id: resolvedUserId,
+          name: zaloProfile.name || DEFAULT_ZALO_PROFILE.name,
+          avatar: zaloProfile.avatar || DEFAULT_ZALO_PROFILE.avatar,
+          phone: resolvedPhone,
+        });
+        setTicketOrders((current) => {
+          const withoutClaimed = current.filter((ticket) => ticket.code !== selectedTicket?.code);
+          return selectedTicket ? [selectedTicket, ...withoutClaimed] : current;
+        });
+        showToast('Mã vé đã được cập nhật thông tin');
+      } catch (error) {
+        showToast(readApiErrorMessage(error, 'Không thể cập nhật mã vé'));
+        return;
+      } finally {
+        setMiniAppLoading(false);
+      }
+    }
+
+    if (selectedTicket.checkedIn) {
+      showToast('Mã vé này đã check-in');
       return;
     }
 
@@ -605,6 +767,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     clearCachedQrTicket();
     setQrGenerated(false);
     setQrValue('');
+    setOrderCode('');
   };
   const handlePermissionDenied = async () => {
     if (miniAppLoading) {
@@ -623,7 +786,6 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   }
   const handlePermissionApproved = async (): Promise<void> => {
     const intent = permissionIntent;
-    debugger;
     if (miniAppLoading) {
       return;
     }
@@ -1112,9 +1274,15 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           qrMarkup={qrMarkup}
           zones={accessibleZones}
           checkinLog={checkinLog}
+          ticketOrders={ticketOrders}
+          ticketsLoading={ticketsLoading}
+          ticketsError={ticketsError}
           onOrderCodeChange={setOrderCode}
+          onSelectTicket={handleSelectTicket}
           onGenerate={handleGenerateQr}
           onEditTicketCode={handleEditTicketCode}
+          onCopyTicketCode={handleCopyTicketCode}
+          onRefreshTickets={handleRefreshTicketOrders}
           onDemoCheckin={handleDemoCheckin}
           onOpenTicketHelp={() => setTicketHelpOpen(true)}
         />
