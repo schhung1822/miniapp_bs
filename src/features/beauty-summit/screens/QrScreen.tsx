@@ -1,11 +1,13 @@
 import React from 'react';
 
+import BeautyQrCode from '@/features/beauty-summit/components/BeautyQrCode';
 import QrPreviewModal from '@/features/beauty-summit/components/QrPreviewModal';
 import { CopyIcon, QrIcon } from '@/features/beauty-summit/icons';
 import type { CheckinLog, CheckinZone, MiniAppTicketOrder, TierMeta } from '@/features/beauty-summit/types';
 
 interface QrScreenProps {
   tier: TierMeta;
+  ticketLabel: string;
   orderCode: string;
   qrGenerated: boolean;
   availablePoints: number;
@@ -14,7 +16,6 @@ interface QrScreenProps {
   userAvatar: string;
   userPhone: string;
   qrValue: string;
-  qrMarkup: string;
   zones: CheckinZone[];
   checkinLog: CheckinLog[];
   ticketOrders: MiniAppTicketOrder[];
@@ -32,6 +33,7 @@ interface QrScreenProps {
 
 const QrScreen: React.FC<QrScreenProps> = ({
   tier,
+  ticketLabel,
   orderCode,
   qrGenerated,
   availablePoints,
@@ -40,7 +42,6 @@ const QrScreen: React.FC<QrScreenProps> = ({
   userAvatar,
   userPhone,
   qrValue,
-  qrMarkup,
   zones,
   checkinLog,
   ticketOrders,
@@ -58,6 +59,16 @@ const QrScreen: React.FC<QrScreenProps> = ({
   const [entryMode, setEntryMode] = React.useState<'auto' | 'manual'>('auto');
   const [qrPreviewOpen, setQrPreviewOpen] = React.useState<boolean>(false);
   const selectedTicket = ticketOrders.find((ticket) => ticket.code === orderCode);
+  const maskedPhone = React.useMemo(() => {
+    const digits = userPhone.replace(/\D/g, '');
+    const localDigits = digits.length === 11 && digits.startsWith('84') ? `0${digits.slice(2)}` : digits;
+
+    if (localDigits.length !== 10) {
+      return userPhone;
+    }
+
+    return `${localDigits.slice(0, 4)} *** ${localDigits.slice(7)}`;
+  }, [userPhone]);
   const canGenerate =
     entryMode === 'manual'
       ? Boolean(orderCode.trim()) && !selectedTicket?.checkedIn
@@ -233,7 +244,7 @@ const QrScreen: React.FC<QrScreenProps> = ({
             className="mb-3 inline-flex rounded-full px-3 py-1 text-xs font-semibold text-[#170d1d]"
             style={{ background: tier.gradient }}
           >
-            {tier.icon} {tier.name} Pass
+            {tier.icon} {ticketLabel}
           </div>
           <div className="text-2xl font-black text-[#241629]">Tạo mã QR check-in</div>
           <div className="mt-2 text-sm text-[#7a7280]">
@@ -241,13 +252,13 @@ const QrScreen: React.FC<QrScreenProps> = ({
           </div>
         </div>
 
-        <div className="rounded-[1.35rem] border border-[#eadfd2] bg-[#fffaf2] p-4 shadow-[0_16px_34px_rgba(184,134,11,0.08)]">
+        <div className="rounded-[1.35rem] border border-[#eadfd2] bg-white p-4 shadow-[0_8px_18px_rgba(36,22,41,0.06)]">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-[0.16em] text-[#8b8790]">
                 Danh sách mã vé
               </label>
-              <div className="mt-1 text-[11px] text-[#7a7280]">{userPhone}</div>
+              <div className="mt-1 text-[11px] text-[#7a7280]">{maskedPhone}</div>
             </div>
             <button
               type="button"
@@ -300,7 +311,7 @@ const QrScreen: React.FC<QrScreenProps> = ({
   return (
     <div className="beauty-scroll h-full overflow-y-auto px-4 pb-10 pt-5">
       <div
-        className="mb-4 rounded-[1.3rem] border bg-white p-4 shadow-[0_12px_28px_rgba(184,134,11,0.08)]"
+        className="mb-4 rounded-[1.3rem] border bg-white p-4 shadow-[0_8px_18px_rgba(36,22,41,0.06)]"
         style={{ borderColor: `${tier.color}33` }}
       >
         <div className="flex items-center gap-4">
@@ -310,7 +321,7 @@ const QrScreen: React.FC<QrScreenProps> = ({
                 className="inline-flex rounded-full px-3 py-1 text-xs font-semibold text-[#170d1d]"
                 style={{ background: tier.gradient }}
               >
-                {tier.icon} {tier.name} Pass
+                {tier.icon} {ticketLabel}
               </div>
               <img
                 src={userAvatar}
@@ -319,12 +330,11 @@ const QrScreen: React.FC<QrScreenProps> = ({
               />
             </div>
             <div className="text-lg font-bold text-[#241629]">{userName}</div>
-            <div className="mt-1 text-sm text-[#7a7280]">{userPhone}</div>
-            <div className="mt-2 text-xs tracking-[0.22em] text-[#8b8790]">{orderCode}</div>
+            <div className="mt-1 text-sm text-[#7a7280]">{maskedPhone}</div>
             <button
               type="button"
               onClick={onEditTicketCode}
-              className="mt-3 inline-flex rounded-full border border-[#eadfd2] bg-[#fffaf2] px-3 py-1.5 text-[11px] font-semibold text-[#7a5200]"
+              className="mt-2 inline-flex rounded-full border border-[#eadfd2] bg-white px-3 py-1.5 text-[11px] font-semibold text-[#7a5200]"
             >
               Đổi vé
             </button>
@@ -332,12 +342,16 @@ const QrScreen: React.FC<QrScreenProps> = ({
           <button
             type="button"
             onClick={() => setQrPreviewOpen(true)}
-            className="h-24 w-24 shrink-0 rounded-[1rem] bg-white p-2 shadow-[0_18px_40px_rgba(184,134,11,0.18)]"
+            className="beauty-crisp-edge h-24 w-24 shrink-0 rounded-[1rem] bg-white p-2 shadow-[0_12px_24px_rgba(184,134,11,0.14)]"
             aria-label="Mở mã QR lớn"
           >
-            <div
-              className="h-full w-full overflow-hidden rounded-xl"
-              dangerouslySetInnerHTML={{ __html: qrMarkup }}
+            <BeautyQrCode
+              value={qrValue}
+              size={80}
+              wrapperClassName="h-full w-full overflow-hidden rounded-xl"
+              canvasClassName="h-full w-full rounded-xl"
+              logoSize={12}
+              logoRingClassName="border-[4px] shadow-[0_4px_12px_rgba(178,71,125,0.12)]"
             />
           </button>
         </div>
@@ -373,17 +387,24 @@ const QrScreen: React.FC<QrScreenProps> = ({
           return (
             <div
               key={zone.id}
-              className="rounded-[1.1rem] border bg-white p-4"
+              className="rounded-[1.1rem] border bg-white p-4 shadow-[0_6px_14px_rgba(36,22,41,0.04)]"
               style={{
                 borderColor: count > 0 ? `${zone.color}33` : '#eadfd2',
               }}
             >
               <div className="flex items-start gap-3">
                 <div
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
+                  className="beauty-crisp-edge flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl"
                   style={{ background: `${zone.color}1e`, border: `1px solid ${zone.color}30` }}
                 >
-                  <QrIcon color={zone.color} />
+                  <BeautyQrCode
+                    value={qrValue}
+                    size={26}
+                    wrapperClassName="h-[26px] w-[26px]"
+                    canvasClassName="h-[26px] w-[26px] rounded-[0.45rem]"
+                    logoSize={8}
+                    logoRingClassName="border-[3px]"
+                  />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-semibold text-[#241629]">{zone.name}</div>

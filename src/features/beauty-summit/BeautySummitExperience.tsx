@@ -9,7 +9,7 @@ import {
   getUserInfo,
   scanQRCode,
 } from 'zmp-sdk';
-import { authorize, nativeStorage, showOAWidget } from 'zmp-sdk/apis';
+import { authorize, nativeStorage, openChat, showOAWidget } from 'zmp-sdk/apis';
 
 import {
   BPOINT_VOUCHERS,
@@ -43,7 +43,6 @@ import type {
   VoteCategory,
 } from '@/features/beauty-summit/types';
 import apiClient from '@/lib/api-client';
-import { generateQrMarkup } from '@/features/beauty-summit/utils';
 
 interface BeautySummitExperienceProps {
   onHeaderChange: (config: HeaderProps) => void;
@@ -99,24 +98,51 @@ interface ClaimMiniAppTicketResponse {
   message?: string;
 }
 
-const formatPhoneDisplay = (value: string): string => {
+const normalizePhoneValue = (value: string): string => {
   const digits = value.replace(/\D/g, '');
 
-  if (digits.length === 11 && digits.startsWith('84')) {
-    const local = `0${digits.slice(2)}`;
-    return `${local.slice(0, 4)} ${local.slice(4, 7)} ${local.slice(7)}`;
+  if (!digits) {
+    return '';
   }
+
+  if (digits.startsWith('84')) {
+    return digits;
+  }
+
+  if (digits.startsWith('0')) {
+    return `84${digits.slice(1)}`;
+  }
+
+  if (digits.length === 9) {
+    return `84${digits}`;
+  }
+
+  return digits;
+};
+
+const formatPhoneDisplay = (value: string): string => {
+  const normalizedValue = normalizePhoneValue(value);
+  const localPhone = normalizedValue.startsWith('84') ? `0${normalizedValue.slice(2)}` : normalizedValue;
+  const digits = localPhone.replace(/\D/g, '');
 
   if (digits.length === 10) {
     return `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7)}`;
   }
 
-  return value;
+  return localPhone || value;
 };
-
-const normalizePhoneValue = (value: string): string => value.replace(/\s/g, '');
 const normalizeTicketCode = (value: string): string => value.trim().toUpperCase();
 const buildCheckinQrValue = (_userId: string, ticketCode: string): string => normalizeTicketCode(ticketCode);
+const setNativeStorageItem = (key: string, value: string): void => {
+  if (typeof window !== 'undefined' && window.zalo) {
+    nativeStorage.setItem(key, value);
+  }
+};
+const removeNativeStorageItem = (key: string): void => {
+  if (typeof window !== 'undefined' && window.zalo) {
+    nativeStorage.removeItem(key);
+  }
+};
 
 const isCompleteZaloUser = (value: Partial<CachedZaloUser> | null | undefined): value is CachedZaloUser =>
   Boolean(value?.id?.trim() && value?.avatar?.trim() && value?.phone?.trim());
@@ -144,7 +170,7 @@ const readCachedZaloUser = (): CachedZaloUser | null => {
     const parsedValue = JSON.parse(rawValue) as Partial<CachedZaloUser>;
     if (!isCompleteZaloUser(parsedValue)) {
       console.log('[BeautySummit] nativeStorage cache incomplete:', parsedValue);
-      nativeStorage.removeItem(ZALO_USER_STORAGE_KEY);
+      removeNativeStorageItem(ZALO_USER_STORAGE_KEY);
       return null;
     }
 
@@ -158,15 +184,14 @@ const readCachedZaloUser = (): CachedZaloUser | null => {
     return cachedUser;
   } catch {
     // Kiểm tra object window.zalo
-    if (window.zalo) {
-      nativeStorage.clear();
-    } 
+    removeNativeStorageItem(ZALO_USER_STORAGE_KEY);
+    console.log('[BeautySummit] nativeStorage user cache parse failed, cache cleared');
     return null;
   }
 };
 
 const writeCachedZaloUser = (value: CachedZaloUser): void => {
-  nativeStorage.setItem(
+  setNativeStorageItem(
     ZALO_USER_STORAGE_KEY,
     JSON.stringify({
       ...value,
@@ -188,7 +213,7 @@ const readCachedQrTicket = (expectedUserId?: string | null): CachedQrTicket | nu
     const parsedValue = JSON.parse(rawValue) as Partial<CachedQrTicket>;
     if (!isCompleteCachedQrTicket(parsedValue)) {
       console.log('[BeautySummit] QR cache incomplete:', parsedValue);
-      nativeStorage.removeItem(ZALO_QR_STORAGE_KEY);
+      removeNativeStorageItem(ZALO_QR_STORAGE_KEY);
       return null;
     }
 
@@ -200,7 +225,7 @@ const readCachedQrTicket = (expectedUserId?: string | null): CachedQrTicket | nu
 
     if (expectedUserId?.trim() && cachedQr.userId !== expectedUserId.trim()) {
       console.log('[BeautySummit] QR cache user mismatch, clearing cache');
-      nativeStorage.removeItem(ZALO_QR_STORAGE_KEY);
+      removeNativeStorageItem(ZALO_QR_STORAGE_KEY);
       return null;
     }
 
@@ -218,14 +243,14 @@ const readCachedQrTicket = (expectedUserId?: string | null): CachedQrTicket | nu
     console.log('[BeautySummit] QR cache hit:', cachedQr);
     return cachedQr;
   } catch {
-    nativeStorage.removeItem(ZALO_QR_STORAGE_KEY);
+    removeNativeStorageItem(ZALO_QR_STORAGE_KEY);
     console.log('[BeautySummit] QR cache parse failed, cache cleared');
     return null;
   };
 };
 
 const writeCachedQrTicket = (value: CachedQrTicket): void => {
-  nativeStorage.setItem(
+  setNativeStorageItem(
     ZALO_QR_STORAGE_KEY,
     JSON.stringify({
       userId: value.userId.trim(),
@@ -233,10 +258,11 @@ const writeCachedQrTicket = (value: CachedQrTicket): void => {
       qrValue: value.qrValue.trim(),
     }),
   );
+  console.log('[BeautySummit] QR cache saved:', value);
 };
 
 const clearCachedQrTicket = (): void => {
-  nativeStorage.removeItem(ZALO_QR_STORAGE_KEY);
+  removeNativeStorageItem(ZALO_QR_STORAGE_KEY);
 };
 
 const requestZaloPermissions = async (): Promise<void> => {
@@ -300,6 +326,8 @@ const syncMiniAppUser = async (user: CachedZaloUser): Promise<void> => {
     throw new Error(message);
   }
 };
+
+const formatTicketLabel = (value: string): string => value.trim().toUpperCase();
 
 const fetchMiniAppTicketOrders = async (zid: string, phone: string): Promise<MiniAppTicketOrder[]> => {
   const response = await apiClient.post<MiniAppTicketsResponse>('/api/tickets', {
@@ -456,6 +484,40 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   }, [applyResolvedUser]);
 
   React.useEffect(() => {
+    const resolvedId = zaloUserId.trim();
+    const resolvedPhone = normalizePhoneValue(zaloPhone);
+    const resolvedAvatar = zaloProfile.avatar.trim();
+
+    if (!resolvedId || !resolvedPhone || !resolvedAvatar) {
+      return;
+    }
+
+    writeCachedZaloUser({
+      id: resolvedId,
+      name: zaloProfile.name || DEFAULT_ZALO_PROFILE.name,
+      avatar: resolvedAvatar,
+      phone: resolvedPhone,
+    });
+  }, [zaloPhone, zaloProfile.avatar, zaloProfile.name, zaloUserId]);
+
+  React.useEffect(() => {
+    const resolvedId = zaloUserId.trim();
+    if (!resolvedId) {
+      return;
+    }
+
+    const cachedQr = readCachedQrTicket(resolvedId);
+    if (!cachedQr) {
+      return;
+    }
+
+    setOrderCode(cachedQr.ticketCode);
+    setQrValue(cachedQr.qrValue);
+    setQrGenerated(true);
+    console.log('[BeautySummit] QR cache restored after bootstrap:', cachedQr);
+  }, [zaloUserId]);
+
+  React.useEffect(() => {
     return () => {
       if (toastTimer.current) {
         window.clearTimeout(toastTimer.current);
@@ -534,6 +596,8 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     VOTE_CATEGORIES.find((category) => category.id === selectedBrandKey?.categoryId) ?? null;
   const selectedBrand: VoteBrand | null =
     selectedCategory?.brands.find((brand) => brand.id === selectedBrandKey?.brandId) ?? null;
+  const currentTicket = ticketOrders.find((ticket) => ticket.code === normalizeTicketCode(orderCode));
+  const currentTicketLabel = formatTicketLabel(currentTicket?.ticketClass || currentTier.name);
 
   const showToast = React.useCallback((message: string) => {
     setToast(message);
@@ -542,6 +606,19 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     }
     toastTimer.current = window.setTimeout(() => setToast(null), 2200);
   }, []);
+
+  const handleOpenSupportOaChat = React.useCallback(async (): Promise<void> => {
+    try {
+      await openChat({
+        type: 'oa',
+        id: '3374320125227368636',
+        message: 'Xin chào, tôi cần hỗ trợ tìm mã vé Beauty Summit.',
+      });
+    } catch (error) {
+      console.warn('[BeautySummit] unable to open OA chat:', error);
+      showToast('Không thể mở Zalo OA trong môi trường hiện tại');
+    }
+  }, [showToast]);
 
   const loadTicketOrders = React.useCallback(async (zid: string, phone: string): Promise<void> => {
     const normalizedZid = zid.trim();
@@ -1040,33 +1117,47 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
 
     return (
       <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-sm">
-        <div className="absolute inset-x-0 bottom-0 rounded-t-[1.75rem] border-t border-white/8 bg-[#121320] px-5 pb-8 pt-3 shadow-[0_-24px_60px_rgba(0,0,0,0.45)]">
-          <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-white/12" />
+        <div className="absolute inset-x-0 bottom-0 rounded-t-[1.75rem] border-t border-[#eadfd2] bg-white px-5 pb-8 pt-3 shadow-[0_-24px_60px_rgba(15,23,42,0.16)]">
+          <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-[#d6d3d9]" />
           <div className="mb-5 flex items-start justify-between gap-4">
             <div>
-              <div className="text-lg font-bold text-white">Tìm mã vé ở đâu?</div>
-              <div className="mt-1 text-sm text-zinc-400">Hai tình huống nhận mã phổ biến.</div>
+              <div className="text-lg font-bold text-[#111827]">Tìm mã vé ở đâu?</div>
+              <div className="mt-1 text-sm text-[#4b5563]">Hai tình huống nhận mã phổ biến.</div>
             </div>
-            <button type="button" onClick={() => setTicketHelpOpen(false)} className="rounded-full bg-white/6 p-2 text-zinc-400">
+            <button
+              type="button"
+              onClick={() => setTicketHelpOpen(false)}
+              className="rounded-full bg-[#f3f4f6] p-2 text-[#374151]"
+            >
               <CloseIcon />
             </button>
           </div>
 
           <div className="space-y-3">
-            <div className="rounded-[1.1rem] border border-amber-300/18 bg-amber-300/6 p-4">
-              <div className="mb-2 text-sm font-bold text-amber-200">1. Khách mua vé trực tiếp</div>
-              <div className="text-sm leading-6 text-zinc-300">
+            <div className="rounded-[1.1rem] border border-[#f4d37a] bg-[#fff8e1] p-4">
+              <div className="mb-2 text-sm font-bold text-[#111827]">1. Khách mua vé trực tiếp</div>
+              <div className="text-sm leading-6 text-[#374151]">
                 Mã vé được gửi qua email hoặc tin nhắn Zalo tại thời điểm thanh toán thành công.
               </div>
             </div>
-            <div className="rounded-[1.1rem] border border-violet-300/18 bg-violet-300/6 p-4">
-              <div className="mb-2 text-sm font-bold text-violet-200">2. Khách nhận vé từ đối tác</div>
-              <div className="text-sm leading-6 text-zinc-300">
+            <div className="rounded-[1.1rem] border border-[#ddc2f6] bg-[#f8f1ff] p-4">
+              <div className="mb-2 text-sm font-bold text-[#111827]">2. Khách nhận vé từ đối tác</div>
+              <div className="text-sm leading-6 text-[#374151]">
                 Mã vé sẽ được chuyển qua nhãn hàng hoặc đối tác mời tham dự. Bạn có thể liên hệ trực tiếp đầu mối đã gửi thư mời.
               </div>
             </div>
-            <div className="rounded-[1.1rem] border border-white/8 bg-white/[0.03] p-4 text-sm leading-6 text-zinc-300">
-              Vẫn chưa tìm thấy mã? Liên hệ hotline hoặc nhắn Zalo OA Beauty Summit Vietnam để được hỗ trợ.
+            <div className="rounded-[1.1rem] border border-[#e5e7eb] bg-[#f9fafb] p-4 text-sm leading-6 text-[#374151]">
+              Vẫn chưa tìm thấy mã? Liên hệ hotline hoặc nhắn{' '}
+              <button
+                type="button"
+                onClick={() => {
+                  void handleOpenSupportOaChat();
+                }}
+                className="font-semibold text-[#0d7cff] underline underline-offset-2"
+              >
+                Zalo OA Beauty Summit Vietnam
+              </button>{' '}
+              để được hỗ trợ.
             </div>
           </div>
         </div>
@@ -1229,8 +1320,6 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const userAvatar = zaloProfile.avatar || DEFAULT_ZALO_PROFILE.avatar;
   const userPhone = displayPhone;
   const userRole: BeautyUserRole = 'guest';
-  const qrMarkup = generateQrMarkup(qrValue || `BS26-${tier}-${orderCode || 'DEMO'}`);
-
   if (appBootstrapping) {
     return <BeautyShell loading loadingLabel="Checking account..." toast={toast} />;
   }
@@ -1264,6 +1353,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       {screen === 'qr' ? (
         <QrScreen
           tier={currentTier}
+          ticketLabel={currentTicketLabel}
           orderCode={orderCode}
           qrGenerated={qrGenerated}
           availablePoints={availablePoints}
@@ -1272,7 +1362,6 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           userAvatar={userAvatar}
           userPhone={userPhone}
           qrValue={qrValue}
-          qrMarkup={qrMarkup}
           zones={accessibleZones}
           checkinLog={checkinLog}
           ticketOrders={ticketOrders}
@@ -1292,6 +1381,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       {screen === 'main' ? (
         <DashboardScreen
           tier={currentTier}
+          ticketLabel={currentTicketLabel}
           activeTab={activeTab}
           activePhase={activePhase}
           voucherTab={voucherTab}
@@ -1307,7 +1397,6 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           userRole={userRole}
           orderCode={orderCode}
           qrValue={qrValue}
-          qrMarkup={qrMarkup}
           currentPhaseMissions={currentPhaseMissions}
           allMissionCount={allMissions.length}
           completedIds={completedIds}

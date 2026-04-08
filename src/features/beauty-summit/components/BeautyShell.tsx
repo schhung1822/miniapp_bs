@@ -17,8 +17,8 @@ const BeautyShell: React.FC<BeautyShellProps> = ({
 }) => {
   return (
     <div className="beauty-shell beauty-light relative h-full overflow-hidden text-[#241629]">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_top,_rgba(255,236,200,0.92),_transparent_62%)]" />
-      <div className="pointer-events-none absolute inset-x-0 top-24 h-48 bg-[radial-gradient(circle_at_center,_rgba(255,198,220,0.46),_transparent_62%)]" />
+      <div className="pointer-events-none absolute left-[-7rem] top-[-5rem] h-64 w-64 rounded-full bg-[radial-gradient(circle,_rgba(255,236,200,0.42)_0%,_rgba(255,236,200,0)_72%)]" />
+      <div className="pointer-events-none absolute right-[-5rem] top-[-3.5rem] h-56 w-56 rounded-full bg-[radial-gradient(circle,_rgba(255,198,220,0.22)_0%,_rgba(255,198,220,0)_72%)]" />
       {children}
       {loading ? (
         <div className="absolute inset-0 z-[60] flex items-center justify-center bg-white/72 backdrop-blur-sm">

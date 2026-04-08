@@ -1,19 +1,18 @@
 import React from 'react';
 
-import { ChevronRightIcon, PolicyIcon, QrIcon, StarIcon } from '@/features/beauty-summit/icons';
-import type { BeautyUserRole, TierMeta } from '@/features/beauty-summit/types';
+import { ChevronRightIcon, PolicyIcon, StarIcon } from '@/features/beauty-summit/icons';
+import type { BeautyUserRole } from '@/features/beauty-summit/types';
 
 interface ProfilePanelProps {
   userName: string;
   userAvatar: string;
   userPhone: string;
-  tier: TierMeta;
+  ticketLabel: string;
   availablePoints: number;
   completedCount: number;
   totalMissionCount: number;
   userRole: BeautyUserRole;
   onOpenPolicy: () => void;
-  onOpenScanner: () => void;
 }
 
 const getInitials = (value: string): string =>
@@ -28,13 +27,12 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
   userName,
   userAvatar,
   userPhone,
-  tier,
+  ticketLabel,
   availablePoints,
   completedCount,
   totalMissionCount,
   userRole,
   onOpenPolicy,
-  onOpenScanner,
 }) => {
   const roleLabel = userRole === 'receptionist' ? 'Lễ tân' : 'Khách tham dự';
 
@@ -61,12 +59,14 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
               </div>
             </div>
             <div className="mt-1 text-[12px] text-zinc-400">{userPhone}</div>
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              <div className="rounded-[0.95rem] border border-[#eadfd2] bg-[#fffaf2] px-3 py-2">
+            <div className="mt-3 grid grid-cols-[1.15fr_0.92fr_0.92fr] gap-2">
+              <div className="flex min-w-0 flex-col items-center justify-center rounded-[0.95rem] border border-[#eadfd2] bg-[#fffaf2] px-3 py-2 text-center">
                 <div className="text-[10px] uppercase tracking-[0.12em] text-[#8b8790]">Hạng vé</div>
-                <div className="mt-1 text-[12px] font-semibold text-[#241629]">{tier.name}</div>
+                <div className="mt-1 w-full whitespace-nowrap text-center text-[12px] font-semibold text-[#241629]">
+                  {ticketLabel}
+                </div>
               </div>
-              <div className="rounded-[0.95rem] border border-[#eadfd2] bg-[#fffaf2] px-3 py-2">
+              <div className="flex min-w-0 flex-col items-center justify-center rounded-[0.95rem] border border-[#eadfd2] bg-[#fffaf2] px-3 py-2 text-center">
                 <div className="whitespace-nowrap text-[10px] uppercase tracking-[0.08em] text-[#8b8790]">
                   Nhiệm vụ
                 </div>
@@ -74,7 +74,7 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
                   {completedCount}/{totalMissionCount}
                 </div>
               </div>
-              <div className="rounded-[0.95rem] border border-[#eadfd2] bg-[#fffaf2] px-3 py-2">
+              <div className="flex min-w-0 flex-col items-center justify-center rounded-[0.95rem] border border-[#eadfd2] bg-[#fffaf2] px-3 py-2 text-center">
                 <div className="text-[10px] uppercase tracking-[0.12em] text-[#8b8790]">BPoint</div>
                 <div className="mt-1 inline-flex items-center gap-1 text-[12px] font-semibold text-[#241629]">
                   <StarIcon size={12} color="#ffd23f" />
@@ -85,27 +85,6 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
           </div>
         </div>
       </div>
-
-      <button
-        type="button"
-        onClick={onOpenScanner}
-        className="flex w-full items-center gap-3 rounded-[1.2rem] border border-emerald-200 bg-[#f0fdf6] px-4 py-4 text-left shadow-[0_16px_32px_rgba(16,185,129,0.08)]"
-      >
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1rem] bg-emerald-100 text-emerald-700">
-          <QrIcon size={22} color="#047857" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <div className="text-[13px] font-bold text-[#064e3b]">Quét mã check-in</div>
-            <div className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
-              Tạm mở
-            </div>
-          </div>
-          <div className="mt-1 text-[11px] leading-5 text-emerald-900/70">
-            Bản tạm để demo. Sau này chỉ tài khoản role lễ tân mới được phép sử dụng.
-          </div>
-        </div>
-      </button>
 
       <button
         type="button"

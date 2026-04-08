@@ -2,8 +2,8 @@
 
 .beauty-shell {
   background:
-    radial-gradient(circle at top left, rgba(255, 238, 205, 0.96), transparent 21rem),
-    radial-gradient(circle at top right, rgba(255, 220, 234, 0.78), transparent 20rem),
+    radial-gradient(circle at top left, rgba(255, 238, 205, 0.42), transparent 18rem),
+    radial-gradient(circle at top right, rgba(255, 220, 234, 0.28), transparent 17rem),
     linear-gradient(180deg, #fffaf1 0%, #fff7fb 45%, #f7fbff 100%);
   font-family: "Be Vietnam Pro", sans-serif;
 }
@@ -127,6 +127,10 @@
   height: 0;
 }
 
+.beauty-crisp-edge {
+  isolation: isolate;
+}
+
 @keyframes beauty-slide-up {
   from {
     opacity: 0;
@@ -154,11 +158,11 @@
 @keyframes beauty-glow {
   0%,
   100% {
-    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 14px 28px rgba(36, 22, 41, 0.14);
   }
 
   50% {
-    box-shadow: 0 18px 52px rgba(236, 72, 153, 0.12);
+    box-shadow: 0 16px 32px rgba(236, 72, 153, 0.08);
   }
 }
 

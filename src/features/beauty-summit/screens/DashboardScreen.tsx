@@ -29,6 +29,7 @@ import {
   VoteIcon,
 } from '@/features/beauty-summit/icons';
 import BrandDetailDrawer from '@/features/beauty-summit/components/BrandDetailDrawer';
+import BeautyQrCode from '@/features/beauty-summit/components/BeautyQrCode';
 import FooterNav from '@/features/beauty-summit/components/FooterNav';
 import MilestoneModal from '@/features/beauty-summit/components/MilestoneModal';
 import MissionCard from '@/features/beauty-summit/components/MissionCard';
@@ -41,6 +42,7 @@ import VoucherCodeModal from '@/features/beauty-summit/components/VoucherCodeMod
 
 interface DashboardScreenProps {
   tier: TierMeta;
+  ticketLabel: string;
   activeTab: BeautyTab;
   activePhase: MissionPhase;
   voucherTab: VoucherTab;
@@ -56,7 +58,6 @@ interface DashboardScreenProps {
   userRole: BeautyUserRole;
   orderCode: string;
   qrValue: string;
-  qrMarkup: string;
   currentPhaseMissions: Mission[];
   allMissionCount: number;
   completedIds: string[];
@@ -129,6 +130,7 @@ const phaseItems: Array<{
 
 const DashboardScreen: React.FC<DashboardScreenProps> = ({
   tier,
+  ticketLabel,
   activeTab,
   activePhase,
   voucherTab,
@@ -144,7 +146,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
   userRole,
   orderCode,
   qrValue,
-  qrMarkup,
   currentPhaseMissions,
   allMissionCount,
   completedIds,
@@ -197,7 +198,16 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
   const previousTabRef = React.useRef<BeautyTab>(activeTab);
   const [qrPreviewOpen, setQrPreviewOpen] = React.useState<boolean>(false);
   const hasQr = qrGenerated && orderCode.trim().length > 0;
-  const ticketCode = hasQr ? orderCode.trim().slice(-3) || 'KKK' : 'KKK';
+  const maskedPhone = React.useMemo(() => {
+    const digits = userPhone.replace(/\D/g, '');
+    const localDigits = digits.length === 11 && digits.startsWith('84') ? `0${digits.slice(2)}` : digits;
+
+    if (localDigits.length !== 10) {
+      return userPhone;
+    }
+
+    return `${localDigits.slice(0, 4)} *** ${localDigits.slice(7)}`;
+  }, [userPhone]);
 
   React.useEffect(() => {
     if (previousTabRef.current !== activeTab) {
@@ -210,15 +220,15 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
   }, [activeTab]);
 
   const renderPassCard = (): React.ReactNode => (
-    <div className="beauty-glow mb-5 overflow-hidden rounded-[1.8rem] border border-[#715318] bg-[linear-gradient(135deg,#241d12_0%,#251b15_56%,#311225_100%)] shadow-[0_16px_38px_rgba(0,0,0,0.24)]">
+    <div className="beauty-glow beauty-crisp-edge mb-5 overflow-hidden rounded-[1.8rem] border border-[#715318] bg-[linear-gradient(135deg,#241d12_0%,#251b15_56%,#311225_100%)] shadow-[0_14px_28px_rgba(0,0,0,0.18)]">
       <div className="relative px-4 pb-4 pt-5">
-        <div className="pointer-events-none absolute right-7 top-4 h-20 w-20 rounded-full bg-[#ff3bb1]/14 blur-[42px]" />
+        <div className="pointer-events-none absolute right-8 top-5 h-16 w-16 rounded-full bg-[radial-gradient(circle,rgba(255,59,177,0.14)_0%,rgba(255,59,177,0)_72%)]" />
         <div className="grid grid-cols-[minmax(0,1fr)_104px] items-start gap-3 sm:grid-cols-[minmax(0,1fr)_118px]">
           <div className="min-w-0 pt-1">
             <div className="mb-3 flex items-center gap-2.5">
               <div className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[#f4c50a] px-3.5 py-2 text-[9px] font-black !text-white">
                 <StarIcon size={15} color="#ffffff" />
-                <span className="text-[12px]">{tier.name} Pass</span>
+                <span className="text-[12px]">{ticketLabel}</span>
               </div>
               <img
                 src={userAvatar}
@@ -230,7 +240,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
               {userName}
             </div>
             <div className="mt-1.5 truncate text-[11px] font-medium leading-none text-[#8a8a92] sm:text-[13px]">
-              {userPhone} · {ticketCode}
+              {maskedPhone}
             </div>
             <div className="mt-4 inline-flex items-center gap-2 rounded-[0.9rem] bg-[#3a2b10] px-3.5 py-2.5 text-[#ffd23f]">
               <StarIcon size={14} color="#ffd23f" />
@@ -242,19 +252,19 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
           <button
             type="button"
             onClick={() => {
-              if (hasQr) {
-                setQrPreviewOpen(true);
-                return;
-              }
               onOpenQr();
             }}
             className="shrink-0 text-center"
           >
-            <div className="relative rounded-[1.45rem] border-[3px] border-[#d4be83] bg-white p-2.5 shadow-[0_0_0_3px_rgba(255,255,255,0.05),0_14px_28px_rgba(211,80,168,0.16)]">
+            <div className="beauty-crisp-edge relative rounded-[1.45rem] border-[3px] border-[#d4be83] bg-white p-2.5 shadow-[0_10px_20px_rgba(211,80,168,0.14)]">
               {hasQr ? (
-                <div
-                  className="h-[82px] w-[82px] overflow-hidden rounded-[0.8rem] sm:h-[92px] sm:w-[92px] [&>svg]:h-full [&>svg]:w-full"
-                  dangerouslySetInnerHTML={{ __html: qrMarkup }}
+                <BeautyQrCode
+                  value={qrValue}
+                  size={92}
+                  wrapperClassName="h-[82px] w-[82px] overflow-hidden rounded-[0.8rem] sm:h-[92px] sm:w-[92px]"
+                  canvasClassName="h-full w-full rounded-[0.8rem]"
+                  logoSize={12}
+                  logoRingClassName="border-[4px] shadow-[0_4px_12px_rgba(178,71,125,0.12)]"
                 />
               ) : (
                 <div className="flex flex-col h-[82px] w-[82px] items-center justify-center rounded-[0.8rem] bg-white sm:h-[92px] sm:w-[92px]">
@@ -691,13 +701,12 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
       userName={userName}
       userAvatar={userAvatar}
       userPhone={userPhone}
-      tier={tier}
+      ticketLabel={ticketLabel}
       availablePoints={availablePoints}
       completedCount={completedIds.length}
       totalMissionCount={allMissionCount}
       userRole={userRole}
       onOpenPolicy={onOpenPolicy}
-      onOpenScanner={onOpenScanner}
     />
   );
 
