@@ -9,7 +9,7 @@ import {
   getUserInfo,
   scanQRCode,
 } from 'zmp-sdk';
-import { authorize, nativeStorage, openChat, showOAWidget } from 'zmp-sdk/apis';
+import { nativeStorage, openChat, showOAWidget } from 'zmp-sdk/apis';
 
 import {
   BPOINT_VOUCHERS,
@@ -131,7 +131,7 @@ const formatPhoneDisplay = (value: string): string => {
 const normalizeTicketCode = (value: string): string => value.trim().toUpperCase();
 const buildCheckinQrValue = (phone: string, ticketCode: string): string =>
   `${normalizePhoneValue(phone)}|${normalizeTicketCode(ticketCode)}`;
-const isZaloRuntime = (): boolean => typeof window !== 'undefined' && Boolean(window.zalo);
+
 const isMeaningfulZaloName = (value: string | null | undefined): boolean => {
   const normalizedValue = String(value ?? '').trim();
   return Boolean(normalizedValue && normalizedValue !== DEFAULT_ZALO_PROFILE.name);
@@ -160,7 +160,7 @@ const normalizeZaloAvatar = (value: string | null | undefined, fallback?: string
   return fallbackValue || DEFAULT_ZALO_PROFILE.avatar;
 };
 const getNativeStorageItem = (key: string): string | null => {
-  if (!isZaloRuntime()) {
+  if (!window.zalo) {
     console.log('[BeautySummit] nativeStorage unavailable for key:', key);
     return null;
   }
@@ -174,12 +174,12 @@ const getNativeStorageItem = (key: string): string | null => {
   }
 };
 const setNativeStorageItem = (key: string, value: string): void => {
-  if (isZaloRuntime()) {
+  if (window.zalo) {
     nativeStorage.setItem(key, value);
   }
 };
 const removeNativeStorageItem = (key: string): void => {
-  if (isZaloRuntime()) {
+  if (window.zalo) {
     nativeStorage.removeItem(key);
   }
 };
@@ -248,16 +248,10 @@ const readCachedQrTicket = (expectedUserId?: string | null, expectedPhone?: stri
 const resolveZaloUserFromSdk = async (options?: {
   requestPermissions?: boolean;
 }): Promise<CachedZaloUser> => {
-  // if (!isZaloRuntime()) {
-  //   throw new Error('Zalo Mini App runtime is unavailable');
-  // }
 
-  if (options?.requestPermissions !== false) {
-    await requestZaloPermissions();
-  }
 
   const { userInfo } = await getUserInfo({
-    autoRequestPermission: false,
+    autoRequestPermission: options?.requestPermissions !== false,
   });
   console.log('[BeautySummit] Zalo userInfo:', userInfo);
 
@@ -295,17 +289,6 @@ const writeCachedQrTicket = (value: CachedQrTicket): void => {
 
 const clearCachedQrTicket = (): void => {
   removeNativeStorageItem(ZALO_QR_STORAGE_KEY);
-};
-
-const requestZaloPermissions = async (): Promise<void> => {
-  const permissions = await authorize({
-    scopes: ['scope.userInfo', 'scope.userPhonenumber'],
-  });
-  console.log('[BeautySummit] Zalo permissions granted:', permissions);
-
-  if (!permissions['scope.userInfo'] || !permissions['scope.userPhonenumber']) {
-    throw new Error('Required Zalo permissions were not granted');
-  }
 };
 
 const resolveZaloPhoneNumber = async (): Promise<string> => {
@@ -482,7 +465,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     setDisplayPhone(formatPhoneDisplay(normalizedPhone));
 
     // Kiểm tra object window.zalo
-    if (isZaloRuntime()) {
+    if (window.zalo) {
       // Zalo Mini App đang chạy trên ứng dụng Zalo thực
       const cachedQr = readCachedQrTicket(resolvedId, normalizedPhone);
       if (cachedQr) {
@@ -502,7 +485,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     let cancelled = false;
 
     const bootstrapUser = async (): Promise<void> => {
-      if (!isZaloRuntime()) {
+      if (!window.zalo) {
         if (!cancelled) {
           setZaloUserId('');
           setZaloPhone('');
@@ -962,7 +945,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     if (miniAppLoading) {
       return;
     }
-    debugger
+
     setPermissionStep(null);
     setPermissionIntent(null);
 
@@ -970,7 +953,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
 
     try {
       const resolvedUser = await resolveZaloUserFromSdk({
-        requestPermissions: isZaloRuntime(),
+        requestPermissions: true,
       });
 
       applyResolvedUser(resolvedUser);
