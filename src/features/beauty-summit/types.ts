@@ -31,6 +31,7 @@ export interface TierMeta {
 
 export interface Voucher {
   id: string;
+  kind?: VoucherTab;
   brand: string;
   logo: string;
   discount: string;
@@ -39,11 +40,15 @@ export interface Voucher {
   color: string;
   cost?: number;
   isGrand?: boolean;
+  isActive?: boolean;
 }
 
 export interface VoteBrand {
   id: string;
   name: string;
+  product?: string;
+  summary?: string;
+  link?: string;
 }
 
 export interface VoteCategory {
@@ -102,6 +107,17 @@ export interface MiniAppTicketOrder {
   checkedIn: boolean;
   checkinTime: string | null;
   createdAt: string | null;
+}
+
+export interface MiniAppRewardState {
+  completedIds: string[];
+  claimedFreeVoucherIds: string[];
+  redeemedVoucherIds: string[];
+  claimedMilestonePcts: number[];
+  votes: Record<string, string>;
+  spentPoints: number;
+  totalPoints: number;
+  availablePoints: number;
 }
 
 export interface PolicySection {

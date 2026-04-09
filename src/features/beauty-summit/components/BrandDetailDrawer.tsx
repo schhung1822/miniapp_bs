@@ -22,6 +22,10 @@ const BrandDetailDrawer: React.FC<BrandDetailDrawerProps> = ({
     return null;
   }
 
+  const displayTitle = brand.product || brand.name;
+  const summary =
+    brand.summary ||
+    `${displayTitle} dang duoc de cu trong hang muc "${category.title}". Ban co the chon hoac huy binh chon ngay tai day.`;
   const seed = brand.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const voteCount = (seed % 800) + 120 + (voted ? 1 : 0);
   const percentage = Math.min(98, Math.round((voteCount / (voteCount + 220)) * 100));
@@ -43,7 +47,10 @@ const BrandDetailDrawer: React.FC<BrandDetailDrawerProps> = ({
             >
               {category.title}
             </div>
-            <div className="truncate text-[1.2rem] font-black text-[#241629]">{brand.name}</div>
+            <div className="truncate text-[1.2rem] font-black text-[#241629]">{displayTitle}</div>
+            {brand.product && brand.product !== brand.name ? (
+              <div className="mt-1 text-[12px] font-medium text-[#8a7e8b]">{brand.name}</div>
+            ) : null}
           </div>
           <button
             type="button"
@@ -77,10 +84,7 @@ const BrandDetailDrawer: React.FC<BrandDetailDrawerProps> = ({
           <div className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#9a8f9d]">
             Tom tat
           </div>
-          <p className="text-sm leading-6 text-[#5b5360]">
-            {brand.name} dang duoc de cu trong hang muc "{category.title}". Ban co the chon hoac huy
-            binh chon ngay tai day.
-          </p>
+          <p className="text-sm leading-6 text-[#5b5360]">{summary}</p>
         </div>
 
         <div className="mb-6">
@@ -114,7 +118,7 @@ const BrandDetailDrawer: React.FC<BrandDetailDrawerProps> = ({
           }
         >
           <VoteIcon color={voted ? '#5f5662' : '#fff'} />
-          {voted ? 'Bo chon muc nay' : `Vote cho ${brand.name}`}
+          {voted ? 'Bo chon muc nay' : `Vote cho ${displayTitle}`}
         </button>
       </div>
     </div>

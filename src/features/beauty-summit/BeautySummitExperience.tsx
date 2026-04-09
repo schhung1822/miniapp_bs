@@ -34,6 +34,7 @@ import type {
   CheckinLog,
   ExperienceScreen,
   Milestone,
+  MiniAppRewardState,
   MiniAppTicketOrder,
   Mission,
   MissionPhase,
@@ -59,9 +60,21 @@ const ZALO_QR_STORAGE_KEY =
   import.meta.env.VITE_ZALO_QR_STORAGE_KEY?.trim() || 'beauty-summit.qr-checkin';
 const OA_WIDGET_ID = 'beautySummitOaWidget';
 const BEAUTY_TABS: readonly BeautyTab[] = ['missions', 'vouchers', 'vote', 'profile'];
+const DEFAULT_BPOINT_VOUCHERS: Voucher[] = BPOINT_VOUCHERS.map((voucher) => ({
+  ...voucher,
+  kind: 'bpoint',
+  isActive: true,
+}));
+const DEFAULT_FREE_VOUCHERS: Voucher[] = FREE_VOUCHERS.map((voucher) => ({
+  ...voucher,
+  kind: 'free',
+  isActive: true,
+}));
 
 const isBeautyTab = (value: string | null): value is BeautyTab =>
   Boolean(value && BEAUTY_TABS.includes(value as BeautyTab));
+
+const isZalo = !!window.ZaloMiniApp || !!window.ZMP;
 
 interface CachedZaloUser {
   id: string;
@@ -92,6 +105,25 @@ interface MiniAppTicketsResponse {
 
 interface ClaimMiniAppTicketResponse {
   data?: MiniAppTicketOrder;
+  message?: string;
+}
+
+interface MiniAppRewardsResponse {
+  data?: {
+    state?: MiniAppRewardState;
+    vouchers?: {
+      bpoint?: Voucher[];
+      free?: Voucher[];
+    };
+    voteCategories?: VoteCategory[];
+  };
+  message?: string;
+}
+
+interface MiniAppRewardActionResponse {
+  data?: {
+    state?: MiniAppRewardState;
+  };
   message?: string;
 }
 
@@ -160,24 +192,26 @@ const normalizeZaloAvatar = (value: string | null | undefined, fallback?: string
   return fallbackValue || DEFAULT_ZALO_PROFILE.avatar;
 };
 const getNativeStorageItem = (key: string): string | null => {
-  // if (!window.zalo) {
-  //   console.log('[BeautySummit] nativeStorage unavailable for key:', key);
-  //   return null;
-  // }
-
   try {
-    const value = nativeStorage.getItem(key);
-    return typeof value === 'string' ? value : null;
-  } catch (error) {
-    console.warn('[BeautySummit] nativeStorage read failed:', key, error);
+    if (isZalo) {
+      const value = nativeStorage.getItem(key);
+      return typeof value === 'string' ? value : null;
+    }
+  } catch {
     return null;
   }
+
+  return null;
 };
 const setNativeStorageItem = (key: string, value: string): void => {
+  if (isZalo) {
     nativeStorage.setItem(key, value);
+  }
 };
 const removeNativeStorageItem = (key: string): void => {
+  if (isZalo) {
     nativeStorage.removeItem(key);
+  }
 };
 
 const isCompleteCachedQrTicket = (
@@ -375,6 +409,60 @@ const claimMiniAppTicketOrder = async (
   return response.data.data;
 };
 
+const loadMiniAppRewards = async (user: CachedZaloUser): Promise<{
+  state: MiniAppRewardState;
+  vouchers: {
+    bpoint: Voucher[];
+    free: Voucher[];
+  };
+  voteCategories: VoteCategory[];
+}> => {
+  const response = await apiClient.post<MiniAppRewardsResponse>('/api/rewards', {
+    action: 'load',
+    id: user.id,
+    name: user.name,
+    phone: normalizePhoneValue(user.phone),
+    avatar: user.avatar,
+  });
+
+  const rewardsData = response.data.data;
+  const state = rewardsData?.state;
+  if (!state) {
+    throw new Error(response.data.message || 'Unable to load reward state');
+  }
+
+  return {
+    state,
+    vouchers: {
+      bpoint: rewardsData?.vouchers?.bpoint ?? [],
+      free: rewardsData?.vouchers?.free ?? [],
+    },
+    voteCategories: rewardsData?.voteCategories ?? [],
+  };
+};
+
+const updateMiniAppRewardState = async (
+  user: CachedZaloUser,
+  action: 'complete-mission' | 'claim-voucher' | 'redeem-voucher' | 'claim-milestone' | 'toggle-vote',
+  payload: Record<string, unknown>,
+): Promise<MiniAppRewardState> => {
+  const response = await apiClient.post<MiniAppRewardActionResponse>('/api/rewards', {
+    action,
+    id: user.id,
+    name: user.name,
+    phone: normalizePhoneValue(user.phone),
+    avatar: user.avatar,
+    ...payload,
+  });
+
+  const state = response.data.data?.state;
+  if (!state) {
+    throw new Error(response.data.message || 'Unable to update reward state');
+  }
+
+  return state;
+};
+
 const readApiErrorMessage = (error: unknown, fallback: string): string => {
   const response = (error as { response?: { data?: { message?: string } } } | null)?.response;
   return response?.data?.message || (error instanceof Error ? error.message : fallback);
@@ -402,6 +490,9 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const [claimedFreeVoucherIds, setClaimedFreeVoucherIds] = React.useState<string[]>([]);
   const [redeemedVoucherIds, setRedeemedVoucherIds] = React.useState<string[]>([]);
   const [spentPoints, setSpentPoints] = React.useState<number>(0);
+  const [bpointVouchers, setBpointVouchers] = React.useState<Voucher[]>(DEFAULT_BPOINT_VOUCHERS);
+  const [freeVouchers, setFreeVouchers] = React.useState<Voucher[]>(DEFAULT_FREE_VOUCHERS);
+  const [voteCategories, setVoteCategories] = React.useState<VoteCategory[]>(VOTE_CATEGORIES);
   const [claimedMilestonePcts, setClaimedMilestonePcts] = React.useState<number[]>([]);
   const [votes, setVotes] = React.useState<Record<string, string>>({});
   const [voteQuery, setVoteQuery] = React.useState<string>('');
@@ -409,6 +500,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const [expandedMissionId, setExpandedMissionId] = React.useState<string | null>(null);
   const [selectedVoucherId, setSelectedVoucherId] = React.useState<string | null>(null);
   const [selectedMilestonePct, setSelectedMilestonePct] = React.useState<number | null>(null);
+  const [rewardScreenSeen, setRewardScreenSeen] = React.useState<boolean>(false);
   const [selectedBrandKey, setSelectedBrandKey] = React.useState<{
     categoryId: string;
     brandId: string;
@@ -452,6 +544,31 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       headerTextColor: 'black',
       actionBar: { hide: true },
     }).catch(() => {});
+  }, []);
+
+  const buildCurrentMiniAppUser = React.useCallback((): CachedZaloUser | null => {
+    const resolvedId = zaloUserId.trim();
+    const resolvedPhone = normalizePhoneValue(zaloPhone);
+
+    if (!resolvedId || !resolvedPhone) {
+      return null;
+    }
+
+    return {
+      id: resolvedId,
+      name: normalizeZaloName(zaloProfile.name),
+      avatar: normalizeZaloAvatar(zaloProfile.avatar),
+      phone: resolvedPhone,
+    };
+  }, [zaloPhone, zaloProfile.avatar, zaloProfile.name, zaloUserId]);
+
+  const applyRewardState = React.useCallback((state: MiniAppRewardState): void => {
+    setCompletedIds(state.completedIds);
+    setClaimedFreeVoucherIds(state.claimedFreeVoucherIds);
+    setRedeemedVoucherIds(state.redeemedVoucherIds);
+    setSpentPoints(state.spentPoints);
+    setClaimedMilestonePcts(state.claimedMilestonePcts);
+    setVotes(state.votes);
   }, []);
 
   const applyResolvedUser = React.useCallback((user: CachedZaloUser): void => {
@@ -618,12 +735,12 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const expandedMission: Mission | null =
     allMissions.find((mission) => mission.id === expandedMissionId) ?? null;
   const selectedVoucher: Voucher | null =
-    [...BPOINT_VOUCHERS, ...FREE_VOUCHERS].find((voucher) => voucher.id === selectedVoucherId) ??
+    [...bpointVouchers, ...freeVouchers].find((voucher) => voucher.id === selectedVoucherId) ??
     null;
   const selectedMilestone: Milestone | null =
     MILESTONES.find((milestone) => milestone.pct === selectedMilestonePct) ?? null;
   const selectedCategory: VoteCategory | null =
-    VOTE_CATEGORIES.find((category) => category.id === selectedBrandKey?.categoryId) ?? null;
+    voteCategories.find((category) => category.id === selectedBrandKey?.categoryId) ?? null;
   const selectedBrand: VoteBrand | null =
     selectedCategory?.brands.find((brand) => brand.id === selectedBrandKey?.brandId) ?? null;
   const currentTicket = ticketOrders.find((ticket) => ticket.code === normalizeTicketCode(orderCode));
@@ -700,6 +817,79 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     }
   }, [zaloProfile.avatar, zaloProfile.name]);
 
+  const loadRewardBundle = React.useCallback(async (zid: string, phone: string): Promise<void> => {
+    const normalizedZid = zid.trim();
+    const normalizedPhone = normalizePhoneValue(phone);
+    if (!normalizedZid || !normalizedPhone) {
+      return;
+    }
+
+    setMiniAppLoading(true);
+
+    const currentUser = {
+      id: normalizedZid,
+      name: normalizeZaloName(zaloProfile.name),
+      avatar: normalizeZaloAvatar(zaloProfile.avatar),
+      phone: normalizedPhone,
+    };
+
+    try {
+      const rewards = await loadMiniAppRewards(currentUser);
+      applyRewardState(rewards.state);
+      setBpointVouchers(rewards.vouchers.bpoint);
+      setFreeVouchers(rewards.vouchers.free);
+      setVoteCategories(rewards.voteCategories.length > 0 ? rewards.voteCategories : VOTE_CATEGORIES);
+    } catch (error) {
+      if (shouldRetryTicketFetchAfterSync(error)) {
+        try {
+          await syncMiniAppUser(currentUser);
+          const retryRewards = await loadMiniAppRewards(currentUser);
+          applyRewardState(retryRewards.state);
+          setBpointVouchers(retryRewards.vouchers.bpoint);
+          setFreeVouchers(retryRewards.vouchers.free);
+          setVoteCategories(
+            retryRewards.voteCategories.length > 0 ? retryRewards.voteCategories : VOTE_CATEGORIES,
+          );
+          return;
+        } catch (retryError) {
+          console.warn('[BeautySummit] reward state retry after sync failed:', retryError);
+        }
+      }
+
+      console.warn('[BeautySummit] unable to load reward bundle:', error);
+    } finally {
+      setMiniAppLoading(false);
+    }
+  }, [applyRewardState, zaloProfile.avatar, zaloProfile.name]);
+
+  const runRewardStateUpdate = React.useCallback(
+    async (
+      action: 'complete-mission' | 'claim-voucher' | 'redeem-voucher' | 'claim-milestone' | 'toggle-vote',
+      payload: Record<string, unknown>,
+    ): Promise<MiniAppRewardState> => {
+      const currentUser = buildCurrentMiniAppUser();
+      if (!currentUser) {
+        throw new Error('Unable to load account information');
+      }
+
+      try {
+        const nextState = await updateMiniAppRewardState(currentUser, action, payload);
+        applyRewardState(nextState);
+        return nextState;
+      } catch (error) {
+        if (shouldRetryTicketFetchAfterSync(error)) {
+          await syncMiniAppUser(currentUser);
+          const retryState = await updateMiniAppRewardState(currentUser, action, payload);
+          applyRewardState(retryState);
+          return retryState;
+        }
+
+        throw error;
+      }
+    },
+    [applyRewardState, buildCurrentMiniAppUser],
+  );
+
   React.useEffect(() => {
     if (screen !== 'main' || !permissionsGranted || !zaloPhone || !zaloUserId) {
       return;
@@ -708,31 +898,49 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     void loadTicketOrders(zaloUserId, zaloPhone);
   }, [loadTicketOrders, permissionsGranted, screen, zaloPhone, zaloUserId]);
 
-  const markMissionComplete = React.useCallback(
-    (missionId: string, message = 'Nhiệm vụ đã hoàn thành') => {
-      setCompletedIds((current) => {
-        if (current.includes(missionId)) {
-          return current;
-        }
+  React.useEffect(() => {
+    if (screen !== 'main' || !permissionsGranted || !zaloPhone || !zaloUserId) {
+      return;
+    }
 
+    void loadRewardBundle(zaloUserId, zaloPhone);
+  }, [loadRewardBundle, permissionsGranted, screen, zaloPhone, zaloUserId]);
+
+  const markMissionComplete = React.useCallback(
+    async (missionId: string, message = 'Nhiem vu da hoan thanh'): Promise<boolean> => {
+      if (completedSet.has(missionId)) {
+        return true;
+      }
+
+      try {
+        await runRewardStateUpdate('complete-mission', { missionId });
         showToast(message);
-        return [...current, missionId];
-      });
+        return true;
+      } catch (error) {
+        showToast(readApiErrorMessage(error, 'Khong the cap nhat nhiem vu'));
+        return false;
+      }
     },
-    [showToast],
+    [completedSet, runRewardStateUpdate, showToast],
   );
 
   React.useEffect(() => {
-    if (screen === 'main' && progress === 100) {
+    if (progress < 100) {
+      setRewardScreenSeen(false);
+      return;
+    }
+
+    if (screen === 'main' && progress === 100 && !rewardScreenSeen) {
+      setRewardScreenSeen(true);
       setScreen('reward');
     }
-  }, [progress, screen]);
+  }, [progress, rewardScreenSeen, screen]);
 
   React.useEffect(() => {
     if (Object.keys(votes).length >= 2) {
       const voteMissionId = `${tier}-d1-vote`;
       if (!completedSet.has(voteMissionId)) {
-        markMissionComplete(voteMissionId, 'Đã mở khóa nhiệm vụ vote');
+        void markMissionComplete(voteMissionId, 'Da mo khoa nhiem vu vote');
       }
     }
   }, [tier, votes, completedSet, markMissionComplete]);
@@ -755,22 +963,26 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       return;
     }
 
-    markMissionComplete(expandedMission.id);
-    setExpandedMissionId(null);
+    void (async () => {
+      const success = await markMissionComplete(expandedMission.id);
+      if (success) {
+        setExpandedMissionId(null);
+      }
+    })();
   };
 
   const handleToggleVote = (category: VoteCategory, brand: VoteBrand): void => {
-    setVotes((current) => {
-      if (current[category.id] === brand.id) {
-        const next = { ...current };
-        delete next[category.id];
-        return next;
+    void (async () => {
+      try {
+        await runRewardStateUpdate('toggle-vote', {
+          categoryId: category.id,
+          brandId: brand.id,
+        });
+        showToast(`Da cap nhat vote cho ${brand.name}`);
+      } catch (error) {
+        showToast(readApiErrorMessage(error, 'Khong the cap nhat vote'));
       }
-
-      return { ...current, [category.id]: brand.id };
-    });
-
-    showToast(`Đã cập nhật vote cho ${brand.name}`);
+    })();
   };
 
   const handleTermsContinue = async (): Promise<void> => {
@@ -900,7 +1112,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     setOrderCode(normalizedCode);
     setQrValue(nextQrValue);
     setQrGenerated(true);
-    markMissionComplete(`${tier}-b1`, 'QR created successfully');
+    void markMissionComplete(`${tier}-b1`, 'QR created successfully');
     showToast('App is ready for check-in');
   };
   const handleEditTicketCode = (): void => {
@@ -1000,7 +1212,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
 
     if (zone.id === 'gate') {
       const missionId = gateCheckins === 0 ? `${tier}-d1-1` : `${tier}-d2-1`;
-      markMissionComplete(missionId, `Đã ghi nhận check-in ${day.toLowerCase()}`);
+      void markMissionComplete(missionId, `Da ghi nhan check-in ${day.toLowerCase()}`);
     }
 
     showToast(`Đã quét tại ${zone.name}`);
@@ -1012,18 +1224,29 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       return;
     }
 
-    setRedeemedVoucherIds((current) => [...current, voucher.id]);
-    setSpentPoints((current) => current + cost);
-    setSelectedVoucherId(voucher.id);
-    showToast(`Đổi voucher thành công - ${cost} BP`);
+    void (async () => {
+      try {
+        await runRewardStateUpdate('redeem-voucher', { voucherId: voucher.id });
+        setSelectedVoucherId(voucher.id);
+        showToast(`Doi voucher thanh cong - ${cost} BP`);
+      } catch (error) {
+        showToast(readApiErrorMessage(error, 'Khong the doi voucher'));
+      }
+    })();
   };
 
   const handleClaimVoucher = (voucher: Voucher): void => {
-    if (!claimedFreeVoucherIds.includes(voucher.id)) {
-      setClaimedFreeVoucherIds((current) => [...current, voucher.id]);
-      showToast(`Đã nhận voucher ${voucher.brand}`);
-    }
-    setSelectedVoucherId(voucher.id);
+    void (async () => {
+      try {
+        if (!claimedFreeVoucherIds.includes(voucher.id)) {
+          await runRewardStateUpdate('claim-voucher', { voucherId: voucher.id });
+          showToast(`Đã nhận voucher ${voucher.brand}`);
+        }
+        setSelectedVoucherId(voucher.id);
+      } catch (error) {
+        showToast(readApiErrorMessage(error, 'Khong the nhan voucher'));
+      }
+    })();
   };
 
   const handleClaimMilestone = (): void => {
@@ -1036,10 +1259,18 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       return;
     }
 
-    if (!claimedMilestonePcts.includes(selectedMilestone.pct)) {
-      setClaimedMilestonePcts((current) => [...current, selectedMilestone.pct]);
-      showToast(`Đã nhận mốc quà ${selectedMilestone.pct}%`);
+    if (claimedMilestonePcts.includes(selectedMilestone.pct)) {
+      return;
     }
+
+    void (async () => {
+      try {
+        await runRewardStateUpdate('claim-milestone', { milestonePct: selectedMilestone.pct });
+        showToast(`Đã nhận mốc quà ${selectedMilestone.pct}%`);
+      } catch (error) {
+        showToast(readApiErrorMessage(error, 'Không thể nhận mốc quà'));
+      }
+    })();
   };
 
   const handleRunScanner = async (): Promise<void> => {
@@ -1416,12 +1647,15 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           activeTab={activeTab}
           activePhase={activePhase}
           voucherTab={voucherTab}
+          bpointVouchers={bpointVouchers}
+          freeVouchers={freeVouchers}
           proofValue={expandedMission ? proofInputs[expandedMission.id] ?? '' : ''}
           progress={progress}
           totalPoints={totalPoints}
           spentPoints={spentPoints}
           availablePoints={availablePoints}
           qrGenerated={qrGenerated}
+          voteCategories={voteCategories}
           userName={userName}
           userAvatar={userAvatar}
           userPhone={userPhone}

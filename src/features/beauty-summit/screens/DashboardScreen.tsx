@@ -1,11 +1,6 @@
 import React from 'react';
 
-import {
-  BPOINT_VOUCHERS,
-  FREE_VOUCHERS,
-  MILESTONES,
-  VOTE_CATEGORIES,
-} from '@/features/beauty-summit/data';
+import { MILESTONES } from '@/features/beauty-summit/data';
 import type {
   BeautyTab,
   BeautyUserRole,
@@ -39,6 +34,7 @@ import ProfilePanel from '@/features/beauty-summit/components/ProfilePanel';
 import QrPreviewModal from '@/features/beauty-summit/components/QrPreviewModal';
 import ScanDrawer from '@/features/beauty-summit/components/ScanDrawer';
 import VoucherCodeModal from '@/features/beauty-summit/components/VoucherCodeModal';
+import VoucherLogoBadge from '@/features/beauty-summit/components/VoucherLogoBadge';
 
 interface DashboardScreenProps {
   tier: TierMeta;
@@ -46,12 +42,15 @@ interface DashboardScreenProps {
   activeTab: BeautyTab;
   activePhase: MissionPhase;
   voucherTab: VoucherTab;
+  bpointVouchers: Voucher[];
+  freeVouchers: Voucher[];
   proofValue: string;
   progress: number;
   totalPoints: number;
   spentPoints: number;
   availablePoints: number;
   qrGenerated: boolean;
+  voteCategories: VoteCategory[];
   userName: string;
   userAvatar: string;
   userPhone: string;
@@ -135,12 +134,15 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
     activeTab,
     activePhase,
     voucherTab,
+    bpointVouchers,
+    freeVouchers,
     proofValue,
     progress,
     totalPoints,
     spentPoints,
     availablePoints,
     qrGenerated,
+    voteCategories,
     userName,
     userAvatar,
     userPhone,
@@ -220,22 +222,22 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
     [completedSet, currentPhaseMissions]
   );
   const votedCount = React.useMemo(
-    () => VOTE_CATEGORIES.filter((category) => Boolean(votes[category.id])).length,
-    [votes]
+    () => voteCategories.filter((category) => Boolean(votes[category.id])).length,
+    [voteCategories, votes]
   );
   const redeemableVoucherCount = React.useMemo(
     () =>
-      BPOINT_VOUCHERS.filter(
+      bpointVouchers.filter(
         (voucher) =>
           !voucher.isGrand &&
           !redeemedSet.has(voucher.id) &&
           availablePoints >= (voucher.cost ?? Number.POSITIVE_INFINITY)
       ).length,
-    [availablePoints, redeemedSet]
+    [availablePoints, bpointVouchers, redeemedSet]
   );
   const freeVoucherClaimedCount = React.useMemo(
-    () => FREE_VOUCHERS.filter((voucher) => claimedFreeSet.has(voucher.id)).length,
-    [claimedFreeSet]
+    () => freeVouchers.filter((voucher) => claimedFreeSet.has(voucher.id)).length,
+    [claimedFreeSet, freeVouchers]
   );
 
   React.useEffect(() => {
@@ -289,7 +291,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
               ) : (
                 <div className="flex h-[82px] w-[82px] flex-col items-center justify-center rounded-[0.8rem] bg-white sm:h-[92px] sm:w-[92px]">
                   <QrIcon size={36} color="#1c1530" />
-                  <p className="text-[#000]">Tao ma QR</p>
+                  <p className="text-[#000]">Tạo mã QR</p>
                 </div>
               )}
               {hasQr ? (
@@ -324,7 +326,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
     return (
       <div className="mb-4 rounded-[1.55rem] border border-[#eadfd2] bg-white px-4 py-4 shadow-[0_12px_28px_rgba(184,134,11,0.08)]">
         <div className="mb-4 flex items-center justify-between gap-4">
-          <div className="text-[14px] font-semibold text-[#9ba1b2]">Tien do nhiem vu</div>
+          <div className="text-[14px] font-semibold text-[#9ba1b2]">Tiến độ nhiệm vụ</div>
           <div className="text-[15px] font-black text-[#ff58ba]">
             {completedIds.length}/{allMissionCount}
           </div>
@@ -534,32 +536,32 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
       <div className="rounded-[1.2rem] border border-[#eadfd2] bg-[linear-gradient(145deg,#fffdf8,#fff6ea)] p-4 shadow-[0_10px_24px_rgba(184,134,11,0.06)]">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-[12px] font-semibold text-[#8a7e8b]">Vi voucher</div>
+            <div className="text-[12px] font-semibold text-[#8a7e8b]">Ví voucher</div>
             <div className="mt-1 flex items-end gap-2">
               <span className="text-[1.75rem] font-black text-[#241629]">{availablePoints}</span>
-              <span className="pb-1 text-[12px] font-semibold text-[#b8860b]">BP kha dung</span>
+              <span className="pb-1 text-[12px] font-semibold text-[#b8860b]">BP khả dụng</span>
             </div>
           </div>
           <div className="rounded-full bg-[#fff2cc] px-3 py-1.5 text-[11px] font-black text-[#9a6700]">
-            {redeemableVoucherCount} co the doi
+            {redeemableVoucherCount} có thể đổi
           </div>
         </div>
         <div className="mt-4 grid grid-cols-3 gap-2">
           <div className="rounded-[0.95rem] bg-white px-3 py-3 text-center">
             <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a7e8b]">
-              Tong
+              Tổng
             </div>
             <div className="mt-1 text-[15px] font-black text-[#241629]">{totalPoints}</div>
           </div>
           <div className="rounded-[0.95rem] bg-white px-3 py-3 text-center">
             <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a7e8b]">
-              Da dung
+                Đã dùng
             </div>
             <div className="mt-1 text-[15px] font-black text-[#db2777]">{spentPoints}</div>
           </div>
           <div className="rounded-[0.95rem] bg-white px-3 py-3 text-center">
             <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a7e8b]">
-              Da nhan
+              Đã nhận
             </div>
             <div className="mt-1 text-[15px] font-black text-[#15803d]">
               {voucherTab === 'bpoint' ? redeemedVoucherIds.length : freeVoucherClaimedCount}
@@ -571,8 +573,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
       <div className="grid grid-cols-2 gap-2 rounded-[1rem] border border-[#eadfd2] bg-[#fffaf2] p-1">
         {(
           [
-            { key: 'bpoint', label: `Doi BPoint (${BPOINT_VOUCHERS.length})` },
-            { key: 'free', label: `Mien phi (${FREE_VOUCHERS.length})` },
+            { key: 'bpoint', label: `Đổi BPoint (${bpointVouchers.length})` },
+            { key: 'free', label: `Miễn phí (${freeVouchers.length})` },
           ] as const
         ).map((item) => (
           <button
@@ -593,66 +595,72 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
 
       {voucherTab === 'bpoint' ? (
         <div className="space-y-3">
-          {BPOINT_VOUCHERS.map((voucher) => {
+          {bpointVouchers.map((voucher) => {
             const redeemed = redeemedSet.has(voucher.id);
             const canAfford = availablePoints >= (voucher.cost ?? 0);
+            const grandPrize = voucher.isGrand;
             return (
               <div
                 key={voucher.id}
-                className="rounded-[1.1rem] border bg-white p-3.5 shadow-[0_10px_22px_rgba(184,134,11,0.05)]"
+                className={`rounded-[1.25rem] border bg-white p-3.5 shadow-[0_10px_22px_rgba(184,134,11,0.05)] ${grandPrize ? 'beauty-grand-prize-card beauty-crisp-edge' : ''}`}
                 style={{
                   borderColor: redeemed
                     ? 'rgba(74,222,128,0.24)'
-                    : voucher.isGrand
-                      ? 'rgba(236,72,153,0.24)'
+                    : grandPrize
+                      ? 'rgba(246,194,52,0.42)'
                       : 'rgba(184,134,11,0.14)',
                 }}
               >
-                <div className="flex items-start gap-3">
-                  <div
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[1rem] text-sm font-black !text-white"
-                    style={{
-                      background: `linear-gradient(135deg, ${voucher.color}, ${voucher.color}bb)`,
-                    }}
-                  >
-                    {voucher.logo}
-                  </div>
+                <div className="flex items-center gap-3">
+                  <VoucherLogoBadge
+                    logo={voucher.logo}
+                    brand={voucher.brand}
+                    color={voucher.color}
+                    className="h-12 w-12 shrink-0"
+                    grandPrize={grandPrize}
+                  />
                   <div className="min-w-0 flex-1">
                     <div className="mb-1 flex items-center gap-2">
                       <span
-                        className="truncate text-[12px] font-semibold"
+                        className="truncate text-[13px] font-semibold"
                         style={{ color: voucher.color }}
                       >
                         {voucher.brand}
                       </span>
                       {voucher.isGrand ? (
-                        <span className="rounded-full bg-[#fce7f3] px-2 py-0.5 text-[10px] font-semibold text-[#be185d]">
-                          Grand prize
+                        <span className="beauty-grand-prize-badge truncate rounded-full px-2 py-0.5 text-[10px] font-semibold">
+                          Giải đặc biệt
                         </span>
                       ) : null}
                     </div>
-                    <div className="text-[14px] font-bold text-[#241629]">{voucher.discount}</div>
-                    <div className="mt-1 text-[11px] leading-5 text-[#7a7280]">{voucher.desc}</div>
+                    <div className="truncate text-[17px] font-black leading-tight text-[#241629]">
+                      {voucher.discount}
+                    </div>
+                    <div className="mt-1 truncate text-[12px] text-[#7a7280]">{voucher.desc}</div>
                   </div>
-                  <div className="shrink-0 text-right">
+                  <div className="shrink-0">
                     {redeemed ? (
                       <button
                         type="button"
                         onClick={() => onOpenVoucher(voucher)}
-                        className="rounded-full bg-[#ecfdf3] px-3 py-2 text-[11px] font-semibold text-[#15803d]"
+                        className="min-w-[82px] rounded-[0.95rem] bg-[#ecfdf3] px-3.5 py-1 text-center text-[13px] font-bold text-[#15803d]"
                       >
-                        Xem ma
+                        Đã nhận
                       </button>
                     ) : voucher.isGrand ? (
-                      <div className="rounded-full bg-[#fff2cc] px-3 py-2 text-[11px] font-bold text-[#9a6700]">
-                        100%
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => onRedeemVoucher(voucher)}
+                        className="beauty-grand-prize-button min-w-[82px] rounded-[0.95rem] px-3.5 py-1 text-center text-[13px] font-bold !text-white"
+                      >
+                        Nhận
+                      </button>
                     ) : (
                       <button
                         type="button"
                         onClick={() => onRedeemVoucher(voucher)}
                         disabled={!canAfford}
-                        className="rounded-full px-3 py-2 text-[11px] font-semibold disabled:cursor-not-allowed disabled:bg-[#f1edf2] disabled:text-[#a69ba8]"
+                        className="min-w-[82px] rounded-[0.95rem] px-3.5 py-1 text-center text-[13px] font-bold disabled:cursor-not-allowed disabled:bg-[#f1edf2] disabled:text-[#a69ba8]"
                         style={
                           canAfford
                             ? {
@@ -673,34 +681,32 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
         </div>
       ) : (
         <div className="space-y-3">
-          {FREE_VOUCHERS.map((voucher) => {
+          {freeVouchers.map((voucher) => {
             const claimed = claimedFreeSet.has(voucher.id);
             return (
               <button
                 key={voucher.id}
                 type="button"
                 onClick={() => (claimed ? onOpenVoucher(voucher) : onClaimVoucher(voucher))}
-                className="flex w-full items-start gap-3 rounded-[1.1rem] border border-[#eadfd2] bg-white p-3.5 text-left shadow-[0_10px_22px_rgba(184,134,11,0.05)]"
+                className="flex w-full items-center gap-3 rounded-[1.25rem] border border-[#eadfd2] bg-white p-3.5 text-left shadow-[0_10px_22px_rgba(184,134,11,0.05)]"
               >
-                <div
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[1rem] text-sm font-black !text-white"
-                  style={{
-                    background: `linear-gradient(135deg, ${voucher.color}, ${voucher.color}bb)`,
-                  }}
-                >
-                  {voucher.logo}
-                </div>
+                <VoucherLogoBadge
+                  logo={voucher.logo}
+                  brand={voucher.brand}
+                  color={voucher.color}
+                  className="h-12 w-12 shrink-0"
+                />
                 <div className="min-w-0 flex-1">
-                  <div className="text-[12px] font-semibold" style={{ color: voucher.color }}>
+                  <div className="text-[13px] font-semibold" style={{ color: voucher.color }}>
                     {voucher.brand}
                   </div>
-                  <div className="mt-0.5 text-[14px] font-bold text-[#241629]">
+                  <div className="truncate text-[17px] font-black leading-tight text-[#241629]">
                     {voucher.discount}
                   </div>
-                  <div className="mt-1 text-[11px] leading-5 text-[#7a7280]">{voucher.desc}</div>
+                  <div className="mt-1 truncate text-[12px] text-[#7a7280]">{voucher.desc}</div>
                 </div>
                 <div
-                  className={`shrink-0 rounded-full px-3 py-2 text-[11px] font-semibold ${claimed ? 'bg-[#ecfdf3] text-[#15803d]' : '!text-white'}`}
+                  className={`shrink-0 rounded-[0.95rem] px-3.5 py-1 text-center text-[13px] font-bold ${claimed ? 'bg-[#ecfdf3] text-[#15803d]' : '!text-white'}`}
                   style={
                     claimed
                       ? undefined
@@ -709,7 +715,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                         }
                   }
                 >
-                  {claimed ? 'Da nhan' : 'Nhan ma'}
+                  {claimed ? 'Đã nhận' : 'Nhận'}
                 </div>
               </button>
             );
@@ -744,7 +750,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                 Con lai
               </div>
               <div className="mt-1 text-[15px] font-black text-[#db2777]">
-                {VOTE_CATEGORIES.length - votedCount}
+                {voteCategories.length - votedCount}
               </div>
             </div>
             <div className="rounded-[0.95rem] bg-white px-3 py-3 text-center">
@@ -752,7 +758,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                 Hang muc
               </div>
               <div className="mt-1 text-[15px] font-black text-[#8b5cf6]">
-                {VOTE_CATEGORIES.length}
+                {voteCategories.length}
               </div>
             </div>
           </div>
@@ -762,7 +768,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
           <input
             value={voteQuery}
             onChange={(event) => onVoteQueryChange(event.target.value)}
-            placeholder="Tim nhan hang..."
+            placeholder="Tim the loai, san pham..."
             className="w-full rounded-[1rem] border border-[#eadfd2] bg-white px-10 py-3 text-sm text-[#241629] placeholder:text-[#a69ba8]"
           />
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2" />
@@ -778,15 +784,28 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
         </div>
 
         <div className="space-y-3">
-          {VOTE_CATEGORIES.map((category) => {
+          {voteCategories.length === 0 ? (
+            <div className="rounded-[1.1rem] border border-dashed border-[#eadfd2] bg-white px-4 py-6 text-center">
+              <div className="text-sm font-semibold text-[#241629]">Chua co hang muc binh chon</div>
+              <div className="mt-1 text-[11px] text-[#8a7e8b]">
+                Admin can tao the loai va ung vien trong trang quan tri.
+              </div>
+            </div>
+          ) : null}
+
+          {voteCategories.map((category) => {
             const filteredBrands = query
-              ? category.brands.filter((brand) => normalizeQuery(brand.name).includes(query))
+              ? category.brands.filter(
+                  (brand) =>
+                    normalizeQuery(brand.name).includes(query) ||
+                    normalizeQuery(brand.product ?? '').includes(query)
+                )
               : category.brands;
             if (filteredBrands.length === 0) return null;
             const selectedId = votes[category.id];
             const selectedBrandName = category.brands.find(
               (brand) => brand.id === selectedId
-            )?.name;
+            );
             return (
               <div
                 key={category.id}
@@ -804,7 +823,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                       </span>
                     </div>
                     <div className="text-[11px] leading-5 text-[#7a7280]">
-                      {selectedBrandName ? `Da chon: ${selectedBrandName}` : category.desc}
+                      {selectedBrandName
+                        ? `Da chon: ${selectedBrandName.product || selectedBrandName.name}`
+                        : category.desc}
                     </div>
                   </div>
                   <div
@@ -836,10 +857,14 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                             className={`truncate text-[13px] font-semibold ${selected ? '' : 'text-[#241629]'}`}
                             style={selected ? { color: category.color } : undefined}
                           >
-                            {brand.name}
+                            {brand.product || brand.name}
                           </div>
                           <div className="mt-0.5 text-[11px] text-[#8a7e8b]">
-                            {selected ? 'Dang la lua chon hien tai' : 'Bam de xem va vote'}
+                            {brand.product && brand.product !== brand.name
+                              ? brand.name
+                              : selected
+                                ? 'Dang la lua chon hien tai'
+                                : 'Bam de xem va vote'}
                           </div>
                         </div>
                         <div
