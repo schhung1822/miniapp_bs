@@ -12,9 +12,7 @@ import {
 import { nativeStorage, openChat, showOAWidget } from 'zmp-sdk/apis';
 
 import {
-  BPOINT_VOUCHERS,
   CHECKIN_ZONES,
-  FREE_VOUCHERS,
   MILESTONES,
   ONBOARDING_SLIDES,
   TIERS,
@@ -60,16 +58,6 @@ const ZALO_QR_STORAGE_KEY =
   import.meta.env.VITE_ZALO_QR_STORAGE_KEY?.trim() || 'beauty-summit.qr-checkin';
 const OA_WIDGET_ID = 'beautySummitOaWidget';
 const BEAUTY_TABS: readonly BeautyTab[] = ['missions', 'vouchers', 'vote', 'profile'];
-const DEFAULT_BPOINT_VOUCHERS: Voucher[] = BPOINT_VOUCHERS.map((voucher) => ({
-  ...voucher,
-  kind: 'bpoint',
-  isActive: true,
-}));
-const DEFAULT_FREE_VOUCHERS: Voucher[] = FREE_VOUCHERS.map((voucher) => ({
-  ...voucher,
-  kind: 'free',
-  isActive: true,
-}));
 
 const isBeautyTab = (value: string | null): value is BeautyTab =>
   Boolean(value && BEAUTY_TABS.includes(value as BeautyTab));
@@ -490,8 +478,8 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const [claimedFreeVoucherIds, setClaimedFreeVoucherIds] = React.useState<string[]>([]);
   const [redeemedVoucherIds, setRedeemedVoucherIds] = React.useState<string[]>([]);
   const [spentPoints, setSpentPoints] = React.useState<number>(0);
-  const [bpointVouchers, setBpointVouchers] = React.useState<Voucher[]>(DEFAULT_BPOINT_VOUCHERS);
-  const [freeVouchers, setFreeVouchers] = React.useState<Voucher[]>(DEFAULT_FREE_VOUCHERS);
+  const [bpointVouchers, setBpointVouchers] = React.useState<Voucher[]>([]);
+  const [freeVouchers, setFreeVouchers] = React.useState<Voucher[]>([]);
   const [voteCategories, setVoteCategories] = React.useState<VoteCategory[]>(VOTE_CATEGORIES);
   const [claimedMilestonePcts, setClaimedMilestonePcts] = React.useState<number[]>([]);
   const [votes, setVotes] = React.useState<Record<string, string>>({});

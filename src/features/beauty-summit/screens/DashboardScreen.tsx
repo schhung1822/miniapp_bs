@@ -735,19 +735,19 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
             <div className="text-base font-bold text-[#241629]">Vote nhanh</div>
           </div>
           <div className="text-sm leading-6 text-[#6f6572]">
-            Chon 1 ung vien trong moi hang muc. Giao dien nay uu tien thao tac nhanh, neu can xem
-            chi tiet thi bam vao thuong hieu.
+            Chọn 1 ứng viên trong mọi hàng mục. Giao diện này ưu tiên thao tác nhanh, nếu cần xem
+            chi tiết thì bấm vào thương hiệu.
           </div>
           <div className="mt-4 grid grid-cols-3 gap-2">
             <div className="rounded-[0.95rem] bg-white px-3 py-3 text-center">
               <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a7e8b]">
-                Da vote
+                Đã vote
               </div>
               <div className="mt-1 text-[15px] font-black text-[#241629]">{votedCount}</div>
             </div>
             <div className="rounded-[0.95rem] bg-white px-3 py-3 text-center">
               <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a7e8b]">
-                Con lai
+                Còn lại
               </div>
               <div className="mt-1 text-[15px] font-black text-[#db2777]">
                 {voteCategories.length - votedCount}
@@ -755,7 +755,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
             </div>
             <div className="rounded-[0.95rem] bg-white px-3 py-3 text-center">
               <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a7e8b]">
-                Hang muc
+                Hàng mục
               </div>
               <div className="mt-1 text-[15px] font-black text-[#8b5cf6]">
                 {voteCategories.length}
@@ -768,7 +768,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
           <input
             value={voteQuery}
             onChange={(event) => onVoteQueryChange(event.target.value)}
-            placeholder="Tim the loai, san pham..."
+            placeholder="Tìm theo loại, sản phẩm..."
             className="w-full rounded-[1rem] border border-[#eadfd2] bg-white px-10 py-3 text-sm text-[#241629] placeholder:text-[#a69ba8]"
           />
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2" />
@@ -786,9 +786,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
         <div className="space-y-3">
           {voteCategories.length === 0 ? (
             <div className="rounded-[1.1rem] border border-dashed border-[#eadfd2] bg-white px-4 py-6 text-center">
-              <div className="text-sm font-semibold text-[#241629]">Chua co hang muc binh chon</div>
+              <div className="text-sm font-semibold text-[#241629]">Chưa có hàng mục bình chọn</div>
               <div className="mt-1 text-[11px] text-[#8a7e8b]">
-                Admin can tao the loai va ung vien trong trang quan tri.
+                Admin có thể tạo thể loại và ứng viên trong trang quản trị.
               </div>
             </div>
           ) : null}
@@ -824,7 +824,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                     </div>
                     <div className="text-[11px] leading-5 text-[#7a7280]">
                       {selectedBrandName
-                        ? `Da chon: ${selectedBrandName.product || selectedBrandName.name}`
+                        ? `Đã chọn: ${selectedBrandName.product || selectedBrandName.name}`
                         : category.desc}
                     </div>
                   </div>
@@ -835,7 +835,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                       color: selectedBrandName ? category.color : '#8b8790',
                     }}
                   >
-                    {selectedBrandName ? 'Da vote' : `${category.brands.length} ung vien`}
+                    {selectedBrandName ? 'Đã vote' : `${category.brands.length} ứng viên`}
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -863,8 +863,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                             {brand.product && brand.product !== brand.name
                               ? brand.name
                               : selected
-                                ? 'Dang la lua chon hien tai'
-                                : 'Bam de xem va vote'}
+                                ? 'Đang là lựa chọn hiện tại'
+                                : 'Bấm để xem và vote'}
                           </div>
                         </div>
                         <div
@@ -873,7 +873,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                             selected ? { background: category.color, color: '#fff' } : undefined
                           }
                         >
-                          {selected ? 'Da chon' : 'Xem'}
+                          {selected ? 'Đã chọn' : 'Xem'}
                         </div>
                       </button>
                     );
