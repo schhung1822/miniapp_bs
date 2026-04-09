@@ -911,7 +911,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
             <input
               value={voteQuery}
               onChange={(event) => onVoteQueryChange(event.target.value)}
-              placeholder="Tim the loai hoac san pham..."
+              placeholder="Tìm thể loại hoặc sản phẩm..."
               className="w-full rounded-[1rem] border border-[#eadfd2] bg-white px-4 py-3 text-sm text-[#241629] placeholder:text-[#a69ba8]"
             />
           </div>
@@ -919,9 +919,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
 
         {voteCategories.length === 0 ? (
           <div className="rounded-[1.1rem] border border-dashed border-[#eadfd2] bg-white px-4 py-6 text-center">
-            <div className="text-sm font-semibold text-[#241629]">Chua co du lieu binh chon</div>
+            <div className="text-sm font-semibold text-[#241629]">Chưa có dữ liệu bình chọn</div>
             <div className="mt-1 text-[11px] text-[#8a7e8b]">
-              Admin can tao vote trong trang quan tri.
+              Admin cần tạo vote trong trang quản trị.
             </div>
           </div>
         ) : (
@@ -930,7 +930,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-[1.05rem] font-black text-[#2f3b57]">
                   <TrophyIcon size={18} color="#f5b700" />
-                  Top 3 Dan Dau
+                  Top 3 Dẫn đầu
                 </div>
                 <div className="space-y-3">
                   {filteredTopThree.map((item, index) =>
@@ -943,7 +943,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-[1.05rem] font-black text-[#2f3b57]">
                 <VoteIcon color="#6366f1" size={18} />
-                Tat Ca Nhan Hang
+                Tất Cả Nhãn Hàng
               </div>
               <div className="space-y-3">
                 {filteredVoteCards.length > 0 ? (
