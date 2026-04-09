@@ -38,7 +38,7 @@ const PolicyDrawer: React.FC<PolicyDrawerProps> = ({ open, onClose }) => {
           </button>
         </div>
 
-        <div className="beauty-scroll max-h-[calc(82vh-6.5rem)] space-y-3 overflow-y-auto pr-1">
+        <div className="beauty-scroll max-h-[calc(82vh-6.5rem)] space-y-3 overflow-y-auto">
           {POLICY_SECTIONS.map((section: PolicySection) => {
             const tone = getToneClasses(section.tone);
             const bulletColor =
@@ -58,10 +58,10 @@ const PolicyDrawer: React.FC<PolicyDrawerProps> = ({ open, onClose }) => {
                 className="overflow-hidden rounded-[1.1rem] border border-white/6 bg-white/[0.03]"
               >
                 <div
-                  className={`flex items-center gap-2 border-b border-white/6 px-4 py-3 text-sm font-bold ${tone}`}
+                  className={`flex items-center gap-2 border-b border-white/6 px-4 py-3 text-sm font-bold`}
                 >
                   <PolicyIcon color="currentColor" />
-                  {section.title}
+                  <div className={`${tone}`}>{section.title}</div>
                 </div>
                 <div className="space-y-3 px-4 py-4">
                   {section.items.map((item) => (

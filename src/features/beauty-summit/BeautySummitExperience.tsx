@@ -16,7 +16,6 @@ import {
   MILESTONES,
   ONBOARDING_SLIDES,
   TIERS,
-  VOTE_CATEGORIES,
   buildMissions,
 } from '@/features/beauty-summit/data';
 import type { HeaderProps } from '@/components/Header';
@@ -480,7 +479,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const [spentPoints, setSpentPoints] = React.useState<number>(0);
   const [bpointVouchers, setBpointVouchers] = React.useState<Voucher[]>([]);
   const [freeVouchers, setFreeVouchers] = React.useState<Voucher[]>([]);
-  const [voteCategories, setVoteCategories] = React.useState<VoteCategory[]>(VOTE_CATEGORIES);
+  const [voteCategories, setVoteCategories] = React.useState<VoteCategory[]>([]);
   const [claimedMilestonePcts, setClaimedMilestonePcts] = React.useState<number[]>([]);
   const [votes, setVotes] = React.useState<Record<string, string>>({});
   const [voteQuery, setVoteQuery] = React.useState<string>('');
@@ -826,7 +825,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       applyRewardState(rewards.state);
       setBpointVouchers(rewards.vouchers.bpoint);
       setFreeVouchers(rewards.vouchers.free);
-      setVoteCategories(rewards.voteCategories.length > 0 ? rewards.voteCategories : VOTE_CATEGORIES);
+      setVoteCategories(rewards.voteCategories);
     } catch (error) {
       if (shouldRetryTicketFetchAfterSync(error)) {
         try {
@@ -835,9 +834,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           applyRewardState(retryRewards.state);
           setBpointVouchers(retryRewards.vouchers.bpoint);
           setFreeVouchers(retryRewards.vouchers.free);
-          setVoteCategories(
-            retryRewards.voteCategories.length > 0 ? retryRewards.voteCategories : VOTE_CATEGORIES,
-          );
+          setVoteCategories(retryRewards.voteCategories);
           return;
         } catch (retryError) {
           console.warn('[BeautySummit] reward state retry after sync failed:', retryError);
@@ -965,7 +962,11 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
         await runRewardStateUpdate('toggle-vote', {
           categoryId: category.id,
           brandId: brand.id,
+          orderCode,
         });
+        if (zaloUserId && zaloPhone) {
+          await loadRewardBundle(zaloUserId, zaloPhone);
+        }
         showToast(`Da cap nhat vote cho ${brand.name}`);
       } catch (error) {
         showToast(readApiErrorMessage(error, 'Khong the cap nhat vote'));

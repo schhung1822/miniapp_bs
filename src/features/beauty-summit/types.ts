@@ -49,6 +49,10 @@ export interface VoteBrand {
   product?: string;
   summary?: string;
   link?: string;
+  logo?: string;
+  voteCount?: number;
+  rank?: number;
+  progressPct?: number;
 }
 
 export interface VoteCategory {
@@ -56,6 +60,7 @@ export interface VoteCategory {
   title: string;
   desc: string;
   color: string;
+  totalVotes?: number;
   brands: VoteBrand[];
 }
 

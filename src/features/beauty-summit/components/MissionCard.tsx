@@ -109,7 +109,7 @@ const MissionCard: React.FC<MissionCardProps> = ({
               completed ? 'bg-[#dff8e9] text-[#16a05d]' : 'bg-[#f7f0f7] text-[#8c7990]'
             }`}
           >
-            {completed ? 'Da xong' : actionLabel}
+            {completed ? 'Đã xong' : actionLabel}
           </span>
         </div>
         <div className="truncate text-[11px] font-normal text-[#7a7280]">{mission.desc}</div>

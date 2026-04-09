@@ -26,9 +26,14 @@ const BrandDetailDrawer: React.FC<BrandDetailDrawerProps> = ({
   const summary =
     brand.summary ||
     `${displayTitle} dang duoc de cu trong hang muc "${category.title}". Ban co the chon hoac huy binh chon ngay tai day.`;
-  const seed = brand.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const voteCount = (seed % 800) + 120 + (voted ? 1 : 0);
-  const percentage = Math.min(98, Math.round((voteCount / (voteCount + 220)) * 100));
+  const voteCount = brand.voteCount ?? 0;
+  const rank = brand.rank ?? Math.max(category.brands.findIndex((item) => item.id === brand.id) + 1, 1);
+  const maxCategoryVote = category.brands.reduce(
+    (max, item) => Math.max(max, item.voteCount ?? 0),
+    0
+  );
+  const percentage =
+    brand.progressPct ?? (maxCategoryVote > 0 ? Math.max(12, Math.round((voteCount / maxCategoryVote) * 100)) : 0);
 
   return (
     <div className="absolute inset-0 z-40 bg-black/55 backdrop-blur-sm">
@@ -36,7 +41,26 @@ const BrandDetailDrawer: React.FC<BrandDetailDrawerProps> = ({
         <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-[#e3d8df]" />
 
         <div className="mb-5 flex items-start justify-between gap-4">
-          <div className="min-w-0">
+          <div className="flex min-w-0 items-start gap-3">
+            {brand.logo || brand.link ? (
+              <img
+                src={brand.logo || brand.link}
+                alt={displayTitle}
+                className="h-16 w-16 shrink-0 rounded-[1rem] object-cover shadow-[0_10px_24px_rgba(36,22,41,0.12)]"
+              />
+            ) : (
+              <div
+                className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[1rem] text-lg font-black text-white shadow-[0_10px_24px_rgba(36,22,41,0.12)]"
+                style={{ background: `linear-gradient(135deg, ${category.color}, ${category.color}bb)` }}
+              >
+                {displayTitle
+                  .split(/\s+/)
+                  .slice(0, 2)
+                  .map((part) => part.charAt(0).toUpperCase())
+                  .join('')}
+              </div>
+            )}
+            <div className="min-w-0">
             <div
               className="mb-2 inline-flex rounded-full border px-3 py-1 text-[11px] font-semibold"
               style={{
@@ -48,9 +72,8 @@ const BrandDetailDrawer: React.FC<BrandDetailDrawerProps> = ({
               {category.title}
             </div>
             <div className="truncate text-[1.2rem] font-black text-[#241629]">{displayTitle}</div>
-            {brand.product && brand.product !== brand.name ? (
-              <div className="mt-1 text-[12px] font-medium text-[#8a7e8b]">{brand.name}</div>
-            ) : null}
+            <div className="mt-1 text-[12px] font-medium text-[#8a7e8b]">Vote backend synced</div>
+            </div>
           </div>
           <button
             type="button"
@@ -70,7 +93,7 @@ const BrandDetailDrawer: React.FC<BrandDetailDrawerProps> = ({
           </div>
           <div className="rounded-[1rem] border border-[#eadfd2] bg-white px-3 py-3.5 text-center">
             <div className="text-lg font-black text-[#241629]">
-              #{Math.floor(voteCount / 100) + 1}
+              #{rank}
             </div>
             <div className="mt-1 text-[11px] text-[#8a7e8b]">Xep hang</div>
           </div>

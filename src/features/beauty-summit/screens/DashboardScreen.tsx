@@ -19,8 +19,9 @@ import {
   ClockIcon,
   GiftIcon,
   QrIcon,
-  SearchIcon,
   StarIcon,
+  ThumbsUpIcon,
+  TrophyIcon,
   VoteIcon,
 } from '@/features/beauty-summit/icons';
 import BrandDetailDrawer from '@/features/beauty-summit/components/BrandDetailDrawer';
@@ -110,22 +111,35 @@ const phaseItems: Array<{
 }> = [
   {
     key: 'before',
-    label: 'Truoc su kien',
+    label: 'Trước sự kiện',
+    sub: '.',
     renderIcon: (active) => <ClockIcon size={18} color={active ? '#b8860b' : '#9a8f9d'} />,
   },
   {
     key: 'day1',
-    label: 'Ngay 1',
+    label: 'Ngày 1',
     sub: '19/06/2026',
     renderIcon: (active) => <CalendarIcon size={18} color={active ? '#b8860b' : '#9a8f9d'} />,
   },
   {
     key: 'day2',
-    label: 'Ngay 2',
+    label: 'Ngày 2',
     sub: '20/06/2026',
     renderIcon: (active) => <CalendarIcon size={18} color={active ? '#b8860b' : '#9a8f9d'} />,
   },
 ];
+
+const VOTE_IMAGE_PATTERN = /^(data:image\/|https?:\/\/|\/)/i;
+
+const isVoteImage = (value?: string): boolean => VOTE_IMAGE_PATTERN.test(String(value ?? '').trim());
+
+const buildVoteFallback = (value: string): string =>
+  value
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join('');
 
 const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
   const {
@@ -239,6 +253,30 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
     () => freeVouchers.filter((voucher) => claimedFreeSet.has(voucher.id)).length,
     [claimedFreeSet, freeVouchers]
   );
+  const voteCards = React.useMemo(() => {
+    const cards = voteCategories.flatMap((category) =>
+      category.brands.map((brand) => ({
+        category,
+        brand,
+        selected: votes[category.id] === brand.id,
+        voteCount: brand.voteCount ?? 0,
+        rank: brand.rank ?? 0,
+      }))
+    );
+
+    return cards.sort(
+      (left, right) =>
+        left.rank - right.rank ||
+        right.voteCount - left.voteCount ||
+        (left.brand.product || left.brand.name).localeCompare(right.brand.product || right.brand.name)
+    );
+  }, [voteCategories, votes]);
+  const overallVoteCount = React.useMemo(
+    () => voteCategories.reduce((sum, category) => sum + (category.totalVotes ?? 0), 0),
+    [voteCategories]
+  );
+  const topThreeVotes = React.useMemo(() => voteCards.slice(0, 3), [voteCards]);
+  const topVoteCount = topThreeVotes[0]?.voteCount ?? voteCards[0]?.voteCount ?? 0;
 
   React.useEffect(() => {
     if (previousTabRef.current !== activeTab) {
@@ -407,9 +445,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
     <>
       <div className="mb-4 grid grid-cols-3 gap-2">
         {[
-          { label: 'Da xong', value: completedIds.length, tone: 'bg-[#fef3c7] text-[#9a6700]' },
+          { label: 'Đã xong', value: completedIds.length, tone: 'bg-[#fef3c7] text-[#9a6700]' },
           {
-            label: 'Dang mo',
+            label: 'Đang mở',
             value: phaseMissionsPending.length,
             tone: 'bg-[#fce7f3] text-[#b83280]',
           },
@@ -432,7 +470,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
       <div className="mb-4 rounded-[1.2rem] border border-[#eadfd2] bg-white p-3.5 shadow-[0_10px_24px_rgba(184,134,11,0.06)]">
         <div className="mb-3 flex items-center justify-between">
           <div>
-            <div className="text-[12px] font-semibold text-[#8a7e8b]">Giai doan nhiem vu</div>
+            <div className="text-[12px] font-semibold text-[#8a7e8b]">Giai đoạn nhiệm vụ</div>
             <div className="mt-1 text-[14px] font-bold text-[#241629]">
               {phaseItems.find((item) => item.key === activePhase)?.label}
             </div>
@@ -497,10 +535,10 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
         ) : (
           <div className="rounded-[1.15rem] border border-dashed border-[#e8d9c0] bg-[#fffdf9] px-4 py-5 text-center">
             <div className="text-[13px] font-semibold text-[#241629]">
-              Khong con nhiem vu dang mo
+              Không còn nhiệm vụ đang mở
             </div>
             <div className="mt-1 text-[11px] text-[#8a7e8b]">
-              Ban da hoan thanh het nhiem vu trong giai doan nay.
+              Bạn đã hoàn thành hết nhiệm vụ trong giai đoạn này.
             </div>
           </div>
         )}
@@ -509,9 +547,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
       {phaseMissionsDone.length > 0 ? (
         <div className="mt-5">
           <div className="mb-3 flex items-center justify-between">
-            <div className="text-[13px] font-bold text-[#241629]">Da hoan thanh</div>
+            <div className="text-[13px] font-bold text-[#241629]">Đã hoàn thành</div>
             <div className="rounded-full bg-[#ecfdf3] px-2.5 py-1 text-[10px] font-semibold text-[#15803d]">
-              {phaseMissionsDone.length} muc
+              {phaseMissionsDone.length} mục
             </div>
           </div>
           <div className="space-y-2.5">
@@ -542,7 +580,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
               <span className="pb-1 text-[12px] font-semibold text-[#b8860b]">BP khả dụng</span>
             </div>
           </div>
-          <div className="rounded-full bg-[#fff2cc] px-3 py-1.5 text-[11px] font-black text-[#9a6700]">
+          <div className="rounded-full bg-[#fff2cc] px-3 py-1.5 text-[11px] text-[#9a6700]">
             {redeemableVoucherCount} có thể đổi
           </div>
         </div>
@@ -727,162 +765,201 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
 
   const renderVoteTab = (): React.ReactNode => {
     const query = normalizeQuery(voteQuery);
-    return (
-      <div className="space-y-4">
-        <div className="rounded-[1.2rem] border border-[#eadfd2] bg-[linear-gradient(145deg,#fffdf8,#fff6ff)] p-4 shadow-[0_10px_24px_rgba(184,134,11,0.06)]">
-          <div className="mb-2 flex items-center gap-2">
-            <VoteIcon color="#8b5cf6" size={20} />
-            <div className="text-base font-bold text-[#241629]">Vote nhanh</div>
-          </div>
-          <div className="text-sm leading-6 text-[#6f6572]">
-            Chọn 1 ứng viên trong mọi hàng mục. Giao diện này ưu tiên thao tác nhanh, nếu cần xem
-            chi tiết thì bấm vào thương hiệu.
-          </div>
-          <div className="mt-4 grid grid-cols-3 gap-2">
-            <div className="rounded-[0.95rem] bg-white px-3 py-3 text-center">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a7e8b]">
-                Đã vote
-              </div>
-              <div className="mt-1 text-[15px] font-black text-[#241629]">{votedCount}</div>
-            </div>
-            <div className="rounded-[0.95rem] bg-white px-3 py-3 text-center">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a7e8b]">
-                Còn lại
-              </div>
-              <div className="mt-1 text-[15px] font-black text-[#db2777]">
-                {voteCategories.length - votedCount}
-              </div>
-            </div>
-            <div className="rounded-[0.95rem] bg-white px-3 py-3 text-center">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a7e8b]">
-                Hàng mục
-              </div>
-              <div className="mt-1 text-[15px] font-black text-[#8b5cf6]">
-                {voteCategories.length}
-              </div>
-            </div>
-          </div>
-        </div>
+    const filteredVoteCards = query
+      ? voteCards.filter(
+          ({ category, brand }) =>
+            normalizeQuery(category.title).includes(query) ||
+            normalizeQuery(brand.product ?? brand.name).includes(query)
+        )
+      : voteCards;
+    const filteredTopThree = topThreeVotes.filter(
+      ({ category, brand }) =>
+        !query ||
+        normalizeQuery(category.title).includes(query) ||
+        normalizeQuery(brand.product ?? brand.name).includes(query)
+    );
 
-        <div className="relative">
-          <input
-            value={voteQuery}
-            onChange={(event) => onVoteQueryChange(event.target.value)}
-            placeholder="Tìm theo loại, sản phẩm..."
-            className="w-full rounded-[1rem] border border-[#eadfd2] bg-white px-10 py-3 text-sm text-[#241629] placeholder:text-[#a69ba8]"
-          />
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2" />
-          {voteQuery ? (
-            <button
-              type="button"
-              onClick={() => onVoteQueryChange('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-[#f4edf2] px-2 py-1 text-xs text-[#8b8790]"
+    const renderVoteItem = (
+      item: (typeof voteCards)[number],
+      options?: {
+        highlight?: boolean;
+        medalNumber?: number;
+      }
+    ): React.ReactNode => {
+      const { category, brand, selected, voteCount, rank } = item;
+      const title = brand.product || brand.name;
+      const progressPct =
+        brand.progressPct ?? (topVoteCount > 0 ? Math.max(12, Math.round((voteCount / topVoteCount) * 100)) : 0);
+
+      return (
+        <div
+          key={`${category.id}-${brand.id}-${options?.highlight ? 'top' : 'all'}`}
+          className="relative"
+        >
+          {options?.medalNumber ? (
+            <div
+              className={`absolute -left-2 -top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full text-lg font-black text-white shadow-[0_10px_20px_rgba(36,22,41,0.2)] ${
+                options.medalNumber === 1
+                  ? 'bg-[linear-gradient(135deg,#f5b700,#d68b00)]'
+                  : options.medalNumber === 2
+                    ? 'bg-[linear-gradient(135deg,#cdd4e3,#8e99b0)]'
+                    : 'bg-[linear-gradient(135deg,#d97706,#92400e)]'
+              }`}
             >
-              x
-            </button>
-          ) : null}
-        </div>
-
-        <div className="space-y-3">
-          {voteCategories.length === 0 ? (
-            <div className="rounded-[1.1rem] border border-dashed border-[#eadfd2] bg-white px-4 py-6 text-center">
-              <div className="text-sm font-semibold text-[#241629]">Chưa có hàng mục bình chọn</div>
-              <div className="mt-1 text-[11px] text-[#8a7e8b]">
-                Admin có thể tạo thể loại và ứng viên trong trang quản trị.
-              </div>
+              {options.medalNumber}
             </div>
           ) : null}
 
-          {voteCategories.map((category) => {
-            const filteredBrands = query
-              ? category.brands.filter(
-                  (brand) =>
-                    normalizeQuery(brand.name).includes(query) ||
-                    normalizeQuery(brand.product ?? '').includes(query)
-                )
-              : category.brands;
-            if (filteredBrands.length === 0) return null;
-            const selectedId = votes[category.id];
-            const selectedBrandName = category.brands.find(
-              (brand) => brand.id === selectedId
-            );
-            return (
-              <div
-                key={category.id}
-                className="rounded-[1.1rem] border border-[#eadfd2] bg-white p-3.5 shadow-[0_10px_22px_rgba(184,134,11,0.05)]"
+          <div
+            className={`overflow-hidden rounded-[1.2rem] border bg-white shadow-[0_10px_22px_rgba(91,74,117,0.08)] ${
+              options?.highlight ? 'border-[#f0c648]' : 'border-[#eadfd2]'
+            }`}
+          >
+            <div className="flex items-center gap-3 px-2.5 py-0.5">
+              <button
+                type="button"
+                onClick={() => onOpenBrand(category, brand)}
+                className="flex min-w-0 flex-1 items-center gap-3 text-left"
               >
-                <div className="mb-3 flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="mb-1 flex items-center gap-2">
-                      <span
-                        className="h-2.5 w-2.5 shrink-0 rounded-full"
-                        style={{ background: category.color }}
-                      />
-                      <span className="truncate text-sm font-bold text-[#241629]">
-                        {category.title}
-                      </span>
-                    </div>
-                    <div className="text-[11px] leading-5 text-[#7a7280]">
-                      {selectedBrandName
-                        ? `Đã chọn: ${selectedBrandName.product || selectedBrandName.name}`
-                        : category.desc}
-                    </div>
-                  </div>
+                {isVoteImage(brand.logo || brand.link) ? (
+                  <img
+                    src={brand.logo || brand.link}
+                    alt={title}
+                    className="h-[58px] w-[58px] shrink-0 rounded-[0.9rem] object-cover shadow-[0_6px_14px_rgba(36,22,41,0.1)]"
+                  />
+                ) : (
                   <div
-                    className="shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-semibold"
+                    className="flex h-[58px] w-[58px] shrink-0 items-center justify-center rounded-[0.9rem] text-[1.2rem] font-black text-white shadow-[0_6px_14px_rgba(36,22,41,0.1)]"
                     style={{
-                      background: selectedBrandName ? `${category.color}18` : '#f4edf2',
-                      color: selectedBrandName ? category.color : '#8b8790',
+                      background: `linear-gradient(135deg, ${category.color}, ${category.color}bb)`,
                     }}
                   >
-                    {selectedBrandName ? 'Đã vote' : `${category.brands.length} ứng viên`}
+                    {buildVoteFallback(title || 'VT')}
+                  </div>
+                )}
+
+                <div className="min-w-0">
+                  <div className="mt-1 truncate text-[0.95rem] font-black text-[#1f2937] truncate">{title}</div>
+                  <div className="inline-flex max-w-full rounded bg-[#f4e8ff] px-1.5 py-0.5 text-[11px] font-semibold text-[#8b34ff]">
+                    <span className="truncate">{category.title}</span>
+                  </div>
+                  <div className="mt-1">
+                    <span className="font-medium me-1 text-[#111827]">{voteCount}</span>
+                    <span className="text-[11px] text-[#8a7e8b]">
+                       vote
+                    </span>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  {filteredBrands.map((brand) => {
-                    const selected = selectedId === brand.id;
-                    return (
-                      <button
-                        key={brand.id}
-                        type="button"
-                        onClick={() => onOpenBrand(category, brand)}
-                        className="flex w-full items-center justify-between gap-3 rounded-[0.95rem] border px-3 py-2.5 text-left transition"
-                        style={{
-                          borderColor: selected ? category.color : 'rgba(184,134,11,0.14)',
-                          background: selected ? `${category.color}12` : '#fffdfa',
-                        }}
-                      >
-                        <div className="min-w-0">
-                          <div
-                            className={`truncate text-[13px] font-semibold ${selected ? '' : 'text-[#241629]'}`}
-                            style={selected ? { color: category.color } : undefined}
-                          >
-                            {brand.product || brand.name}
-                          </div>
-                          <div className="mt-0.5 text-[11px] text-[#8a7e8b]">
-                            {brand.product && brand.product !== brand.name
-                              ? brand.name
-                              : selected
-                                ? 'Đang là lựa chọn hiện tại'
-                                : 'Bấm để xem và vote'}
-                          </div>
-                        </div>
-                        <div
-                          className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold ${selected ? '' : 'bg-[#f4edf2] text-[#8b8790]'}`}
-                          style={
-                            selected ? { background: category.color, color: '#fff' } : undefined
-                          }
-                        >
-                          {selected ? 'Đã chọn' : 'Xem'}
-                        </div>
-                      </button>
-                    );
-                  })}
+              </button>
+
+              <div className="flex shrink-0 flex-col items-end gap-2">
+                <div className="text-[0.95rem] font-semibold text-[#7d6f8a]">#{rank || '--'}</div>
+                <button
+                  type="button"
+                  onClick={() => onToggleVote(category, brand)}
+                  className={`inline-flex min-w-[82px] items-center justify-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold transition-all shadow-sm ${
+                    selected
+                      ? 'bg-gradient-to-r from-[#a855f7] to-[#ec4899] !text-white'
+                      : 'border border-[#ece7f2] bg-[#faf8fc] text-[#4a5568]'
+                  }`}
+                >
+                  <ThumbsUpIcon size={12} color={selected ? '#ffffff' : '#4a5568'} />
+                  <span>{selected ? 'Voted' : 'Vote'}</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="h-1.5 bg-[#d8dde8]">
+              <div
+                className="h-full"
+                style={{
+                  width: `${progressPct}%`,
+                  background: `linear-gradient(90deg, ${category.color}, ${category.color}cc)`,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    return (
+      <div className="space-y-5">
+        <div className="rounded-[1.45rem] border border-[#eadfd2] bg-[linear-gradient(180deg,#fffdfc_0%,#fdf7ff_100%)] p-4 shadow-[0_14px_28px_rgba(91,74,117,0.08)]">
+          <div className="">
+            <div className="flex">
+              <div className="flex items-center justify-center rounded-full w-12 h-12 bg-[linear-gradient(135deg,#f5b700,#f97316)] p-2.5 shadow-[0_12px_24px_rgba(245,183,0,0.22)]">
+                <TrophyIcon size={24} color="#ffffff" />
+              </div>
+              <div className="ms-3">
+                <div className="text-[1.5rem] pb-1 bg-[linear-gradient(135deg,#f59e0b,#d946ef)] bg-clip-text text-[1.5rem] font-black leading-none text-transparent">
+                  Bình Chọn<br/> Nhãn Hàng 2026
                 </div>
               </div>
-            );
-          })}
+            </div>
+            <div className="mt-2 text-sm font-medium text-[#7a7280]">
+              Tổng: <span className="font-black text-[#8b34ff]">{overallVoteCount}</span> vote
+            </div>
+            <div className="mt-2 text-sm leading-6 text-[#6f6572]">
+              Mỗi tài khoản chỉ được vote 1 sản phẩm duy nhất của thể loại đó.
+            </div>
+          </div>
         </div>
+
+        {voteCategories.length > 0 ? (
+          <div className="relative">
+            <input
+              value={voteQuery}
+              onChange={(event) => onVoteQueryChange(event.target.value)}
+              placeholder="Tim the loai hoac san pham..."
+              className="w-full rounded-[1rem] border border-[#eadfd2] bg-white px-4 py-3 text-sm text-[#241629] placeholder:text-[#a69ba8]"
+            />
+          </div>
+        ) : null}
+
+        {voteCategories.length === 0 ? (
+          <div className="rounded-[1.1rem] border border-dashed border-[#eadfd2] bg-white px-4 py-6 text-center">
+            <div className="text-sm font-semibold text-[#241629]">Chua co du lieu binh chon</div>
+            <div className="mt-1 text-[11px] text-[#8a7e8b]">
+              Admin can tao vote trong trang quan tri.
+            </div>
+          </div>
+        ) : (
+          <>
+            {filteredTopThree.length > 0 ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-[1.05rem] font-black text-[#2f3b57]">
+                  <TrophyIcon size={18} color="#f5b700" />
+                  Top 3 Dan Dau
+                </div>
+                <div className="space-y-3">
+                  {filteredTopThree.map((item, index) =>
+                    renderVoteItem(item, { highlight: true, medalNumber: index + 1 })
+                  )}
+                </div>
+              </div>
+            ) : null}
+
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-[1.05rem] font-black text-[#2f3b57]">
+                <VoteIcon color="#6366f1" size={18} />
+                Tat Ca Nhan Hang
+              </div>
+              <div className="space-y-3">
+                {filteredVoteCards.length > 0 ? (
+                  filteredVoteCards.map((item) => renderVoteItem(item))
+                ) : (
+                  <div className="rounded-[1.1rem] border border-dashed border-[#eadfd2] bg-white px-4 py-6 text-center">
+                    <div className="text-sm font-semibold text-[#241629]">Khong tim thay san pham phu hop</div>
+                    <div className="mt-1 text-[11px] text-[#8a7e8b]">
+                      Thu doi tu khoa tim kiem de xem danh sach vote.
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     );
   };
