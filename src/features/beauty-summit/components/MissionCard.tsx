@@ -28,14 +28,14 @@ const MissionCard: React.FC<MissionCardProps> = ({
 }) => {
   const actionLabel =
     mission.auto || mission.checkin
-      ? 'Tu dong'
+      ? 'Tự động'
       : mission.proofType === 'vote'
         ? 'Vote'
         : mission.proofType === 'image'
           ? 'Upload'
           : mission.proofType === 'survey'
-            ? 'Khao sat'
-            : 'Gui bang chung';
+            ? 'Khảo sát'
+            : 'Gửi bảng chứng';
 
   const renderIcon = (): React.ReactNode => {
     if (completed) {

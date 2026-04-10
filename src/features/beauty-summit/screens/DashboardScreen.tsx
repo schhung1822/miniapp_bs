@@ -234,6 +234,10 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
     () => freeVouchers.filter((voucher) => claimedFreeSet.has(voucher.id)).length,
     [claimedFreeSet, freeVouchers]
   );
+  const overallVoteCount = React.useMemo(
+    () => voteCategories.reduce((sum, category) => sum + (category.totalVotes ?? 0), 0),
+    [voteCategories]
+  );
   React.useEffect(() => {
     if (previousTabRef.current !== activeTab) {
       scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -329,28 +333,48 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
         <div className="flex items-start">
           {trackItems.map((item, index) => {
             const isFinal = item.pct === 100;
-            const iconColor = item.unlocked || isFinal ? '#c89d10' : '#5b5c67';
+            const claimed = Boolean(item.milestone && milestoneSet.has(item.milestone.pct));
+            const ready = Boolean(item.milestone && item.unlocked && !claimed);
+            const iconColor = claimed
+              ? '#ffffff'
+              : item.unlocked || isFinal
+                ? '#c89d10'
+                : '#5b5c67';
             const node = (
               <div className="flex w-[36px] flex-col items-center">
                 {item.milestone ? (
                   <button
                     type="button"
                     onClick={() => onOpenMilestone(item.milestone)}
-                    className={`flex h-[33px] w-[33px] items-center justify-center rounded-[0.4rem] border-2 transition ${isFinal ? 'border-dashed' : ''}`}
+                    className={`beauty-milestone-node flex h-[33px] w-[33px] items-center justify-center rounded-[0.4rem] border-2 transition ${
+                      claimed
+                        ? 'beauty-milestone-node--claimed'
+                        : ready
+                          ? 'beauty-milestone-node--ready'
+                          : ''
+                    } ${isFinal ? 'border-dashed' : ''}`}
                     style={{
-                      borderColor: item.unlocked
-                        ? '#c99b17'
-                        : isFinal
-                          ? 'rgba(201,155,23,0.55)'
-                          : '#d7ced9',
-                      background: item.unlocked
-                        ? 'rgba(255,214,102,0.24)'
-                        : isFinal
-                          ? 'rgba(255,214,102,0.12)'
-                          : '#f4f1f5',
+                      borderColor: claimed
+                        ? '#22c55e'
+                        : item.unlocked
+                          ? '#c99b17'
+                          : isFinal
+                            ? 'rgba(201,155,23,0.55)'
+                            : '#d7ced9',
+                      background: claimed
+                        ? 'linear-gradient(135deg, #34d399, #16a34a)'
+                        : item.unlocked
+                          ? 'rgba(255,214,102,0.24)'
+                          : isFinal
+                            ? 'rgba(255,214,102,0.12)'
+                            : '#f4f1f5',
                     }}
                   >
-                    <GiftIcon size={20} color={iconColor} />
+                    {claimed ? (
+                      <span className="text-[18px] leading-none !text-white">{'\u2713'}</span>
+                    ) : (
+                      <GiftIcon size={20} color={iconColor} />
+                    )}
                   </button>
                 ) : (
                   <div
@@ -368,13 +392,15 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                     </span>
                   </div>
                 )}
-                <div
-                  className="ms-1 mt-1 text-[12px] font-black"
-                  style={{ color: item.unlocked || isFinal ? '#c89d10' : '#5b5c67' }}
-                >
-                  {item.label}
+                  <div
+                    className="ms-1 mt-1 text-[12px] font-black"
+                    style={{
+                      color: claimed ? '#16a34a' : item.unlocked || isFinal ? '#c89d10' : '#5b5c67',
+                    }}
+                  >
+                    {item.label}
+                  </div>
                 </div>
-              </div>
             );
 
             if (index === trackItems.length - 1) return <div key={item.pct}>{node}</div>;
@@ -593,6 +619,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
             const redeemed = redeemedSet.has(voucher.id);
             const canAfford = availablePoints >= (voucher.cost ?? 0);
             const grandPrize = voucher.isGrand;
+            const canClaimGrandPrize = progress >= 100;
             return (
               <div
                 key={voucher.id}
@@ -645,7 +672,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                       <button
                         type="button"
                         onClick={() => onRedeemVoucher(voucher)}
-                        className="beauty-grand-prize-button min-w-[82px] rounded-[0.95rem] px-3.5 py-1 text-center text-[13px] font-bold !text-white"
+                        disabled={!canClaimGrandPrize}
+                        className="beauty-grand-prize-button min-w-[82px] rounded-[0.95rem] px-3.5 py-1 text-center text-[13px] font-bold !text-white disabled:cursor-not-allowed disabled:opacity-45"
                       >
                         Nhận
                       </button>
@@ -782,6 +810,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
       <BrandDetailDrawer
         brand={selectedBrand}
         category={selectedCategory}
+        overallVoteCount={overallVoteCount}
         voted={Boolean(
           selectedCategory && selectedBrand && votes[selectedCategory.id] === selectedBrand.id
         )}

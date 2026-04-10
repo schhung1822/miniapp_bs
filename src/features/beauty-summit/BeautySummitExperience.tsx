@@ -1518,7 +1518,12 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       ) : null}
 
       {screen === 'reward' ? (
-        <RewardCompletionScreen tier={tier} orderCode={orderCode} onBack={() => setScreen('main')} />
+        <RewardCompletionScreen
+          tier={tier}
+          orderCode={orderCode}
+          totalPoints={totalPoints}
+          onBack={() => setScreen('main')}
+        />
       ) : null}
 
       <TicketHelpModal

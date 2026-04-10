@@ -64,7 +64,7 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
             </div>
             <div className="min-w-0">
               <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9a8f9d]">
-                Chi tiet nhiem vu
+                Chi tiết nhiệm vụ
               </div>
               <div className="text-[1.05rem] font-bold text-[#241629]">{mission.title}</div>
               <div className="mt-1 text-sm leading-6 text-[#7a7280]">{mission.desc}</div>
@@ -82,7 +82,7 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
 
         <div className="mb-4 rounded-[1.15rem] border border-[#eadfd2] bg-white p-4 shadow-[0_10px_22px_rgba(184,134,11,0.06)]">
           <div className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#9a8f9d]">
-            Cach thuc hien
+            Cách thực hiện
           </div>
           <div className="space-y-3">
             {mission.steps.map((step, index) => (
@@ -146,7 +146,7 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
             }}
           >
             <VoteIcon color={accentColor} />
-            Chuyen sang tab Vote
+            Chuyển sang tab Vote
           </button>
         ) : null}
 
@@ -156,7 +156,7 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
             onClick={() => onChange('survey')}
             className="mb-4 flex w-full items-center justify-center rounded-2xl border border-[#eadfd2] bg-white px-4 py-3 text-sm font-semibold text-[#241629]"
           >
-            Mo khao sat
+            Mở khảo sát
           </button>
         ) : null}
 
@@ -166,7 +166,7 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
             onClick={() => onChange('https://beautysummit.vn/ref/invite')}
             className="mb-4 flex w-full items-center justify-center rounded-2xl border border-[#eadfd2] bg-white px-4 py-3 text-sm font-semibold text-[#241629]"
           >
-            Sao chep link gioi thieu
+            Sao chép link giới thiệu
           </button>
         ) : null}
 
@@ -181,7 +181,7 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
               : `linear-gradient(135deg, ${accentColor}, ${accentColor}cc)`,
           }}
         >
-          Xac nhan hoan thanh
+          Xác nhận hoàn thành
         </button>
       </div>
     </div>

@@ -6,6 +6,7 @@ import { CloseIcon, VoteIcon } from '@/features/beauty-summit/icons';
 interface BrandDetailDrawerProps {
   brand: VoteBrand | null;
   category: VoteCategory | null;
+  overallVoteCount: number;
   voted: boolean;
   onClose: () => void;
   onVote: () => void;
@@ -14,6 +15,7 @@ interface BrandDetailDrawerProps {
 const BrandDetailDrawer: React.FC<BrandDetailDrawerProps> = ({
   brand,
   category,
+  overallVoteCount,
   voted,
   onClose,
   onVote,
@@ -28,12 +30,7 @@ const BrandDetailDrawer: React.FC<BrandDetailDrawerProps> = ({
     `${displayTitle} dang duoc de cu trong hang muc "${category.title}". Ban co the chon hoac huy binh chon ngay tai day.`;
   const voteCount = brand.voteCount ?? 0;
   const rank = brand.rank ?? Math.max(category.brands.findIndex((item) => item.id === brand.id) + 1, 1);
-  const maxCategoryVote = category.brands.reduce(
-    (max, item) => Math.max(max, item.voteCount ?? 0),
-    0
-  );
-  const percentage =
-    brand.progressPct ?? (maxCategoryVote > 0 ? Math.max(12, Math.round((voteCount / maxCategoryVote) * 100)) : 0);
+  const percentage = overallVoteCount > 0 ? Math.round((voteCount / overallVoteCount) * 100) : 0;
 
   return (
     <div className="absolute inset-0 z-40 bg-black/55 backdrop-blur-sm">
@@ -105,14 +102,14 @@ const BrandDetailDrawer: React.FC<BrandDetailDrawerProps> = ({
 
         <div className="mb-5 rounded-[1.1rem] border border-[#eadfd2] bg-white p-4 shadow-[0_10px_22px_rgba(184,134,11,0.06)]">
           <div className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#9a8f9d]">
-            Tom tat
+            Tóm tắt
           </div>
           <p className="text-sm leading-6 text-[#5b5360]">{summary}</p>
         </div>
 
         <div className="mb-6">
           <div className="mb-2 flex items-center justify-between text-xs">
-            <span className="text-[#8a7e8b]">Ty le vote</span>
+            <span className="text-[#8a7e8b]">Tỷ lệ vote</span>
             <span className="font-semibold" style={{ color: category.color }}>
               {percentage}%
             </span>

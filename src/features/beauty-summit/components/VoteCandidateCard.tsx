@@ -42,7 +42,7 @@ const VoteCandidateCard: React.FC<VoteCandidateCardProps> = ({
     <div className="relative">
       {medalNumber ? (
         <div
-          className={`absolute -left-2 -top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full text-lg font-black text-white shadow-[0_10px_20px_rgba(36,22,41,0.2)] ${
+          className={`!text-white absolute -left-2 -top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full text-lg font-black shadow-[0_10px_20px_rgba(36,22,41,0.2)] ${
             medalNumber === 1
               ? 'bg-[linear-gradient(135deg,#f5b700,#d68b00)]'
               : medalNumber === 2
