@@ -786,11 +786,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
         medalNumber?: number;
       }
     ): React.ReactNode => {
-      const { category, brand, selected, voteCount, rank } = item;
+      const { category, brand, selected, voteCount } = item;
       const title = brand.product || brand.name;
-      const progressPct =
-        brand.progressPct ?? (topVoteCount > 0 ? Math.max(12, Math.round((voteCount / topVoteCount) * 100)) : 0);
-
       return (
         <div
           key={`${category.id}-${brand.id}-${options?.highlight ? 'top' : 'all'}`}
@@ -811,11 +808,11 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
           ) : null}
 
           <div
-            className={`overflow-hidden rounded-[1.2rem] border bg-white shadow-[0_10px_22px_rgba(91,74,117,0.08)] ${
+            className={`overflow-hidden rounded-[1.2rem] border bg-white shadow ${
               options?.highlight ? 'border-[#f0c648]' : 'border-[#eadfd2]'
             }`}
           >
-            <div className="flex items-center gap-3 px-2.5 py-0.5">
+            <div className="flex items-center gap-3 px-2.5 py-2.5">
               <button
                 type="button"
                 onClick={() => onOpenBrand(category, brand)}
@@ -843,17 +840,14 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                   <div className="inline-flex max-w-full rounded bg-[#f4e8ff] px-1.5 py-0.5 text-[11px] font-semibold text-[#8b34ff]">
                     <span className="truncate">{category.title}</span>
                   </div>
-                  <div className="mt-1">
-                    <span className="font-medium me-1 text-[#111827]">{voteCount}</span>
-                    <span className="text-[11px] text-[#8a7e8b]">
-                       vote
-                    </span>
-                  </div>
                 </div>
               </button>
 
               <div className="flex shrink-0 flex-col items-end gap-2">
-                <div className="text-[0.95rem] font-semibold text-[#7d6f8a]">#{rank || '--'}</div>
+                <div className="flex items-baseline gap-1 text-right">
+                  <span className="text-[0.95rem] font-bold text-[#111827]">{voteCount}</span>
+                  <span className="text-[11px] text-[#8a7e8b]">vote</span>
+                </div>
                 <button
                   type="button"
                   onClick={() => onToggleVote(category, brand)}
@@ -869,15 +863,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
               </div>
             </div>
 
-            <div className="h-1.5 bg-[#d8dde8]">
-              <div
-                className="h-full"
-                style={{
-                  width: `${progressPct}%`,
-                  background: `linear-gradient(90deg, ${category.color}, ${category.color}cc)`,
-                }}
-              />
-            </div>
           </div>
         </div>
       );

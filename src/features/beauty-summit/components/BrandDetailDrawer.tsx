@@ -72,7 +72,7 @@ const BrandDetailDrawer: React.FC<BrandDetailDrawerProps> = ({
               {category.title}
             </div>
             <div className="truncate text-[1.2rem] font-black text-[#241629]">{displayTitle}</div>
-            <div className="mt-1 text-[12px] font-medium text-[#8a7e8b]">Vote backend synced</div>
+            <div className="mt-1 text-[12px] font-medium text-[#8a7e8b]">Đã đồng bộ dữ liệu</div>
             </div>
           </div>
           <button
@@ -89,17 +89,17 @@ const BrandDetailDrawer: React.FC<BrandDetailDrawerProps> = ({
             <div className="text-lg font-black" style={{ color: category.color }}>
               {voteCount}
             </div>
-            <div className="mt-1 text-[11px] text-[#8a7e8b]">Luot vote</div>
+            <div className="mt-1 text-[11px] text-[#8a7e8b]">Lượt vote</div>
           </div>
           <div className="rounded-[1rem] border border-[#eadfd2] bg-white px-3 py-3.5 text-center">
             <div className="text-lg font-black text-[#241629]">
               #{rank}
             </div>
-            <div className="mt-1 text-[11px] text-[#8a7e8b]">Xep hang</div>
+            <div className="mt-1 text-[11px] text-[#8a7e8b]">Xếp hạng</div>
           </div>
           <div className="rounded-[1rem] border border-[#eadfd2] bg-white px-3 py-3.5 text-center">
             <div className="text-lg font-black text-[#b8860b]">{category.brands.length}</div>
-            <div className="mt-1 text-[11px] text-[#8a7e8b]">Ung vien</div>
+            <div className="mt-1 text-[11px] text-[#8a7e8b]">Ứng viên</div>
           </div>
         </div>
 
@@ -141,7 +141,7 @@ const BrandDetailDrawer: React.FC<BrandDetailDrawerProps> = ({
           }
         >
           <VoteIcon color={voted ? '#5f5662' : '#fff'} />
-          {voted ? 'Bo chon muc nay' : `Vote cho ${displayTitle}`}
+          {voted ? 'Bỏ chọn mục này' : `Vote cho ${displayTitle}`}
         </button>
       </div>
     </div>

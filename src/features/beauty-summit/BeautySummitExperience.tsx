@@ -791,13 +791,13 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           return;
         } catch (retryError) {
           console.warn('[BeautySummit] ticket list retry after sync failed:', retryError);
-          setTicketsError(readApiErrorMessage(retryError, 'Khong the tai danh sach ve. Vui long thu lai.'));
+          setTicketsError(readApiErrorMessage(retryError, 'Không thể tải danh sách vé. Vui lòng thử lại.'));
           return;
         }
       }
 
       console.warn('[BeautySummit] unable to fetch ticket orders:', error);
-      setTicketsError(readApiErrorMessage(error, 'Khong the tai danh sach ve. Vui long thu lai.'));
+      setTicketsError(readApiErrorMessage(error, 'Không thể tải danh sách vé. Vui lòng thử lại.'));
     } finally {
       setTicketsLoading(false);
       setMiniAppLoading(false);
@@ -892,7 +892,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   }, [loadRewardBundle, permissionsGranted, screen, zaloPhone, zaloUserId]);
 
   const markMissionComplete = React.useCallback(
-    async (missionId: string, message = 'Nhiem vu da hoan thanh'): Promise<boolean> => {
+    async (missionId: string, message = 'Nhiệm vụ đã hoàn thành'): Promise<boolean> => {
       if (completedSet.has(missionId)) {
         return true;
       }
@@ -902,7 +902,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
         showToast(message);
         return true;
       } catch (error) {
-        showToast(readApiErrorMessage(error, 'Khong the cap nhat nhiem vu'));
+        showToast(readApiErrorMessage(error, 'Không thể cập nhật nhiệm vụ'));
         return false;
       }
     },
@@ -925,7 +925,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     if (Object.keys(votes).length >= 2) {
       const voteMissionId = `${tier}-d1-vote`;
       if (!completedSet.has(voteMissionId)) {
-        void markMissionComplete(voteMissionId, 'Da mo khoa nhiem vu vote');
+        void markMissionComplete(voteMissionId, 'Đã mở khóa nhiệm vụ vote');
       }
     }
   }, [tier, votes, completedSet, markMissionComplete]);
@@ -967,9 +967,9 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
         if (zaloUserId && zaloPhone) {
           await loadRewardBundle(zaloUserId, zaloPhone);
         }
-        showToast(`Da cap nhat vote cho ${brand.name}`);
+        showToast(`Đã cập nhật vote cho ${brand.name}`);
       } catch (error) {
-        showToast(readApiErrorMessage(error, 'Khong the cap nhat vote'));
+        showToast(readApiErrorMessage(error, 'Không thể cập nhật vote'));
       }
     })();
   };
