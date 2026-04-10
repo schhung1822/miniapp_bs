@@ -64,7 +64,6 @@ const FooterNav: React.FC<FooterNavProps> = ({ activeTab, onChange, onQrClick, h
                 key={tab.key}
                 to={`/?tab=${tab.key}`}
                 onClick={() => onChange(tab.key)}
-                viewTransition
                 className="flex flex-col items-center space-y-0.5 p-1 active:scale-105"
               >
                 <div className="flex h-6 w-6 items-center justify-center">{tab.renderIcon(active)}</div>
@@ -98,7 +97,6 @@ const FooterNav: React.FC<FooterNavProps> = ({ activeTab, onChange, onQrClick, h
                 key={tab.key}
                 to={`/?tab=${tab.key}`}
                 onClick={() => onChange(tab.key)}
-                viewTransition
                 className="flex flex-col items-center space-y-0.5 p-1 active:scale-105"
               >
                 <div className="flex h-6 w-6 items-center justify-center">{tab.renderIcon(active)}</div>

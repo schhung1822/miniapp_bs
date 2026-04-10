@@ -13,16 +13,12 @@ import type {
   VoteBrand,
   VoteCategory,
 } from '@/features/beauty-summit/types';
-import { normalizeQuery } from '@/features/beauty-summit/utils';
 import {
   CalendarIcon,
   ClockIcon,
   GiftIcon,
   QrIcon,
   StarIcon,
-  ThumbsUpIcon,
-  TrophyIcon,
-  VoteIcon,
 } from '@/features/beauty-summit/icons';
 import BrandDetailDrawer from '@/features/beauty-summit/components/BrandDetailDrawer';
 import BeautyQrCode from '@/features/beauty-summit/components/BeautyQrCode';
@@ -36,6 +32,7 @@ import QrPreviewModal from '@/features/beauty-summit/components/QrPreviewModal';
 import ScanDrawer from '@/features/beauty-summit/components/ScanDrawer';
 import VoucherCodeModal from '@/features/beauty-summit/components/VoucherCodeModal';
 import VoucherLogoBadge from '@/features/beauty-summit/components/VoucherLogoBadge';
+import VoteSection from '@/features/beauty-summit/components/VoteSection';
 
 interface DashboardScreenProps {
   tier: TierMeta;
@@ -128,18 +125,6 @@ const phaseItems: Array<{
     renderIcon: (active) => <CalendarIcon size={18} color={active ? '#b8860b' : '#9a8f9d'} />,
   },
 ];
-
-const VOTE_IMAGE_PATTERN = /^(data:image\/|https?:\/\/|\/)/i;
-
-const isVoteImage = (value?: string): boolean => VOTE_IMAGE_PATTERN.test(String(value ?? '').trim());
-
-const buildVoteFallback = (value: string): string =>
-  value
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join('');
 
 const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
   const {
@@ -235,10 +220,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
     () => currentPhaseMissions.filter((mission) => completedSet.has(mission.id)),
     [completedSet, currentPhaseMissions]
   );
-  const votedCount = React.useMemo(
-    () => voteCategories.filter((category) => Boolean(votes[category.id])).length,
-    [voteCategories, votes]
-  );
   const redeemableVoucherCount = React.useMemo(
     () =>
       bpointVouchers.filter(
@@ -253,31 +234,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
     () => freeVouchers.filter((voucher) => claimedFreeSet.has(voucher.id)).length,
     [claimedFreeSet, freeVouchers]
   );
-  const voteCards = React.useMemo(() => {
-    const cards = voteCategories.flatMap((category) =>
-      category.brands.map((brand) => ({
-        category,
-        brand,
-        selected: votes[category.id] === brand.id,
-        voteCount: brand.voteCount ?? 0,
-        rank: brand.rank ?? 0,
-      }))
-    );
-
-    return cards.sort(
-      (left, right) =>
-        left.rank - right.rank ||
-        right.voteCount - left.voteCount ||
-        (left.brand.product || left.brand.name).localeCompare(right.brand.product || right.brand.name)
-    );
-  }, [voteCategories, votes]);
-  const overallVoteCount = React.useMemo(
-    () => voteCategories.reduce((sum, category) => sum + (category.totalVotes ?? 0), 0),
-    [voteCategories]
-  );
-  const topThreeVotes = React.useMemo(() => voteCards.slice(0, 3), [voteCards]);
-  const topVoteCount = topThreeVotes[0]?.voteCount ?? voteCards[0]?.voteCount ?? 0;
-
   React.useEffect(() => {
     if (previousTabRef.current !== activeTab) {
       scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -763,192 +719,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
     </div>
   );
 
-  const renderVoteTab = (): React.ReactNode => {
-    const query = normalizeQuery(voteQuery);
-    const filteredVoteCards = query
-      ? voteCards.filter(
-          ({ category, brand }) =>
-            normalizeQuery(category.title).includes(query) ||
-            normalizeQuery(brand.product ?? brand.name).includes(query)
-        )
-      : voteCards;
-    const filteredTopThree = topThreeVotes.filter(
-      ({ category, brand }) =>
-        !query ||
-        normalizeQuery(category.title).includes(query) ||
-        normalizeQuery(brand.product ?? brand.name).includes(query)
-    );
-
-    const renderVoteItem = (
-      item: (typeof voteCards)[number],
-      options?: {
-        highlight?: boolean;
-        medalNumber?: number;
-      }
-    ): React.ReactNode => {
-      const { category, brand, selected, voteCount } = item;
-      const title = brand.product || brand.name;
-      return (
-        <div
-          key={`${category.id}-${brand.id}-${options?.highlight ? 'top' : 'all'}`}
-          className="relative"
-        >
-          {options?.medalNumber ? (
-            <div
-              className={`absolute -left-2 -top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full text-lg font-black text-white shadow-[0_10px_20px_rgba(36,22,41,0.2)] ${
-                options.medalNumber === 1
-                  ? 'bg-[linear-gradient(135deg,#f5b700,#d68b00)]'
-                  : options.medalNumber === 2
-                    ? 'bg-[linear-gradient(135deg,#cdd4e3,#8e99b0)]'
-                    : 'bg-[linear-gradient(135deg,#d97706,#92400e)]'
-              }`}
-            >
-              {options.medalNumber}
-            </div>
-          ) : null}
-
-          <div
-            className={`overflow-hidden rounded-[1.2rem] border bg-white shadow ${
-              options?.highlight ? 'border-[#f0c648]' : 'border-[#eadfd2]'
-            }`}
-          >
-            <div className="flex items-center gap-3 px-2.5 py-2.5">
-              <button
-                type="button"
-                onClick={() => onOpenBrand(category, brand)}
-                className="flex min-w-0 flex-1 items-center gap-3 text-left"
-              >
-                {isVoteImage(brand.logo || brand.link) ? (
-                  <img
-                    src={brand.logo || brand.link}
-                    alt={title}
-                    className="h-[58px] w-[58px] shrink-0 rounded-[0.9rem] object-cover shadow-[0_6px_14px_rgba(36,22,41,0.1)]"
-                  />
-                ) : (
-                  <div
-                    className="flex h-[58px] w-[58px] shrink-0 items-center justify-center rounded-[0.9rem] text-[1.2rem] font-black text-white shadow-[0_6px_14px_rgba(36,22,41,0.1)]"
-                    style={{
-                      background: `linear-gradient(135deg, ${category.color}, ${category.color}bb)`,
-                    }}
-                  >
-                    {buildVoteFallback(title || 'VT')}
-                  </div>
-                )}
-
-                <div className="min-w-0">
-                  <div className="mt-1 truncate text-[0.95rem] font-black text-[#1f2937] truncate">{title}</div>
-                  <div className="inline-flex max-w-full rounded bg-[#f4e8ff] px-1.5 py-0.5 text-[11px] font-semibold text-[#8b34ff]">
-                    <span className="truncate">{category.title}</span>
-                  </div>
-                </div>
-              </button>
-
-              <div className="flex shrink-0 flex-col items-end gap-2">
-                <div className="flex items-baseline gap-1 text-right">
-                  <span className="text-[0.95rem] font-bold text-[#111827]">{voteCount}</span>
-                  <span className="text-[11px] text-[#8a7e8b]">vote</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => onToggleVote(category, brand)}
-                  className={`inline-flex min-w-[82px] items-center justify-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold transition-all shadow-sm ${
-                    selected
-                      ? 'bg-gradient-to-r from-[#a855f7] to-[#ec4899] !text-white'
-                      : 'border border-[#ece7f2] bg-[#faf8fc] text-[#4a5568]'
-                  }`}
-                >
-                  <ThumbsUpIcon size={12} color={selected ? '#ffffff' : '#4a5568'} />
-                  <span>{selected ? 'Voted' : 'Vote'}</span>
-                </button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      );
-    };
-
-    return (
-      <div className="space-y-5">
-        <div className="rounded-[1.45rem] border border-[#eadfd2] bg-[linear-gradient(180deg,#fffdfc_0%,#fdf7ff_100%)] p-4 shadow-[0_14px_28px_rgba(91,74,117,0.08)]">
-          <div className="">
-            <div className="flex">
-              <div className="flex items-center justify-center rounded-full w-12 h-12 bg-[linear-gradient(135deg,#f5b700,#f97316)] p-2.5 shadow-[0_12px_24px_rgba(245,183,0,0.22)]">
-                <TrophyIcon size={24} color="#ffffff" />
-              </div>
-              <div className="ms-3">
-                <div className="text-[1.5rem] pb-1 bg-[linear-gradient(135deg,#f59e0b,#d946ef)] bg-clip-text text-[1.5rem] font-black leading-none text-transparent">
-                  Bình Chọn<br/> Nhãn Hàng 2026
-                </div>
-              </div>
-            </div>
-            <div className="mt-2 text-sm font-medium text-[#7a7280]">
-              Tổng: <span className="font-black text-[#8b34ff]">{overallVoteCount}</span> vote
-            </div>
-            <div className="mt-2 text-sm leading-6 text-[#6f6572]">
-              Mỗi tài khoản chỉ được vote 1 sản phẩm duy nhất của thể loại đó.
-            </div>
-          </div>
-        </div>
-
-        {voteCategories.length > 0 ? (
-          <div className="relative">
-            <input
-              value={voteQuery}
-              onChange={(event) => onVoteQueryChange(event.target.value)}
-              placeholder="Tìm thể loại hoặc sản phẩm..."
-              className="w-full rounded-[1rem] border border-[#eadfd2] bg-white px-4 py-3 text-sm text-[#241629] placeholder:text-[#a69ba8]"
-            />
-          </div>
-        ) : null}
-
-        {voteCategories.length === 0 ? (
-          <div className="rounded-[1.1rem] border border-dashed border-[#eadfd2] bg-white px-4 py-6 text-center">
-            <div className="text-sm font-semibold text-[#241629]">Chưa có dữ liệu bình chọn</div>
-            <div className="mt-1 text-[11px] text-[#8a7e8b]">
-              Admin cần tạo vote trong trang quản trị.
-            </div>
-          </div>
-        ) : (
-          <>
-            {filteredTopThree.length > 0 ? (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 text-[1.05rem] font-black text-[#2f3b57]">
-                  <TrophyIcon size={18} color="#f5b700" />
-                  Top 3 Dẫn đầu
-                </div>
-                <div className="space-y-3">
-                  {filteredTopThree.map((item, index) =>
-                    renderVoteItem(item, { highlight: true, medalNumber: index + 1 })
-                  )}
-                </div>
-              </div>
-            ) : null}
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-[1.05rem] font-black text-[#2f3b57]">
-                <VoteIcon color="#6366f1" size={18} />
-                Tất Cả Nhãn Hàng
-              </div>
-              <div className="space-y-3">
-                {filteredVoteCards.length > 0 ? (
-                  filteredVoteCards.map((item) => renderVoteItem(item))
-                ) : (
-                  <div className="rounded-[1.1rem] border border-dashed border-[#eadfd2] bg-white px-4 py-6 text-center">
-                    <div className="text-sm font-semibold text-[#241629]">Khong tim thay san pham phu hop</div>
-                    <div className="mt-1 text-[11px] text-[#8a7e8b]">
-                      Thu doi tu khoa tim kiem de xem danh sach vote.
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    );
-  };
-
   const renderProfileTab = (): React.ReactNode => (
     <ProfilePanel
       userName={userName}
@@ -981,7 +751,16 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
           : activeTab === 'vouchers'
             ? renderVoucherTab()
             : activeTab === 'vote'
-              ? renderVoteTab()
+              ? (
+                <VoteSection
+                  voteCategories={voteCategories}
+                  votes={votes}
+                  voteQuery={voteQuery}
+                  onVoteQueryChange={onVoteQueryChange}
+                  onToggleVote={onToggleVote}
+                  onOpenBrand={onOpenBrand}
+                />
+              )
               : renderProfileTab()}
       </div>
 

@@ -9,7 +9,7 @@ import {
   getUserInfo,
   scanQRCode,
 } from 'zmp-sdk';
-import { nativeStorage, openChat, showOAWidget } from 'zmp-sdk/apis';
+import { getSystemInfo, nativeStorage, openChat, showOAWidget } from 'zmp-sdk/apis';
 
 import {
   CHECKIN_ZONES,
@@ -20,7 +20,10 @@ import {
 } from '@/features/beauty-summit/data';
 import type { HeaderProps } from '@/components/Header';
 import BeautyShell from '@/features/beauty-summit/components/BeautyShell';
-import { BrandMark, CloseIcon, TrophyIcon } from '@/features/beauty-summit/icons';
+import OaWidgetModal from '@/features/beauty-summit/components/OaWidgetModal';
+import PermissionNoticeModal from '@/features/beauty-summit/components/PermissionNoticeModal';
+import RewardCompletionScreen from '@/features/beauty-summit/components/RewardCompletionScreen';
+import TicketHelpModal from '@/features/beauty-summit/components/TicketHelpModal';
 import DashboardScreen from '@/features/beauty-summit/screens/DashboardScreen';
 import OnboardingScreen from '@/features/beauty-summit/screens/OnboardingScreen';
 import QrScreen from '@/features/beauty-summit/screens/QrScreen';
@@ -61,7 +64,10 @@ const BEAUTY_TABS: readonly BeautyTab[] = ['missions', 'vouchers', 'vote', 'prof
 const isBeautyTab = (value: string | null): value is BeautyTab =>
   Boolean(value && BEAUTY_TABS.includes(value as BeautyTab));
 
-const isZalo = !!window.ZaloMiniApp || !!window.ZMP;
+const isZaloRuntime = (): boolean => {
+  const { platform } = getSystemInfo();
+  return platform === "android";
+};
 
 interface CachedZaloUser {
   id: string;
@@ -180,7 +186,7 @@ const normalizeZaloAvatar = (value: string | null | undefined, fallback?: string
 };
 const getNativeStorageItem = (key: string): string | null => {
   try {
-    if (isZalo) {
+    if (isZaloRuntime()) {
       const value = nativeStorage.getItem(key);
       return typeof value === 'string' ? value : null;
     }
@@ -191,13 +197,22 @@ const getNativeStorageItem = (key: string): string | null => {
   return null;
 };
 const setNativeStorageItem = (key: string, value: string): void => {
-  if (isZalo) {
-    nativeStorage.setItem(key, value);
+  try {
+    if (isZaloRuntime()) {
+      nativeStorage.setItem(key, value);
+      console.log('[BeautySummit] QR cache saved:', value);
+    }
+  } catch {
+    // Ignore storage write errors outside the Zalo runtime.
   }
 };
 const removeNativeStorageItem = (key: string): void => {
-  if (isZalo) {
-    nativeStorage.removeItem(key);
+  try {
+    if (isZaloRuntime()) {
+      nativeStorage.removeItem(key);
+    }
+  } catch {
+    // Ignore storage remove errors outside the Zalo runtime.
   }
 };
 
@@ -306,7 +321,7 @@ const writeCachedQrTicket = (value: CachedQrTicket): void => {
       qrValue: value.qrValue.trim(),
     }),
   );
-  console.log('[BeautySummit] QR cache saved:', value);
+  
 };
 
 const clearCachedQrTicket = (): void => {
@@ -674,13 +689,13 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       id: OA_WIDGET_ID,
       guidingText: 'Quan tâm Beauty Summit Vietnam trên Zalo',
       color: '#0068FF',
-      onStatusChange: (status) => {
+      onStatusChange: (status:any) => {
         console.log('[BeautySummit] OA widget status:', status);
         if (status === true) {
           openPermissionNotice();
         }
       },
-      onError: (error) => {
+      onError: (error:any) => {
         console.warn('[BeautySummit] OA widget error:', error);
       },
     }).catch((error) => {
@@ -1361,211 +1376,6 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     };
   }, [onHeaderChange]);
 
-  const renderTicketHelp = (): React.ReactNode => {
-    if (!ticketHelpOpen) {
-      return null;
-    }
-
-    return (
-      <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-sm">
-        <div className="absolute inset-x-0 bottom-0 rounded-t-[1.75rem] border-t border-[#eadfd2] bg-white px-5 pb-8 pt-3 shadow-[0_-24px_60px_rgba(15,23,42,0.16)]">
-          <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-[#d6d3d9]" />
-          <div className="mb-5 flex items-start justify-between gap-4">
-            <div>
-              <div className="text-lg font-bold text-[#111827]">Tìm mã vé ở đâu?</div>
-              <div className="mt-1 text-sm text-[#4b5563]">Hai tình huống nhận mã phổ biến.</div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setTicketHelpOpen(false)}
-              className="rounded-full bg-[#f3f4f6] p-2 text-[#374151]"
-            >
-              <CloseIcon />
-            </button>
-          </div>
-
-          <div className="space-y-3">
-            <div className="rounded-[1.1rem] border border-[#f4d37a] bg-[#fff8e1] p-4">
-              <div className="mb-2 text-sm font-bold text-[#111827]">1. Khách mua vé trực tiếp</div>
-              <div className="text-sm leading-6 text-[#374151]">
-                Mã vé được gửi qua email hoặc tin nhắn Zalo tại thời điểm thanh toán thành công.
-              </div>
-            </div>
-            <div className="rounded-[1.1rem] border border-[#ddc2f6] bg-[#f8f1ff] p-4">
-              <div className="mb-2 text-sm font-bold text-[#111827]">2. Khách nhận vé từ đối tác</div>
-              <div className="text-sm leading-6 text-[#374151]">
-                Mã vé sẽ được chuyển qua nhãn hàng hoặc đối tác mời tham dự. Bạn có thể liên hệ trực tiếp đầu mối đã gửi thư mời.
-              </div>
-            </div>
-            <div className="rounded-[1.1rem] border border-[#e5e7eb] bg-[#f9fafb] p-4 text-sm leading-6 text-[#374151]">
-              Vẫn chưa tìm thấy mã? Liên hệ hotline hoặc nhắn{' '}
-              <button
-                type="button"
-                onClick={() => {
-                  void handleOpenSupportOaChat();
-                }}
-                className="font-semibold text-[#0d7cff] underline underline-offset-2"
-              >
-                Zalo OA Beauty Summit Vietnam
-              </button>{' '}
-              để được hỗ trợ.
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderPermissionModal = (): React.ReactNode => {
-    if (!permissionStep) {
-      return null;
-    }
-
-    return (
-      <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/45 px-5 backdrop-blur-sm">
-        <div className="w-full max-w-[21rem] rounded-[1.5rem] bg-white px-4 py-7 text-center shadow-[0_24px_70px_rgba(15,23,42,0.18)]">
-          <div className="mb-4 flex justify-center">
-            <BrandMark size={36} />
-          </div>
-          <div className="whitespace-pre-line text-[1.45rem] font-black leading-tight text-[#111827]">
-            {'Chào mừng bạn đến với\nBeauty Summit'}
-          </div>
-          <div className="mt-6 space-y-3 text-left">
-            <div className="flex items-center gap-2">
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center text-lg text-[#0d7cff]">
-                📱
-              </div>
-              <div className="whitespace-nowrap text-[13px] font-medium leading-5 text-[#2f3137]">
-                Tạo mã QR để check-in nhanh chóng
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center text-lg text-[#0d7cff]">
-                🎁
-              </div>
-              <div className="whitespace-nowrap text-[13px] font-medium leading-5 text-[#2f3137]">
-                Làm nhiệm vụ tích điểm nhận voucher
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center text-lg text-[#0d7cff]">
-                🪪
-              </div>
-              <div className="whitespace-nowrap text-[13px] font-medium leading-5 text-[#2f3137]">
-                Định danh khách hàng xuyên suốt sự kiện
-              </div>
-            </div>
-          </div>
-          <div className="mt-5 text-left text-[13px] leading-5 text-[#2f3137]">
-            Vui lòng đồng ý chia sẻ số điện thoại để liên kết với tài khoản của bạn trên hệ thống
-            Beauty Summit.
-          </div>
-          <div className="mt-7 flex flex-col items-center gap-4">
-            <button
-              type="button"
-              onClick={handlePermissionApproved}
-              disabled={miniAppLoading}
-              className={`relative w-full rounded-full bg-[#0d7cff] px-4 py-4 text-base font-bold !text-white shadow-[0_12px_30px_rgba(13,124,255,0.25)] disabled:cursor-wait disabled:opacity-70 ${
-                miniAppLoading ? 'text-transparent' : ''
-              }`}
-            >
-              Liên kết số điện thoại
-            </button>
-            <button
-              type="button"
-              onClick={handlePermissionDenied}
-              disabled={miniAppLoading}
-              className="px-4 py-1 text-base font-bold text-[#ef4444] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Từ chối và Thoát
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderOaWidgetModal = (): React.ReactNode => {
-    if (!oaPromptOpen) {
-      return null;
-    }
-
-    return (
-      <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/45 px-5 backdrop-blur-sm">
-        <div className="w-full max-w-[24rem] overflow-hidden rounded-[1.4rem] bg-white text-center shadow-[0_24px_70px_rgba(15,23,42,0.2)]">
-          <div className="bg-white px-5 py-4">
-            <div id={OA_WIDGET_ID} className="min-h-[82px] w-full" />
-          </div>
-          <div className="px-5 pb-4 pt-2 text-left">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="w-5 shrink-0 text-center text-lg">🔔</span>
-                <span className="whitespace-nowrap text-[13px] font-semibold leading-5 text-[#374151]">
-                  Nhận thông báo check-in & nhiệm vụ realtime
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-5 shrink-0 text-center text-lg">🎁</span>
-                <span className="whitespace-nowrap text-[13px] font-semibold leading-5 text-[#374151]">
-                  Voucher & ưu đãi gửi trực tiếp qua Zalo
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-5 shrink-0 text-center text-lg">🗓️</span>
-                <span className="whitespace-nowrap text-[13px] font-semibold leading-5 text-[#374151]">
-                  Cập nhật lịch trình & thay đổi sự kiện
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-5 shrink-0 text-center text-lg">📸</span>
-                <span className="whitespace-nowrap text-[13px] font-semibold leading-5 text-[#374151]">
-                  Thông báo phần thưởng & hình ảnh sự kiện
-                </span>
-              </div>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={openPermissionNotice}
-            className="w-full border-t border-[#eef0f4] bg-white px-4 py-4 text-[15px] font-bold text-[#ef4444]"
-          >
-            Để sau
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  const renderRewardScreen = (): React.ReactNode => (
-    <div className="relative flex h-full flex-col items-center justify-center px-6 text-center">
-      <div className="beauty-float mb-5 rounded-full border border-amber-300/25 bg-amber-300/10 p-5">
-        <TrophyIcon size={52} color="#ffd970" />
-      </div>
-      <div className="mb-2 text-xs font-semibold uppercase tracking-[0.35em] text-emerald-300">
-        100% nhiệm vụ hoàn thành
-      </div>
-      <h2 className="bg-[linear-gradient(135deg,#fff,#ffd970,#f59e0b)] bg-clip-text font-serif text-4xl font-black leading-tight text-transparent">
-        Chúc mừng
-      </h2>
-      <p className="mt-4 max-w-[18rem] text-sm leading-7 text-zinc-300">
-        Bạn đã đủ điều kiện tham gia bốc thăm grand prize VinFast VF3 và mở khóa toàn bộ quyền lợi Beauty Summit 2026.
-      </p>
-      <div className="mt-8 w-full rounded-[1.4rem] border border-pink-400/20 bg-[linear-gradient(145deg,rgba(236,72,153,0.16),rgba(245,158,11,0.08))] p-5">
-        <div className="text-[11px] uppercase tracking-[0.18em] text-zinc-400">Mã tham gia</div>
-        <div className="mt-3 text-xl font-black tracking-[0.3em] text-emerald-200">
-          VF3-{tier[0]}-{orderCode.slice(-4) || '0000'}
-        </div>
-      </div>
-      <button
-        type="button"
-        onClick={() => setScreen('main')}
-        className="mt-8 rounded-[1.15rem] bg-white/8 px-5 py-3 text-sm font-semibold text-white"
-      >
-        Quay lại dashboard
-      </button>
-    </div>
-  );
-
   let userName = 'Minh Hoàng';
   userName = zaloProfile.name || userName;
   const userAvatar = zaloProfile.avatar || DEFAULT_ZALO_PROFILE.avatar;
@@ -1707,11 +1517,26 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
         />
       ) : null}
 
-      {screen === 'reward' ? renderRewardScreen() : null}
+      {screen === 'reward' ? (
+        <RewardCompletionScreen tier={tier} orderCode={orderCode} onBack={() => setScreen('main')} />
+      ) : null}
 
-      {renderTicketHelp()}
-      {renderOaWidgetModal()}
-      {renderPermissionModal()}
+      <TicketHelpModal
+        open={ticketHelpOpen}
+        onClose={() => setTicketHelpOpen(false)}
+        onOpenSupportChat={() => {
+          void handleOpenSupportOaChat();
+        }}
+      />
+
+      <OaWidgetModal open={oaPromptOpen} widgetId={OA_WIDGET_ID} onSkip={openPermissionNotice} />
+
+      <PermissionNoticeModal
+        open={Boolean(permissionStep)}
+        loading={miniAppLoading}
+        onApprove={handlePermissionApproved}
+        onDeny={handlePermissionDenied}
+      />
 
       {screen === 'qr' && qrGenerated ? (
         <button
