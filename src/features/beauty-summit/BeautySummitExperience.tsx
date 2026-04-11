@@ -787,6 +787,35 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     showToast(lockReason === 'transferred' ? 'Vé này đã được người khác nhận' : 'Mã vé này đã check-in');
   }, [orderCode, showToast, ticketOrders, zaloPhone]);
 
+  const syncCachedQrWithTicketOrders = React.useCallback(
+    (orders: MiniAppTicketOrder[], userId: string, phone: string): void => {
+      const cachedQr = readCachedQrTicket(userId, phone);
+      if (!cachedQr) {
+        return;
+      }
+
+      const hasCachedTicket = orders.some(
+        (ticket) => normalizeTicketCode(ticket.code) === cachedQr.ticketCode,
+      );
+      if (hasCachedTicket) {
+        return;
+      }
+
+      console.log(
+        '[BeautySummit] cached QR ticket missing from latest ticket list, clearing cache:',
+        cachedQr.ticketCode,
+      );
+
+      clearCachedQrTicket();
+      setQrGenerated(false);
+      setQrValue('');
+      setOrderCode((current) =>
+        normalizeTicketCode(current) === cachedQr.ticketCode ? '' : current,
+      );
+    },
+    [],
+  );
+
   const handleOpenSupportOaChat = React.useCallback(async (): Promise<void> => {
     try {
       await openChat({
@@ -817,6 +846,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
         console.log('[BeautySummit] ticket list loaded with no orders for phone:', normalizedPhone);
       }
 
+      syncCachedQrWithTicketOrders(orders, normalizedZid, normalizedPhone);
       setTicketOrders(orders);
     } catch (error) {
       if (shouldRetryTicketFetchAfterSync(error)) {
@@ -832,6 +862,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
 
           await syncMiniAppUser(syncUser);
           const retryOrders = await fetchMiniAppTicketOrders(normalizedZid, normalizedPhone);
+          syncCachedQrWithTicketOrders(retryOrders, normalizedZid, normalizedPhone);
           setTicketOrders(retryOrders);
           setTicketsError(null);
           return;
@@ -848,7 +879,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       setTicketsLoading(false);
       setMiniAppLoading(false);
     }
-  }, [zaloProfile.avatar, zaloProfile.name]);
+  }, [syncCachedQrWithTicketOrders, zaloProfile.avatar, zaloProfile.name]);
 
   const loadRewardBundle = React.useCallback(async (zid: string, phone: string): Promise<void> => {
     const normalizedZid = zid.trim();
