@@ -496,9 +496,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
 
       {phaseMissionsPending.length > 0 ? (
         <div className="mb-3 flex items-center justify-between">
-          <div className="text-[13px] font-bold text-[#241629]">Can lam ngay</div>
+          <div className="text-[13px] font-bold text-[#241629]">Cần làm ngay</div>
           <div className="rounded-full bg-[#fff5d6] px-2.5 py-1 text-[10px] font-semibold text-[#9a6700]">
-            {phaseMissionsPending.length} nhiem vu
+            {phaseMissionsPending.length} nhiệm vụ
           </div>
         </div>
       ) : null}

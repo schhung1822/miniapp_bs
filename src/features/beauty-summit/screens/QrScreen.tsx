@@ -3,6 +3,7 @@ import React from 'react';
 import BeautyQrCode from '@/features/beauty-summit/components/BeautyQrCode';
 import QrPreviewModal from '@/features/beauty-summit/components/QrPreviewModal';
 import { CopyIcon, QrIcon } from '@/features/beauty-summit/icons';
+import { getMiniAppTicketLockReason, isMiniAppTicketDisabled } from '@/features/beauty-summit/types';
 import type { CheckinLog, CheckinZone, MiniAppTicketOrder, TierMeta } from '@/features/beauty-summit/types';
 
 interface QrScreenProps {
@@ -59,6 +60,7 @@ const QrScreen: React.FC<QrScreenProps> = ({
   const [entryMode, setEntryMode] = React.useState<'auto' | 'manual'>('auto');
   const [qrPreviewOpen, setQrPreviewOpen] = React.useState<boolean>(false);
   const selectedTicket = ticketOrders.find((ticket) => ticket.code === orderCode);
+  const selectedTicketLockReason = getMiniAppTicketLockReason(selectedTicket, userPhone);
   const maskedPhone = React.useMemo(() => {
     const digits = userPhone.replace(/\D/g, '');
     const localDigits = digits.length === 11 && digits.startsWith('84') ? `0${digits.slice(2)}` : digits;
@@ -71,8 +73,8 @@ const QrScreen: React.FC<QrScreenProps> = ({
   }, [userPhone]);
   const canGenerate =
     entryMode === 'manual'
-      ? Boolean(orderCode.trim()) && !selectedTicket?.checkedIn
-      : Boolean(selectedTicket && !selectedTicket.checkedIn);
+      ? Boolean(orderCode.trim()) && !isMiniAppTicketDisabled(selectedTicket, userPhone)
+      : Boolean(selectedTicket && !isMiniAppTicketDisabled(selectedTicket, userPhone));
   const checkinCountByZone = checkinLog.reduce<Record<string, number>>((accumulator, item) => {
     accumulator[item.zoneId] = (accumulator[item.zoneId] ?? 0) + 1;
     return accumulator;
@@ -124,23 +126,30 @@ const QrScreen: React.FC<QrScreenProps> = ({
       <div className="space-y-2.5">
         {ticketOrders.map((ticket) => {
           const selected = ticket.code === orderCode;
-          const disabled = ticket.checkedIn;
+          const disabled = isMiniAppTicketDisabled(ticket, userPhone);
+          const lockReason = getMiniAppTicketLockReason(ticket, userPhone);
+          const transferred = lockReason === 'transferred';
 
           return (
             <div
               key={ticket.code}
               className={`flex items-center gap-2 rounded-[1.15rem] border p-2.5 transition ${
-                selected ? 'border-[#d9a400] bg-[#fff8dc]' : 'border-[#eadfd2] bg-white'
+                disabled
+                  ? 'border-[#d8d2da] bg-[#f3f0f4]'
+                  : selected
+                    ? 'border-[#d9a400] bg-[#fff8dc]'
+                    : 'border-[#eadfd2] bg-white'
               } ${disabled ? 'opacity-70' : ''}`}
             >
               <button
                 type="button"
+                disabled={disabled}
                 onClick={() => {
                   if (!disabled) {
                     onSelectTicket(ticket.code);
                   }
                 }}
-                className="min-w-0 flex-1 text-left"
+                className="min-w-0 flex-1 text-left disabled:cursor-not-allowed"
               >
                 <div className="flex min-w-0 items-center gap-2">
                   <div
@@ -151,10 +160,14 @@ const QrScreen: React.FC<QrScreenProps> = ({
                     <QrIcon size={19} color={disabled ? '#9a8f9d' : '#b8860b'} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-black tracking-[0.12em] text-[#241629]">
+                    <div
+                      className={`truncate text-sm font-black tracking-[0.12em] ${
+                        disabled ? 'text-[#756f78]' : 'text-[#241629]'
+                      }`}
+                    >
                       {ticket.code}
                     </div>
-                    <div className="mt-0.5 truncate text-[11px] text-[#7a7280]">
+                    <div className={`mt-0.5 truncate text-[11px] ${disabled ? 'text-[#918998]' : 'text-[#7a7280]'}`}>
                       {ticket.ticketClass || 'Beauty Summit Ticket'}
                     </div>
                   </div>
@@ -162,15 +175,20 @@ const QrScreen: React.FC<QrScreenProps> = ({
               </button>
               <div
                 className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold ${
-                  ticket.checkedIn ? 'bg-emerald-100 text-emerald-700' : 'bg-[#fff2cc] text-[#9f7400]'
+                  transferred
+                    ? 'bg-slate-200 text-slate-600'
+                    : ticket.checkedIn
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : 'bg-[#fff2cc] text-[#9f7400]'
                 }`}
               >
                 {ticket.statusLabel}
               </div>
               <button
                 type="button"
+                disabled={disabled}
                 onClick={() => onCopyTicketCode(ticket.code)}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f4edf2]"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f4edf2] disabled:cursor-not-allowed disabled:opacity-50"
                 aria-label={`Copy ${ticket.code}`}
               >
                 <CopyIcon size={15} color="#7a7280" />
@@ -212,9 +230,14 @@ const QrScreen: React.FC<QrScreenProps> = ({
       <div className="mt-3 text-xs leading-5 text-[#7a7280]">
         Nếu mã hợp lệ, hệ thống sẽ tự cập nhật vé này theo thông tin tài khoản hiện tại của bạn.
       </div>
-      {selectedTicket?.checkedIn ? (
+      {selectedTicketLockReason === 'checked-in' ? (
         <div className="mt-3 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
           Vé này đã check-in, vui lòng chọn hoặc nhập mã vé khác.
+        </div>
+      ) : null}
+      {selectedTicketLockReason === 'transferred' ? (
+        <div className="mt-3 rounded-xl bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-600">
+          Vé này đã được người khác nhận nên tạm khóa trên tài khoản này.
         </div>
       ) : null}
     </div>

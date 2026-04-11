@@ -110,9 +110,101 @@ export interface MiniAppTicketOrder {
   status: string;
   statusLabel: string;
   checkedIn: boolean;
+  disabled?: boolean;
+  transferLocked?: boolean;
+  canOpen?: boolean;
   checkinTime: string | null;
   createdAt: string | null;
+  buyerName?: string;
+  buyerPhone?: string;
+  holderName?: string;
+  holderPhone?: string;
 }
+
+export type MiniAppTicketLockReason = 'checked-in' | 'transferred';
+
+type MiniAppTicketAvailability = Pick<
+  MiniAppTicketOrder,
+  | 'checkedIn'
+  | 'disabled'
+  | 'transferLocked'
+  | 'canOpen'
+  | 'phone'
+  | 'buyerPhone'
+  | 'holderPhone'
+  | 'status'
+  | 'statusLabel'
+>;
+
+const normalizeMiniAppPhone = (value: string | null | undefined): string => {
+  const digits = String(value ?? '').replace(/\D/g, '');
+
+  if (!digits) {
+    return '';
+  }
+
+  if (digits.startsWith('84')) {
+    return digits;
+  }
+
+  if (digits.startsWith('0')) {
+    return `84${digits.slice(1)}`;
+  }
+
+  if (digits.length === 9) {
+    return `84${digits}`;
+  }
+
+  return digits;
+};
+
+const normalizeMiniAppStatus = (value: string | null | undefined): string =>
+  String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+
+export const getMiniAppTicketLockReason = (
+  ticket: MiniAppTicketAvailability | null | undefined,
+  viewerPhone?: string | null,
+): MiniAppTicketLockReason | null => {
+  if (!ticket) {
+    return null;
+  }
+
+  const viewerDigits = normalizeMiniAppPhone(viewerPhone);
+  const holderDigits = normalizeMiniAppPhone(ticket.holderPhone || ticket.phone);
+  const buyerDigits = normalizeMiniAppPhone(ticket.buyerPhone);
+  const normalizedStatus = normalizeMiniAppStatus(ticket.status);
+  const normalizedStatusLabel = normalizeMiniAppStatus(ticket.statusLabel);
+  const markedTransferred =
+    ticket.transferLocked ||
+    ticket.disabled ||
+    ticket.canOpen === false ||
+    normalizedStatus.includes('transfer') ||
+    normalizedStatus.includes('chuyen') ||
+    normalizedStatusLabel.includes('transfer') ||
+    normalizedStatusLabel.includes('chuyen');
+  const inferredTransferred =
+    Boolean(viewerDigits && holderDigits && viewerDigits !== holderDigits && (!buyerDigits || buyerDigits === viewerDigits)) ||
+    Boolean(!viewerDigits && buyerDigits && holderDigits && buyerDigits !== holderDigits && markedTransferred);
+
+  if (markedTransferred || inferredTransferred) {
+    return 'transferred';
+  }
+
+  if (ticket.checkedIn) {
+    return 'checked-in';
+  }
+
+  return null;
+};
+
+export const isMiniAppTicketDisabled = (
+  ticket: MiniAppTicketAvailability | null | undefined,
+  viewerPhone?: string | null,
+): boolean => getMiniAppTicketLockReason(ticket, viewerPhone) !== null;
 
 export interface MiniAppRewardState {
   completedIds: string[];

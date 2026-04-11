@@ -24,10 +24,12 @@ import OaWidgetModal from '@/features/beauty-summit/components/OaWidgetModal';
 import PermissionNoticeModal from '@/features/beauty-summit/components/PermissionNoticeModal';
 import RewardCompletionScreen from '@/features/beauty-summit/components/RewardCompletionScreen';
 import TicketHelpModal from '@/features/beauty-summit/components/TicketHelpModal';
+import VoteConfirmModal from '@/features/beauty-summit/components/VoteConfirmModal';
 import DashboardScreen from '@/features/beauty-summit/screens/DashboardScreen';
 import OnboardingScreen from '@/features/beauty-summit/screens/OnboardingScreen';
 import QrScreen from '@/features/beauty-summit/screens/QrScreen';
 import TermsScreen from '@/features/beauty-summit/screens/TermsScreen';
+import { getMiniAppTicketLockReason, isMiniAppTicketDisabled } from '@/features/beauty-summit/types';
 import type {
   BeautyTab,
   BeautyUserRole,
@@ -507,6 +509,11 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     categoryId: string;
     brandId: string;
   } | null>(null);
+  const [pendingVoteAction, setPendingVoteAction] = React.useState<{
+    category: VoteCategory;
+    brand: VoteBrand;
+  } | null>(null);
+  const [voteSubmitting, setVoteSubmitting] = React.useState<boolean>(false);
   const [toast, setToast] = React.useState<string | null>(null);
   const [checkinLog, setCheckinLog] = React.useState<CheckinLog[]>([]);
   const [ticketHelpOpen, setTicketHelpOpen] = React.useState<boolean>(false);
@@ -745,6 +752,11 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     voteCategories.find((category) => category.id === selectedBrandKey?.categoryId) ?? null;
   const selectedBrand: VoteBrand | null =
     selectedCategory?.brands.find((brand) => brand.id === selectedBrandKey?.brandId) ?? null;
+  const pendingVoteCategory: VoteCategory | null = pendingVoteAction?.category ?? null;
+  const pendingVoteBrand: VoteBrand | null = pendingVoteAction?.brand ?? null;
+  const pendingVoteSelected = Boolean(
+    pendingVoteCategory && pendingVoteBrand && votes[pendingVoteCategory.id] === pendingVoteBrand.id,
+  );
   const currentTicket = ticketOrders.find((ticket) => ticket.code === normalizeTicketCode(orderCode));
   const currentTicketLabel = formatTicketLabel(currentTicket?.ticketClass || currentTier.name);
 
@@ -755,6 +767,25 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     }
     toastTimer.current = window.setTimeout(() => setToast(null), 2200);
   }, []);
+
+  React.useEffect(() => {
+    const normalizedCode = normalizeTicketCode(orderCode);
+    if (!normalizedCode) {
+      return;
+    }
+
+    const selectedTicket = ticketOrders.find((ticket) => ticket.code === normalizedCode);
+    const lockReason = getMiniAppTicketLockReason(selectedTicket, zaloPhone);
+    if (!lockReason) {
+      return;
+    }
+
+    clearCachedQrTicket();
+    setQrGenerated(false);
+    setQrValue('');
+    setOrderCode('');
+    showToast(lockReason === 'transferred' ? 'Vé này đã được người khác nhận' : 'Mã vé này đã check-in');
+  }, [orderCode, showToast, ticketOrders, zaloPhone]);
 
   const handleOpenSupportOaChat = React.useCallback(async (): Promise<void> => {
     try {
@@ -891,7 +922,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   );
 
   React.useEffect(() => {
-    if (screen !== 'main' || !permissionsGranted || !zaloPhone || !zaloUserId) {
+    if ((screen !== 'main' && screen !== 'qr') || !permissionsGranted || !zaloPhone || !zaloUserId) {
       return;
     }
 
@@ -972,7 +1003,20 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   };
 
   const handleToggleVote = (category: VoteCategory, brand: VoteBrand): void => {
+    setPendingVoteAction({ category, brand });
+  };
+
+  const handleConfirmVote = (): void => {
+    if (!pendingVoteAction || voteSubmitting) {
+      return;
+    }
+
+    const { category, brand } = pendingVoteAction;
+    const isRemovingVote = votes[category.id] === brand.id;
+
     void (async () => {
+      setVoteSubmitting(true);
+
       try {
         await runRewardStateUpdate('toggle-vote', {
           categoryId: category.id,
@@ -982,9 +1026,14 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
         if (zaloUserId && zaloPhone) {
           await loadRewardBundle(zaloUserId, zaloPhone);
         }
-        showToast(`Đã cập nhật vote cho ${brand.name}`);
+        setPendingVoteAction(null);
+        showToast(
+          isRemovingVote ? `Đã hủy vote cho ${brand.name}` : `Đã vote cho ${brand.name}`,
+        );
       } catch (error) {
         showToast(readApiErrorMessage(error, 'Không thể cập nhật vote'));
+      } finally {
+        setVoteSubmitting(false);
       }
     })();
   };
@@ -998,7 +1047,14 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   };
 
   const handleSelectTicket = (ticketCode: string): void => {
-    setOrderCode(normalizeTicketCode(ticketCode));
+    const normalizedCode = normalizeTicketCode(ticketCode);
+    const selectedTicket = ticketOrders.find((ticket) => ticket.code === normalizedCode);
+
+    if (isMiniAppTicketDisabled(selectedTicket, zaloPhone)) {
+      return;
+    }
+
+    setOrderCode(normalizedCode);
   };
 
   const handleRefreshTicketOrders = (): void => {
@@ -1073,8 +1129,14 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       }
     }
 
-    if (selectedTicket.checkedIn) {
+    const lockReason = getMiniAppTicketLockReason(selectedTicket, zaloPhone);
+    if (lockReason === 'checked-in') {
       showToast('Mã vé này đã check-in');
+      return;
+    }
+
+    if (lockReason === 'transferred') {
+      showToast('Vé này đã được người khác nhận');
       return;
     }
 
@@ -1541,6 +1603,20 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
         loading={miniAppLoading}
         onApprove={handlePermissionApproved}
         onDeny={handlePermissionDenied}
+      />
+
+      <VoteConfirmModal
+        open={Boolean(pendingVoteAction)}
+        brand={pendingVoteBrand}
+        category={pendingVoteCategory}
+        voted={pendingVoteSelected}
+        loading={voteSubmitting}
+        onClose={() => {
+          if (!voteSubmitting) {
+            setPendingVoteAction(null);
+          }
+        }}
+        onConfirm={handleConfirmVote}
       />
 
       {screen === 'qr' && qrGenerated ? (
