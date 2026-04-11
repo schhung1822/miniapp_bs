@@ -19,203 +19,98 @@ const SPARKLES = [
   { left: '89%', top: '78%', size: 9, color: '#f5c49f', delay: '0.9s', duration: '2.2s' },
 ] as const;
 
+const displayFontClass = "font-['Playfair_Display',serif]";
+const bodyFontClass = "font-['Be_Vietnam_Pro',sans-serif]";
+
 const RewardCompletionScreen: React.FC<RewardCompletionScreenProps> = ({
   tier,
   orderCode,
   totalPoints,
   onBack,
 }) => {
-  const title = 'CHÚC MỪNG!';
-  const subtitle = `100% nhiệm vụ hoàn thành \u2022 ${totalPoints} BPoint`;
+  const title = 'CH\u00daC M\u1eeaNG!';
+  const subtitle = `100% nhi\u1ec7m v\u1ee5 ho\u00e0n th\u00e0nh \u2022 ${totalPoints} BPoint`;
   const grandPrizeTitle = '\u2605 GRAND PRIZE \u2605';
-  const rewardHeadingTop = 'Bạn đã đủ điều kiện';
-  const rewardHeadingMiddle = 'trúng thưởng';
+  const rewardHeadingTop = 'B\u1ea1n \u0111\u00e3 \u0111\u1ee7 \u0111i\u1ec1u ki\u1ec7n';
+  const rewardHeadingMiddle = 'tr\u00fang th\u01b0\u1edfng';
   const rewardDescription =
-    'Xuất trình màn hình này tại sân khấu chính để tham gia bốc thăm trúng thưởng xe VinFast VF3 trị giá 315 triệu đồng';
-  const rewardCodeLabel = 'Mã tham gia bốc thăm';
-  const backLabel = '\u2190 Quay lại';
+    'Xu\u1ea5t tr\u00ecnh m\u00e0n h\u00ecnh n\u00e0y t\u1ea1i s\u00e2n kh\u1ea5u ch\u00ednh \u0111\u1ec3 tham gia b\u1ed1c th\u0103m tr\u00fang xe VinFast VF3 tri gia 315 trieu dong';
+  const rewardCodeLabel = 'M\u00e3 tham gia b\u1ed1c th\u0103m';
+  const backLabel = '\u2190 Quay l\u1ea1i';
   const rewardCode = `VF3-${tier.substring(0, 1)}-${orderCode.slice(-4) || '0000'}-WIN`;
 
   return (
-    <div
-      className="beauty-reward-screen-modal relative h-full overflow-hidden"
-      style={{ padding: '70px 24px 40px' }}
-    >
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background:
-            'radial-gradient(circle at 50% 30%, rgba(196,30,127,0.25) 0%, transparent 60%)',
-          pointerEvents: 'none',
-        }}
-      />
+    <div className="beauty-reward-screen-modal relative h-full overflow-hidden px-6 pb-10 pt-[70px]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(196,30,127,0.25)_0%,transparent_60%)]" />
 
       {SPARKLES.map((particle, index) => (
         <div
           // eslint-disable-next-line react/no-array-index-key
           key={index}
-          className="beauty-reward-sparkle"
+          className="beauty-reward-sparkle absolute rounded-full"
           style={{
-            position: 'absolute',
             left: particle.left,
             top: particle.top,
             width: `${particle.size}px`,
             height: `${particle.size}px`,
             background: particle.color,
-            borderRadius: '50%',
             animationDelay: particle.delay,
             animationDuration: particle.duration,
           }}
         />
       ))}
 
-      <div
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          textAlign: 'center',
-        }}
-      >
+      <div className="relative z-10 text-center">
         <div className="beauty-reward-slide-up beauty-reward-float">
-          <div
-            style={{
-              marginBottom: 12,
-              filter: 'drop-shadow(0 0 30px rgba(255,215,0,0.4))',
-              display: 'flex',
-              justifyContent: 'center',
-            }}
-          >
+          <div className="mb-3 flex justify-center [filter:drop-shadow(0_0_30px_rgba(255,215,0,0.4))]">
             <TrophyIcon size={64} color="#FFD700" />
           </div>
 
           <h1
-            style={{
-              fontSize: 30,
-              fontWeight: 900,
-              marginBottom: 6,
-              background: 'linear-gradient(135deg, #FFD700, #FFF, #FFD700)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              fontFamily: '"Playfair Display", Georgia, serif',
-            }}
+            className={`${displayFontClass} mb-1.5 inline-block bg-gradient-to-r from-[#FFD700] via-white to-[#FFD700] bg-clip-text pb-1 pt-1 text-[30px] font-black leading-[1.2] text-transparent`}
           >
             {title}
           </h1>
 
-          <p
-            style={{
-              fontSize: 14,
-              color: '#FFB6D9',
-              fontWeight: 600,
-              fontFamily: '"Be Vietnam Pro", sans-serif',
-            }}
-          >
-            {subtitle}
-          </p>
+          <p className={`${bodyFontClass} text-sm font-semibold text-[#FFB6D9]`}>{subtitle}</p>
         </div>
 
         <div
-          className="beauty-reward-slide-up beauty-reward-card-glow"
-          style={{
-            background: 'linear-gradient(145deg, rgba(196,30,127,0.15), rgba(255,111,181,0.08))',
-            borderRadius: 22,
-            padding: 28,
-            border: '2px solid rgba(255,111,181,0.25)',
-            marginTop: 32,
-            animationDelay: '0.3s',
-          }}
+          className="beauty-reward-slide-up beauty-reward-card-glow mt-8 rounded-[22px] border-2 border-[rgba(255,111,181,0.25)] bg-[linear-gradient(145deg,rgba(196,30,127,0.15),rgba(255,111,181,0.08))] p-7"
+          style={{ animationDelay: '0.3s' }}
         >
           <div
-            style={{
-              fontSize: 12,
-              letterSpacing: 4,
-              color: '#4ade80',
-              marginBottom: 14,
-              fontWeight: 600,
-              fontFamily: '"Be Vietnam Pro", sans-serif',
-            }}
+            className={`${bodyFontClass} mb-3.5 text-xs font-semibold tracking-[0.33em] text-[#4ade80]`}
           >
             {grandPrizeTitle}
           </div>
 
-          <div
-            className="beauty-reward-float"
-            style={{
-              marginBottom: 14,
-              display: 'flex',
-              justifyContent: 'center',
-              animationDuration: '2s',
-            }}
-          >
+          <div className="beauty-reward-float mb-3.5 flex justify-center" style={{ animationDuration: '2s' }}>
             <TrophyIcon size={56} color="#FFD700" />
           </div>
 
           <h2
-            style={{
-              fontSize: 20,
-              fontWeight: 900,
-              marginBottom: 10,
-              lineHeight: 1.3,
-              color: '#fff6db',
-              fontFamily: '"Playfair Display", Georgia, serif',
-            }}
+            className={`${displayFontClass} mb-2.5 text-[20px] font-black leading-[1.3] text-[#fff6db]`}
           >
             {rewardHeadingTop}
             <br />
             {rewardHeadingMiddle}
             <br />
-            <span
-              style={{
-                background: 'linear-gradient(135deg, #22c55e, #4ade80)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                fontSize: 26,
-              }}
-            >
+            <span className="inline-block bg-gradient-to-r from-[#22c55e] to-[#4ade80] bg-clip-text text-[26px] text-transparent">
               VinFast VF3
             </span>
           </h2>
 
-          <p
-            style={{
-              fontSize: 12,
-              color: '#aaa',
-              lineHeight: 1.6,
-              fontWeight: 300,
-              marginBottom: 20,
-              fontFamily: '"Be Vietnam Pro", sans-serif',
-            }}
-          >
+          <p className={`${bodyFontClass} mb-5 text-xs font-light leading-[1.6] text-[#aaa]`}>
             {rewardDescription}
           </p>
 
-          <div
-            style={{
-              background: 'rgba(255,255,255,0.07)',
-              borderRadius: 10,
-              padding: '10px 18px',
-              display: 'inline-block',
-            }}
-          >
-            <div
-              style={{
-                fontSize: 10,
-                color: '#777',
-                marginBottom: 3,
-                fontFamily: '"Be Vietnam Pro", sans-serif',
-              }}
-            >
+          <div className="inline-block rounded-[10px] bg-[rgba(255,255,255,0.07)] px-[18px] py-[10px]">
+            <div className={`${bodyFontClass} mb-[3px] text-[10px] text-[#777]`}>
               {rewardCodeLabel}
             </div>
             <div
-              style={{
-                fontSize: 18,
-                fontWeight: 700,
-                letterSpacing: 4,
-                color: '#4ade80',
-                fontFamily: '"Be Vietnam Pro", sans-serif',
-              }}
+              className={`${bodyFontClass} text-[18px] font-bold tracking-[0.25em] text-[#4ade80]`}
             >
               {rewardCode}
             </div>
@@ -225,18 +120,7 @@ const RewardCompletionScreen: React.FC<RewardCompletionScreenProps> = ({
         <button
           type="button"
           onClick={onBack}
-          style={{
-            width: '100%',
-            padding: '14px',
-            borderRadius: 13,
-            border: '1px solid rgba(255,255,255,0.12)',
-            background: 'transparent',
-            color: '#bbb',
-            fontSize: 13,
-            cursor: 'pointer',
-            marginTop: 22,
-            fontFamily: '"Be Vietnam Pro", sans-serif',
-          }}
+          className={`${bodyFontClass} mt-[22px] w-full cursor-pointer rounded-[13px] border border-[rgba(255,255,255,0.12)] bg-transparent px-4 py-[14px] text-[13px] text-[#bbb]`}
         >
           {backLabel}
         </button>
