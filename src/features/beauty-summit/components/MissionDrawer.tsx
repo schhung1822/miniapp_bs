@@ -1,4 +1,5 @@
 import React from 'react';
+import { chooseImage } from 'zmp-sdk/apis';
 
 import type { Mission } from '@/features/beauty-summit/types';
 import { CameraIcon, CloseIcon, LinkIcon, QrIcon, VoteIcon } from '@/features/beauty-summit/icons';
@@ -11,6 +12,7 @@ interface MissionDrawerProps {
   onClose: () => void;
   onSubmit: () => void;
   onGoVote: () => void;
+  onRunAction: (mission: Mission) => void;
 }
 
 const MissionDrawer: React.FC<MissionDrawerProps> = ({
@@ -21,17 +23,55 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
   onClose,
   onSubmit,
   onGoVote,
+  onRunAction,
 }) => {
   if (!mission) {
     return null;
   }
 
-  const showInput = mission.proofType === 'link' || mission.proofType === 'code';
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const isActionMission = Boolean(mission.actionUrl);
+  const showInput =
+    (mission.proofType === 'link' || mission.proofType === 'code') && !isActionMission;
   const showUpload = mission.proofType === 'image';
   const isVoteAction = mission.proofType === 'vote';
   const isSurveyAction = mission.proofType === 'survey';
   const isReferralAction = mission.proofType === 'referral';
+  const hideSubmit = Boolean(mission.autoCompleteOnAction && isActionMission);
   const disableSubmit = showInput && value.trim().length === 0;
+  const hasUploadedImage = showUpload && value.trim().length > 0;
+
+  const handleChooseImage = async (): Promise<void> => {
+    try {
+      const result = await chooseImage({
+        sourceType: ['album'],
+        count: 1,
+      });
+      const selectedImage = result.filePaths?.[0];
+      if (selectedImage) {
+        onChange(selectedImage);
+        return;
+      }
+    } catch {
+      fileInputRef.current?.click();
+    }
+  };
+
+  const handleFileInputChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ): Promise<void> => {
+    const selectedFile = event.target.files?.[0];
+    if (!selectedFile) {
+      return;
+    }
+
+    if (value.startsWith('blob:')) {
+      URL.revokeObjectURL(value);
+    }
+
+    onChange(URL.createObjectURL(selectedFile));
+    event.target.value = '';
+  };
 
   const renderMissionIcon = (): React.ReactNode => {
     if (mission.proofType === 'image') {
@@ -118,19 +158,59 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
         ) : null}
 
         {showUpload ? (
+          <>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(event) => {
+                void handleFileInputChange(event);
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                void handleChooseImage();
+              }}
+              className="mb-4 flex w-full flex-col items-center rounded-[1.15rem] border border-dashed px-4 py-5 text-center"
+              style={{ borderColor: `${accentColor}38`, background: `${accentColor}0d` }}
+            >
+              {hasUploadedImage ? (
+                <>
+                  <img
+                    src={value}
+                    alt="Mission proof"
+                    className="h-24 w-24 rounded-[1rem] object-cover shadow-[0_10px_22px_rgba(184,134,11,0.14)]"
+                  />
+                  <div className="mt-3 text-xs text-[#7a7280]">Nhấn để chọn lại ảnh khác.</div>
+                </>
+              ) : (
+                <>
+                  <CameraIcon color={accentColor} size={26} />
+                  <div className="mt-3 text-sm font-semibold text-[#241629]">{mission.proofLabel}</div>
+                  <div className="mt-1 text-xs text-[#7a7280]">
+                    Chọn ảnh từ thư viện hoặc máy của bạn.
+                  </div>
+                </>
+              )}
+            </button>
+          </>
+        ) : null}
+
+        {isActionMission ? (
           <button
             type="button"
-            onClick={() => onChange('uploaded')}
-            className="mb-4 flex w-full flex-col items-center rounded-[1.15rem] border border-dashed px-4 py-5 text-center"
-            style={{ borderColor: `${accentColor}38`, background: `${accentColor}0d` }}
+            onClick={() => onRunAction(mission)}
+            className="mb-4 flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold"
+            style={{
+              borderColor: `${accentColor}2e`,
+              background: `${accentColor}12`,
+              color: accentColor,
+            }}
           >
-            <CameraIcon color={accentColor} size={26} />
-            <div className="mt-3 text-sm font-semibold text-[#241629]">{mission.proofLabel}</div>
-            <div className="mt-1 text-xs text-[#7a7280]">
-              {value
-                ? 'Da gan bang chung. Bam xac nhan de hoan thanh.'
-                : 'Nhan de gia lap upload anh.'}
-            </div>
+            <LinkIcon color={accentColor} />
+            {mission.actionLabel ?? mission.proofLabel ?? 'Mở link nhiệm vụ'}
           </button>
         ) : null}
 
@@ -170,19 +250,21 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
           </button>
         ) : null}
 
-        <button
-          type="button"
-          onClick={onSubmit}
-          disabled={disableSubmit}
-          className="w-full rounded-2xl px-4 py-3 text-sm font-bold !text-white transition disabled:cursor-not-allowed disabled:bg-[#ece7ec] disabled:!text-[#a69ba8]"
-          style={{
-            background: disableSubmit
-              ? undefined
-              : `linear-gradient(135deg, ${accentColor}, ${accentColor}cc)`,
-          }}
-        >
-          Xác nhận hoàn thành
-        </button>
+        {!hideSubmit ? (
+          <button
+            type="button"
+            onClick={onSubmit}
+            disabled={disableSubmit}
+            className="w-full rounded-2xl px-4 py-3 text-sm font-bold !text-white transition disabled:cursor-not-allowed disabled:bg-[#ece7ec] disabled:!text-[#a69ba8]"
+            style={{
+              background: disableSubmit
+                ? undefined
+                : `linear-gradient(135deg, ${accentColor}, ${accentColor}cc)`,
+            }}
+          >
+            Xác nhận hoàn thành
+          </button>
+        ) : null}
       </div>
     </div>
   );

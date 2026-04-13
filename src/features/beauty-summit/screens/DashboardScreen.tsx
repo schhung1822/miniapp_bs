@@ -80,6 +80,7 @@ interface DashboardScreenProps {
   onOpenMission: (mission: Mission) => void;
   onCloseMission: () => void;
   onSubmitMission: () => void;
+  onRunMissionAction: (mission: Mission) => void;
   onVoteQueryChange: (value: string) => void;
   onToggleVote: (category: VoteCategory, brand: VoteBrand) => void;
   onOpenBrand: (category: VoteCategory, brand: VoteBrand) => void;
@@ -174,6 +175,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
     onOpenMission,
     onCloseMission,
     onSubmitMission,
+    onRunMissionAction,
     onVoteQueryChange,
     onToggleVote,
     onOpenBrand,
@@ -802,6 +804,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
         onChange={onProofValueChange}
         onClose={onCloseMission}
         onSubmit={onSubmitMission}
+        onRunAction={onRunMissionAction}
         onGoVote={() => {
           onCloseMission();
           onTabChange('vote');

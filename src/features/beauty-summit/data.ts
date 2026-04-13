@@ -256,10 +256,13 @@ const createBaseMissions = (tier: TierKey): MissionSet => {
         steps: [
           'Truy cập fanpage Beauty Summit Vietnam trên Facebook.',
           'Like và Follow fanpage.',
-          'Chụp ảnh màn hình xác nhận và tải lên app.',
+          'Hệ thống sẽ ghi nhận sau khi bạn mở fanpage từ app.',
         ],
-        proofType: 'image',
-        proofLabel: 'Tải ảnh màn hình đã follow',
+        proofType: 'link',
+        proofLabel: 'Mở fanpage Beauty Summit Vietnam',
+        actionLabel: 'Mở fanpage',
+        actionUrl: 'https://www.facebook.com/BeautySummitVietnam',
+        autoCompleteOnAction: true,
       },
       {
         id: `${tier}-b3`,

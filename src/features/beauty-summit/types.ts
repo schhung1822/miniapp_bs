@@ -74,6 +74,9 @@ export interface Mission {
   proofType: ProofType;
   proofLabel?: string;
   proofPlaceholder?: string;
+  actionUrl?: string;
+  actionLabel?: string;
+  autoCompleteOnAction?: boolean;
   auto?: boolean;
   checkin?: boolean;
 }

@@ -29,6 +29,8 @@ const MissionCard: React.FC<MissionCardProps> = ({
   const actionLabel =
     mission.auto || mission.checkin
       ? 'Tự động'
+      : mission.actionUrl
+        ? 'Mở link'
       : mission.proofType === 'vote'
         ? 'Vote'
         : mission.proofType === 'image'

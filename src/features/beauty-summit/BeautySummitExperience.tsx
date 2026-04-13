@@ -9,7 +9,15 @@ import {
   getUserInfo,
   scanQRCode,
 } from 'zmp-sdk';
-import { authorize, getSystemInfo, nativeStorage, openChat, showOAWidget } from 'zmp-sdk/apis';
+import {
+  authorize,
+  getSetting,
+  getSystemInfo,
+  nativeStorage,
+  openChat,
+  openWebview,
+  showOAWidget,
+} from 'zmp-sdk/apis';
 
 import {
   CHECKIN_ZONES,
@@ -1115,6 +1123,39 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     })();
   };
 
+  const handleRunMissionAction = React.useCallback(
+    (mission: Mission): void => {
+      if (!mission.actionUrl) {
+        return;
+      }
+
+      void (async () => {
+        try {
+          if (isZaloRuntime()) {
+            await openWebview({
+              url: mission.actionUrl,
+            });
+          } else {
+            window.open(mission.actionUrl, '_blank', 'noopener,noreferrer');
+          }
+
+          if (mission.autoCompleteOnAction) {
+            const success = await markMissionComplete(mission.id);
+            if (success) {
+              setExpandedMissionId(null);
+            }
+            return;
+          }
+
+          showToast('Đã mở link nhiệm vụ');
+        } catch {
+          showToast('Không thể mở link nhiệm vụ');
+        }
+      })();
+    },
+    [markMissionComplete, showToast],
+  );
+
   const handleToggleVote = (category: VoteCategory, brand: VoteBrand): void => {
     setPendingVoteAction({ category, brand });
   };
@@ -1725,6 +1766,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           onOpenMission={(mission) => setExpandedMissionId(mission.id)}
           onCloseMission={() => setExpandedMissionId(null)}
           onSubmitMission={handleSubmitMission}
+          onRunMissionAction={handleRunMissionAction}
           onVoteQueryChange={setVoteQuery}
           onToggleVote={handleToggleVote}
           onOpenBrand={(category, brand) =>
