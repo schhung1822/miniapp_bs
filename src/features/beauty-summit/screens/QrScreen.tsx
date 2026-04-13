@@ -59,6 +59,7 @@ const QrScreen: React.FC<QrScreenProps> = ({
 }) => {
   const [entryMode, setEntryMode] = React.useState<'auto' | 'manual'>('auto');
   const [qrPreviewOpen, setQrPreviewOpen] = React.useState<boolean>(false);
+  const [viewportHeight, setViewportHeight] = React.useState<number>(0);
   const selectedTicket = ticketOrders.find((ticket) => ticket.code === orderCode);
   const selectedTicketLockReason = getMiniAppTicketLockReason(selectedTicket, userPhone);
   const maskedPhone = React.useMemo(() => {
@@ -79,6 +80,41 @@ const QrScreen: React.FC<QrScreenProps> = ({
     accumulator[item.zoneId] = (accumulator[item.zoneId] ?? 0) + 1;
     return accumulator;
   }, {});
+  const selectionPanelMaxHeight = React.useMemo(() => {
+    if (!viewportHeight) {
+      return undefined;
+    }
+
+    return Math.max(380, viewportHeight - 170);
+  }, [viewportHeight]);
+  const ticketListMaxHeight = React.useMemo(() => {
+    if (!viewportHeight) {
+      return 260;
+    }
+
+    return Math.max(180, viewportHeight - 410);
+  }, [viewportHeight]);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const updateViewportHeight = () => {
+      const nextHeight = Math.round(window.visualViewport?.height ?? window.innerHeight);
+      setViewportHeight(nextHeight);
+    };
+
+    updateViewportHeight();
+
+    window.addEventListener('resize', updateViewportHeight);
+    window.visualViewport?.addEventListener('resize', updateViewportHeight);
+
+    return () => {
+      window.removeEventListener('resize', updateViewportHeight);
+      window.visualViewport?.removeEventListener('resize', updateViewportHeight);
+    };
+  }, []);
 
   const renderTicketList = (): React.ReactNode => {
     if (ticketsLoading) {
@@ -123,7 +159,10 @@ const QrScreen: React.FC<QrScreenProps> = ({
     }
 
     return (
-      <div className="space-y-2.5">
+      <div
+        className="beauty-scroll h-full min-h-0 space-y-2.5 overflow-y-auto pr-1"
+        style={{ maxHeight: `${ticketListMaxHeight}px` }}
+      >
         {ticketOrders.map((ticket) => {
           const selected = ticket.code === orderCode;
           const disabled = isMiniAppTicketDisabled(ticket, userPhone);
@@ -261,8 +300,8 @@ const QrScreen: React.FC<QrScreenProps> = ({
 
   if (!qrGenerated) {
     return (
-      <div className="beauty-scroll h-full overflow-y-auto px-5 pb-10 pt-6">
-        <div className="mb-6 text-center">
+      <div className="flex h-full min-h-0 flex-col overflow-hidden px-5 pb-6 pt-6">
+        <div className="mb-6 shrink-0 text-center">
           <div
             className="mb-3 inline-flex rounded-full px-3 py-1 text-xs font-semibold text-[#170d1d]"
             style={{ background: tier.gradient }}
@@ -275,8 +314,11 @@ const QrScreen: React.FC<QrScreenProps> = ({
           </div>
         </div>
 
-        <div className="rounded-[1.35rem] border border-[#eadfd2] bg-white p-4 shadow-[0_8px_18px_rgba(36,22,41,0.06)]">
-          <div className="mb-3 flex items-center justify-between gap-3">
+        <div
+          className="flex min-h-0 flex-1 flex-col rounded-[1.35rem] border border-[#eadfd2] bg-white p-4 shadow-[0_8px_18px_rgba(36,22,41,0.06)]"
+          style={selectionPanelMaxHeight ? { maxHeight: `${selectionPanelMaxHeight}px` } : undefined}
+        >
+          <div className="mb-3 flex shrink-0 items-center justify-between gap-3">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-[0.16em] text-[#8b8790]">
                 Danh sách mã vé
@@ -292,7 +334,7 @@ const QrScreen: React.FC<QrScreenProps> = ({
             </button>
           </div>
 
-          <div className="mb-4 grid grid-cols-2 gap-2 rounded-[1rem] bg-white p-1">
+          <div className="mb-4 grid shrink-0 grid-cols-2 gap-2 rounded-[1rem] bg-white p-1">
             <button
               type="button"
               onClick={() => setEntryMode('auto')}
@@ -315,13 +357,15 @@ const QrScreen: React.FC<QrScreenProps> = ({
             </button>
           </div>
 
-          {entryMode === 'auto' ? renderTicketList() : renderManualTicketInput()}
+          <div className={entryMode === 'auto' ? 'min-h-0 flex-1 overflow-hidden' : 'shrink-0'}>
+            {entryMode === 'auto' ? renderTicketList() : renderManualTicketInput()}
+          </div>
 
           <button
             type="button"
             onClick={onGenerate}
             disabled={!canGenerate}
-            className="mt-4 w-full rounded-[1.15rem] px-4 py-4 text-sm font-bold disabled:cursor-not-allowed disabled:bg-[#d1d5db] disabled:text-[#6b7280]"
+            className="mt-4 w-full shrink-0 rounded-[1.15rem] px-4 py-4 text-sm font-bold disabled:cursor-not-allowed disabled:bg-[#d1d5db] disabled:text-[#6b7280]"
             style={canGenerate ? { background: 'linear-gradient(135deg, #f59e0b, #ffd970)', color: '#170d1d' } : undefined}
           >
             Tạo mã QR
