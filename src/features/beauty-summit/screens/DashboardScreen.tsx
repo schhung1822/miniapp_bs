@@ -94,6 +94,7 @@ interface DashboardScreenProps {
   onOpenQr: () => void;
   onChangeTicket: () => void;
   onOpenPolicy: () => void;
+  onLogout: () => void;
   onClosePolicy: () => void;
   onOpenScanner: () => void;
   onCloseScanner: () => void;
@@ -187,6 +188,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
     onOpenQr,
     onChangeTicket,
     onOpenPolicy,
+    onLogout,
     onClosePolicy,
     onCloseScanner,
     onRunScanner,
@@ -758,6 +760,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
       totalMissionCount={allMissionCount}
       userRole={userRole}
       onOpenPolicy={onOpenPolicy}
+      onLogout={onLogout}
     />
   );
 

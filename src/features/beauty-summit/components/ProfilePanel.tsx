@@ -13,6 +13,7 @@ interface ProfilePanelProps {
   totalMissionCount: number;
   userRole: BeautyUserRole;
   onOpenPolicy: () => void;
+  onLogout: () => void;
 }
 
 const getInitials = (value: string): string =>
@@ -33,6 +34,7 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
   totalMissionCount,
   userRole,
   onOpenPolicy,
+  onLogout,
 }) => {
   const roleLabel = userRole === 'receptionist' ? 'Lễ tân' : 'Khách tham dự';
 
@@ -103,6 +105,14 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
         <div className="shrink-0 text-zinc-500">
           <ChevronRightIcon size={16} color="currentColor" />
         </div>
+      </button>
+
+      <button
+        type="button"
+        onClick={onLogout}
+        className="w-full rounded-[1.2rem] border border-[#fecaca] bg-[#fff1f2] px-4 py-4 text-center text-[13px] font-bold text-[#dc2626] shadow-[0_10px_24px_rgba(220,38,38,0.06)]"
+      >
+        Đăng xuất
       </button>
     </div>
   );
