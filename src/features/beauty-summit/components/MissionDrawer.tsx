@@ -12,7 +12,6 @@ interface MissionDrawerProps {
   onClose: () => void;
   onSubmit: () => void;
   onGoVote: () => void;
-  onRunAction: (mission: Mission) => void;
 }
 
 const MissionDrawer: React.FC<MissionDrawerProps> = ({
@@ -23,21 +22,17 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
   onClose,
   onSubmit,
   onGoVote,
-  onRunAction,
 }) => {
   if (!mission) {
     return null;
   }
 
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
-  const isActionMission = Boolean(mission.actionUrl);
-  const showInput =
-    (mission.proofType === 'link' || mission.proofType === 'code') && !isActionMission;
+  const showInput = mission.proofType === 'link' || mission.proofType === 'code';
   const showUpload = mission.proofType === 'image';
   const isVoteAction = mission.proofType === 'vote';
   const isSurveyAction = mission.proofType === 'survey';
   const isReferralAction = mission.proofType === 'referral';
-  const hideSubmit = Boolean(mission.autoCompleteOnAction && isActionMission);
   const disableSubmit = showInput && value.trim().length === 0;
   const hasUploadedImage = showUpload && value.trim().length > 0;
 
@@ -198,22 +193,6 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
           </>
         ) : null}
 
-        {isActionMission ? (
-          <button
-            type="button"
-            onClick={() => onRunAction(mission)}
-            className="mb-4 flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold"
-            style={{
-              borderColor: `${accentColor}2e`,
-              background: `${accentColor}12`,
-              color: accentColor,
-            }}
-          >
-            <LinkIcon color={accentColor} />
-            {mission.actionLabel ?? mission.proofLabel ?? 'Mở link nhiệm vụ'}
-          </button>
-        ) : null}
-
         {isVoteAction ? (
           <button
             type="button"
@@ -243,28 +222,26 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
         {isReferralAction ? (
           <button
             type="button"
-            onClick={() => onChange('https://beautysummit.vn/ref/invite')}
+            onClick={() => onChange("")}
             className="mb-4 flex w-full items-center justify-center rounded-2xl border border-[#eadfd2] bg-white px-4 py-3 text-sm font-semibold text-[#241629]"
           >
             Sao chép link giới thiệu
           </button>
         ) : null}
 
-        {!hideSubmit ? (
-          <button
-            type="button"
-            onClick={onSubmit}
-            disabled={disableSubmit}
-            className="w-full rounded-2xl px-4 py-3 text-sm font-bold !text-white transition disabled:cursor-not-allowed disabled:bg-[#ece7ec] disabled:!text-[#a69ba8]"
-            style={{
-              background: disableSubmit
-                ? undefined
-                : `linear-gradient(135deg, ${accentColor}, ${accentColor}cc)`,
-            }}
-          >
-            Xác nhận hoàn thành
-          </button>
-        ) : null}
+        <button
+          type="button"
+          onClick={onSubmit}
+          disabled={disableSubmit}
+          className="w-full rounded-2xl px-4 py-3 text-sm font-bold !text-white transition disabled:cursor-not-allowed disabled:bg-[#ece7ec] disabled:!text-[#a69ba8]"
+          style={{
+            background: disableSubmit
+              ? undefined
+              : `linear-gradient(135deg, ${accentColor}, ${accentColor}cc)`,
+          }}
+        >
+          Xác nhận hoàn thành
+        </button>
       </div>
     </div>
   );

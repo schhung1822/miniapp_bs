@@ -22,6 +22,7 @@ import {
 } from '@/features/beauty-summit/icons';
 import BrandDetailDrawer from '@/features/beauty-summit/components/BrandDetailDrawer';
 import BeautyQrCode from '@/features/beauty-summit/components/BeautyQrCode';
+import DeveloperInfoDrawer from '@/features/beauty-summit/components/DeveloperInfoDrawer';
 import FooterNav from '@/features/beauty-summit/components/FooterNav';
 import MilestoneModal from '@/features/beauty-summit/components/MilestoneModal';
 import MissionCard from '@/features/beauty-summit/components/MissionCard';
@@ -69,6 +70,7 @@ interface DashboardScreenProps {
   selectedMilestone: Milestone | null;
   expandedMission: Mission | null;
   policyOpen: boolean;
+  developerInfoOpen: boolean;
   scannerOpen: boolean;
   scannerBusy: boolean;
   scannerResult: string | null;
@@ -80,7 +82,6 @@ interface DashboardScreenProps {
   onOpenMission: (mission: Mission) => void;
   onCloseMission: () => void;
   onSubmitMission: () => void;
-  onRunMissionAction: (mission: Mission) => void;
   onVoteQueryChange: (value: string) => void;
   onToggleVote: (category: VoteCategory, brand: VoteBrand) => void;
   onOpenBrand: (category: VoteCategory, brand: VoteBrand) => void;
@@ -95,8 +96,10 @@ interface DashboardScreenProps {
   onOpenQr: () => void;
   onChangeTicket: () => void;
   onOpenPolicy: () => void;
+  onOpenDeveloperInfo: () => void;
   onLogout: () => void;
   onClosePolicy: () => void;
+  onCloseDeveloperInfo: () => void;
   onOpenScanner: () => void;
   onCloseScanner: () => void;
   onRunScanner: () => void;
@@ -164,6 +167,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
     selectedMilestone,
     expandedMission,
     policyOpen,
+    developerInfoOpen,
     scannerOpen,
     scannerBusy,
     scannerResult,
@@ -175,7 +179,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
     onOpenMission,
     onCloseMission,
     onSubmitMission,
-    onRunMissionAction,
     onVoteQueryChange,
     onToggleVote,
     onOpenBrand,
@@ -190,8 +193,10 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
     onOpenQr,
     onChangeTicket,
     onOpenPolicy,
+    onOpenDeveloperInfo,
     onLogout,
     onClosePolicy,
+    onCloseDeveloperInfo,
     onCloseScanner,
     onRunScanner,
   } = props;
@@ -762,6 +767,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
       totalMissionCount={allMissionCount}
       userRole={userRole}
       onOpenPolicy={onOpenPolicy}
+      onOpenDeveloperInfo={onOpenDeveloperInfo}
       onLogout={onLogout}
     />
   );
@@ -804,7 +810,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
         onChange={onProofValueChange}
         onClose={onCloseMission}
         onSubmit={onSubmitMission}
-        onRunAction={onRunMissionAction}
         onGoVote={() => {
           onCloseMission();
           onTabChange('vote');
@@ -834,6 +839,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
         onClaim={onClaimMilestone}
       />
       <PolicyDrawer open={policyOpen} onClose={onClosePolicy} />
+      <DeveloperInfoDrawer open={developerInfoOpen} onClose={onCloseDeveloperInfo} />
       <ScanDrawer
         open={scannerOpen}
         userRole={userRole}
@@ -871,6 +877,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
           selectedBrand ||
           selectedMilestone ||
           policyOpen ||
+          developerInfoOpen ||
           scannerOpen ||
           qrPreviewOpen
         )}

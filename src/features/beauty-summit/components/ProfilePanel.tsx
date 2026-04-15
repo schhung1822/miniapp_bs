@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { ChevronRightIcon, PolicyIcon, StarIcon } from '@/features/beauty-summit/icons';
+import { ChevronRightIcon, PolicyIcon, ProfileIcon, StarIcon } from '@/features/beauty-summit/icons';
 import type { BeautyUserRole } from '@/features/beauty-summit/types';
 
 interface ProfilePanelProps {
@@ -13,6 +13,7 @@ interface ProfilePanelProps {
   totalMissionCount: number;
   userRole: BeautyUserRole;
   onOpenPolicy: () => void;
+  onOpenDeveloperInfo: () => void;
   onLogout: () => void;
 }
 
@@ -34,6 +35,7 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
   totalMissionCount,
   userRole,
   onOpenPolicy,
+  onOpenDeveloperInfo,
   onLogout,
 }) => {
   const roleLabel = userRole === 'receptionist' ? 'Lễ tân' : 'Khách tham dự';
@@ -100,6 +102,25 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
           <div className="text-[13px] font-bold text-[#241629]">Chính sách ứng dụng</div>
           <div className="mt-1 text-[11px] leading-5 text-[#7a7280]">
             Xem quy định sự kiện, BPoint, voucher và chính sách dữ liệu cá nhân.
+          </div>
+        </div>
+        <div className="shrink-0 text-zinc-500">
+          <ChevronRightIcon size={16} color="currentColor" />
+        </div>
+      </button>
+
+      <button
+        type="button"
+        onClick={onOpenDeveloperInfo}
+        className="flex w-full items-center gap-3 rounded-[1.2rem] border border-[#eadfd2] bg-white px-4 py-4 text-left shadow-[0_10px_24px_rgba(184,134,11,0.06)]"
+      >
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1rem] bg-[#dbeafe] text-[#2563eb]">
+          <ProfileIcon size={21} color="#2563eb" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-[13px] font-bold text-[#241629]">Thông tin nhà phát triển</div>
+          <div className="mt-1 text-[11px] leading-5 text-[#7a7280]">
+            Xem mã số doanh nghiệp, số điện thoại hỗ trợ và phiên bản Mini App hiện tại.
           </div>
         </div>
         <div className="shrink-0 text-zinc-500">
