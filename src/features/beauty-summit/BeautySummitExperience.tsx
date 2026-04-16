@@ -191,7 +191,7 @@ const formatPhoneDisplay = (value: string): string => {
 };
 const normalizeTicketCode = (value: string): string => value.trim().toUpperCase();
 const buildCheckinQrValue = (phone: string, ticketCode: string): string =>
-  `${normalizePhoneValue(phone)}|${normalizeTicketCode(ticketCode)}`;
+  `${phone}|${normalizeTicketCode(ticketCode)}`;
 
 const isMeaningfulZaloName = (value: string | null | undefined): boolean => {
   const normalizedValue = String(value ?? '').trim();
