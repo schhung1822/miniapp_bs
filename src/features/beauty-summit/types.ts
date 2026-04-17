@@ -90,17 +90,15 @@ export interface MissionSet {
 export interface CheckinZone {
   id: string;
   name: string;
-  location: string;
-  color: string;
-  tiers: TierKey[];
-  desc: string;
+  allowedTiers: TierKey[];
+  imageUrl: string | null;
+  isActive: boolean;
+  eventDate: string | null;
 }
 
 export interface CheckinLog {
   id: string;
   zoneId: string;
-  zoneName: string;
-  color: string;
   time: string;
   day: string;
 }
@@ -117,6 +115,7 @@ export interface MiniAppTicketOrder {
   transferLocked?: boolean;
   canOpen?: boolean;
   checkinTime: string | null;
+  zoneId?: string;
   createdAt: string | null;
   buyerName?: string;
   buyerPhone?: string;

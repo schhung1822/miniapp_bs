@@ -344,21 +344,6 @@ const createBaseMissions = (tier: TierKey): MissionSet => {
     ],
     day2: [
       {
-        id: `${tier}-d2-1`,
-        title: 'Check-in cổng sự kiện ngày 2',
-        desc: 'Check-in lại ở cổng trong ngày thứ hai.',
-        points: 15,
-        phase: 'day2',
-        steps: [
-          'Trở lại cổng chính vào ngày 2.',
-          'Mở QR trong app và đưa staff quét.',
-          'Hệ thống tự ghi nhận khi check-in thành công.',
-        ],
-        proofType: 'scan',
-        proofLabel: 'Quét bởi nhân viên tại cổng',
-        checkin: true,
-      },
-      {
         id: `${tier}-d2-2`,
         title: 'Đánh giá sự kiện',
         desc: 'Hoàn thành khảo sát nhanh về trải nghiệm tại Beauty Summit 2026.',

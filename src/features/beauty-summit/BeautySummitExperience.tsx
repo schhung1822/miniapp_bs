@@ -558,6 +558,7 @@ const loadMiniAppRewards = async (user: CachedZaloUser): Promise<{
 
 const loadMiniAppBootstrapBundle = async (user: CachedZaloUser): Promise<{
   tickets: MiniAppTicketOrder[];
+  checkinZones: CheckinZone[];
   rewards: {
     state: MiniAppRewardState;
     vouchers: {
@@ -585,6 +586,7 @@ const loadMiniAppBootstrapBundle = async (user: CachedZaloUser): Promise<{
 
   return {
     tickets: data?.tickets ?? [],
+    checkinZones: data?.checkinZones ?? [],
     rewards: {
       state,
       vouchers: {
@@ -666,6 +668,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   } | null>(null);
   const [voteSubmitting, setVoteSubmitting] = React.useState<boolean>(false);
   const [toast, setToast] = React.useState<string | null>(null);
+  const [checkinZones, setCheckinZones] = React.useState<CheckinZone[]>([]);
   const [checkinLog, setCheckinLog] = React.useState<CheckinLog[]>([]);
   const [ticketHelpOpen, setTicketHelpOpen] = React.useState<boolean>(false);
   const [oaPromptOpen, setOaPromptOpen] = React.useState<boolean>(false);
@@ -676,6 +679,20 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const [permissionsGranted, setPermissionsGranted] = React.useState<boolean>(false);
   const [policyOpen, setPolicyOpen] = React.useState<boolean>(false);
   const [developerInfoOpen, setDeveloperInfoOpen] = React.useState<boolean>(false);
+
+  const applyOrdersToCheckinLog = React.useCallback((orders: MiniAppTicketOrder[]) => {
+    const logs = orders.filter((t) => t.checkedIn).map((t) => {
+      const timeStr = t.checkinTime ? new Date(t.checkinTime).toLocaleTimeString('vi-VN') : '';
+      const dayStr = t.checkinTime ? new Date(t.checkinTime).toLocaleDateString('en-GB') : '';
+      return {
+        id: `log-${t.code}`,
+        zoneId: t.zoneId || '',
+        time: timeStr,
+        day: dayStr,
+      };
+    });
+    setCheckinLog(logs);
+  }, []);
   const [scannerOpen, setScannerOpen] = React.useState<boolean>(false);
   const [scannerBusy, setScannerBusy] = React.useState<boolean>(false);
   const [scannerResult, setScannerResult] = React.useState<string | null>(null);
@@ -873,7 +890,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const progress =
     allMissions.length === 0 ? 0 : Math.round((completedIds.length / allMissions.length) * 100);
   const currentTier = TIERS[tier];
-  const accessibleZones = CHECKIN_ZONES.filter((zone) => zone.tiers.includes(tier));
+  const accessibleZones = checkinZones.filter((zone) => zone.allowedTiers.includes(tier));
 
   const phaseProgressMap: Record<MissionPhase, number> = {
     before: Math.round(
@@ -1017,6 +1034,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
 
       syncCachedQrWithTicketOrders(orders, normalizedZid, normalizedPhone);
       setTicketOrders(orders);
+      applyOrdersToCheckinLog(orders);
     } catch (error) {
       if (shouldRetryTicketFetchAfterSync(error)) {
         console.warn('[BeautySummit] ticket list unauthorized, retrying after user sync:', error);
@@ -1033,6 +1051,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           const retryOrders = await fetchMiniAppTicketOrders(normalizedZid, normalizedPhone);
           syncCachedQrWithTicketOrders(retryOrders, normalizedZid, normalizedPhone);
           setTicketOrders(retryOrders);
+          applyOrdersToCheckinLog(retryOrders);
           setTicketsError(null);
           return;
         } catch (retryError) {
@@ -1048,7 +1067,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       setTicketsLoading(false);
       setMiniAppLoading(false);
     }
-  }, [syncCachedQrWithTicketOrders, zaloProfile.avatar, zaloProfile.name]);
+  }, [applyOrdersToCheckinLog, syncCachedQrWithTicketOrders, zaloProfile.avatar, zaloProfile.name]);
 
   const loadRewardBundle = React.useCallback(async (zid: string, phone: string): Promise<void> => {
     const normalizedZid = zid.trim();
@@ -1109,6 +1128,9 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       const bundle = await loadMiniAppBootstrapBundle(currentUser);
       syncCachedQrWithTicketOrders(bundle.tickets, normalizedZid, normalizedPhone);
       setTicketOrders(bundle.tickets);
+      setCheckinZones(bundle.checkinZones);
+      applyOrdersToCheckinLog(bundle.tickets);
+      
       applyLoadedRewards(bundle.rewards);
     } catch (error) {
       console.warn('[BeautySummit] bootstrap bundle failed, falling back to split loaders:', error);
@@ -1120,7 +1142,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       setTicketsLoading(false);
       setMiniAppLoading(false);
     }
-  }, [applyLoadedRewards, loadRewardBundle, loadTicketOrders, syncCachedQrWithTicketOrders, zaloProfile.avatar, zaloProfile.name]);
+  }, [applyLoadedRewards, applyOrdersToCheckinLog, loadRewardBundle, loadTicketOrders, syncCachedQrWithTicketOrders, zaloProfile.avatar, zaloProfile.name]);
 
   const runRewardStateUpdate = React.useCallback(
     async (
@@ -1504,40 +1526,6 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     }
   };
 
-  const handleDemoCheckin = (zoneId: string): void => {
-    const zone = accessibleZones.find((item) => item.id === zoneId);
-    if (!zone) {
-      return;
-    }
-
-    const now = new Date();
-    const time = `${now.getHours().toString().padStart(2, '0')}:${now
-      .getMinutes()
-      .toString()
-      .padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
-    const gateCheckins = checkinLog.filter((item) => item.zoneId === 'gate').length;
-    const day = gateCheckins === 0 ? 'Ngày 1' : 'Ngày 2';
-
-    setCheckinLog((current) => [
-      {
-        id: `${zone.id}-${Date.now()}`,
-        zoneId: zone.id,
-        zoneName: zone.name,
-        color: zone.color,
-        time,
-        day,
-      },
-      ...current,
-    ]);
-
-    if (zone.id === 'gate') {
-      const missionId = gateCheckins === 0 ? `${tier}-d1-1` : `${tier}-d2-1`;
-      void markMissionComplete(missionId, `Đã ghi nhận check-in ${day.toLowerCase()}`);
-    }
-
-    showToast(`Đã quét tại ${zone.name}`);
-  };
-
   const handleLogout = React.useCallback((): void => {
     clearBeautySummitNativeStorage();
     setPermissionStep(null);
@@ -1796,7 +1784,6 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           onEditTicketCode={handleEditTicketCode}
           onCopyTicketCode={handleCopyTicketCode}
           onRefreshTickets={handleRefreshTicketOrders}
-          onDemoCheckin={handleDemoCheckin}
           onOpenTicketHelp={() => setTicketHelpOpen(true)}
         />
       ) : null}

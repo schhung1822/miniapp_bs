@@ -28,7 +28,6 @@ interface QrScreenProps {
   onEditTicketCode: () => void;
   onCopyTicketCode: (ticketCode: string) => void;
   onRefreshTickets: () => void;
-  onDemoCheckin: (zoneId: string) => void;
   onOpenTicketHelp: () => void;
 }
 
@@ -54,7 +53,6 @@ const QrScreen: React.FC<QrScreenProps> = ({
   onEditTicketCode,
   onCopyTicketCode,
   onRefreshTickets,
-  onDemoCheckin,
   onOpenTicketHelp,
 }) => {
   const [entryMode, setEntryMode] = React.useState<'auto' | 'manual'>('auto');
@@ -443,42 +441,50 @@ const QrScreen: React.FC<QrScreenProps> = ({
 
       <div className="mb-2 text-sm font-bold text-[#241629]">Khu vực check-in</div>
       <div className="mb-4 text-xs text-[#7a7280]">
-        Staff ở mỗi điểm sẽ quét QR của bạn. Bấm “demo” để giả lập thao tác quét.
+        Staff ở mỗi điểm sẽ quét QR của bạn.
       </div>
 
       <div className="space-y-3">
         {zones.map((zone) => {
           const count = checkinCountByZone[zone.id] ?? 0;
           const logs = checkinLog.filter((item) => item.zoneId === zone.id);
+          const zoneColor = '#C41E7F';
 
           return (
             <div
               key={zone.id}
               className="rounded-[1.1rem] border bg-white p-4 shadow-[0_6px_14px_rgba(36,22,41,0.04)]"
               style={{
-                borderColor: count > 0 ? `${zone.color}33` : '#eadfd2',
+                borderColor: count > 0 ? `${zoneColor}33` : '#eadfd2',
               }}
             >
               <div className="flex items-start gap-3">
                 <div
                   className="beauty-crisp-edge flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl"
-                  style={{ background: `${zone.color}1e`, border: `1px solid ${zone.color}30` }}
+                  style={{ background: `${zoneColor}1e`, border: `1px solid ${zoneColor}30` }}
                 >
-                  <BeautyQrCode
-                    value={qrValue}
-                    size={26}
-                    wrapperClassName="h-[26px] w-[26px]"
-                    canvasClassName="h-[26px] w-[26px] rounded-[0.45rem]"
-                    logoSize={8}
-                    logoRingClassName="border-[3px]"
-                  />
+                  {zone.imageUrl ? (
+                    <img src={zone.imageUrl} className="h-full w-full object-cover" alt="" />
+                  ) : (
+                    <BeautyQrCode
+                      value={qrValue}
+                      size={26}
+                      wrapperClassName="h-[26px] w-[26px]"
+                      canvasClassName="h-[26px] w-[26px] rounded-[0.45rem]"
+                      logoSize={8}
+                      logoRingClassName="border-[3px]"
+                    />
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-semibold text-[#241629]">{zone.name}</div>
-                  <div className="mt-1 text-xs text-[#7a7280]">{zone.location}</div>
-                  <div className="mt-2 text-xs text-[#7a7280]">{zone.desc}</div>
+                  {zone.eventDate ? (
+                     <div className="mt-1 text-xs text-[#7a7280]">
+                        Ngày: {zone.eventDate.split('T')[0].split('-').reverse().join('/')}
+                     </div>
+                  ) : null}
                 </div>
-                <div className="text-right text-xs font-semibold" style={{ color: zone.color }}>
+                <div className="text-right text-xs font-semibold" style={{ color: zoneColor }}>
                   {count > 0 ? `${count} lượt` : 'Chờ quét'}
                 </div>
               </div>
@@ -486,27 +492,15 @@ const QrScreen: React.FC<QrScreenProps> = ({
                 <div className="mt-3 space-y-1 pl-[52px] text-xs text-[#7a7280]">
                   {logs.map((log) => (
                     <div key={log.id} className="flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full" style={{ background: zone.color }} />
+                      <span className="h-1.5 w-1.5 rounded-full" style={{ background: zoneColor }} />
                       <span>{log.day}</span>
-                      <span className="font-semibold" style={{ color: zone.color }}>
+                      <span className="font-semibold" style={{ color: zoneColor }}>
                         {log.time}
                       </span>
                     </div>
                   ))}
                 </div>
               ) : null}
-              <button
-                type="button"
-                onClick={() => onDemoCheckin(zone.id)}
-                className="mt-3 rounded-full px-3 py-1.5 text-[11px] font-semibold"
-                style={{
-                  color: zone.color,
-                  background: `${zone.color}0e`,
-                  border: `1px dashed ${zone.color}33`,
-                }}
-              >
-                Demo: staff quét
-              </button>
             </div>
           );
         })}
