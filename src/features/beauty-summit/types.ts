@@ -182,7 +182,6 @@ export const getMiniAppTicketLockReason = (
   const normalizedStatusLabel = normalizeMiniAppStatus(ticket.statusLabel);
   const markedTransferred =
     ticket.transferLocked ||
-    ticket.disabled ||
     ticket.canOpen === false ||
     normalizedStatus.includes('transfer') ||
     normalizedStatus.includes('chuyen') ||
@@ -206,7 +205,10 @@ export const getMiniAppTicketLockReason = (
 export const isMiniAppTicketDisabled = (
   ticket: MiniAppTicketAvailability | null | undefined,
   viewerPhone?: string | null,
-): boolean => getMiniAppTicketLockReason(ticket, viewerPhone) !== null;
+): boolean => {
+  const reason = getMiniAppTicketLockReason(ticket, viewerPhone);
+  return reason === 'transferred';
+};
 
 export interface MiniAppRewardState {
   completedIds: string[];

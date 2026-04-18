@@ -267,11 +267,6 @@ const QrScreen: React.FC<QrScreenProps> = ({
       <div className="mt-3 text-xs leading-5 text-[#7a7280]">
         Nếu mã hợp lệ, hệ thống sẽ tự cập nhật vé này theo thông tin tài khoản hiện tại của bạn.
       </div>
-      {selectedTicketLockReason === 'checked-in' ? (
-        <div className="mt-3 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
-          Vé này đã check-in, vui lòng chọn hoặc nhập mã vé khác.
-        </div>
-      ) : null}
       {selectedTicketLockReason === 'transferred' ? (
         <div className="mt-3 rounded-xl bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-600">
           Vé này đã được người khác nhận nên tạm khóa trên tài khoản này.
