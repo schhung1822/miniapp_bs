@@ -945,7 +945,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
 
     const selectedTicket = ticketOrders.find((ticket) => ticket.code === normalizedCode);
     const lockReason = getMiniAppTicketLockReason(selectedTicket, zaloPhone);
-    if (!lockReason) {
+    if (lockReason !== 'transferred') {
       return;
     }
 
@@ -953,7 +953,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     setQrGenerated(false);
     setQrValue('');
     setOrderCode('');
-    showToast(lockReason === 'transferred' ? 'Vé này đã được người khác nhận' : 'Mã vé này đã check-in');
+    showToast('Vé này đã được người khác nhận');
   }, [orderCode, showToast, ticketOrders, zaloPhone]);
 
   const syncCachedQrWithTicketOrders = React.useCallback(
@@ -1381,11 +1381,6 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     }
 
     const lockReason = getMiniAppTicketLockReason(selectedTicket, zaloPhone);
-    if (lockReason === 'checked-in') {
-      showToast('Mã vé này đã check-in');
-      return;
-    }
-
     if (lockReason === 'transferred') {
       showToast('Vé này đã được người khác nhận');
       return;

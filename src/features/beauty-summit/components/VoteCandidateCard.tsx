@@ -2,6 +2,7 @@ import React from 'react';
 
 import type { VoteBrand, VoteCategory } from '@/features/beauty-summit/types';
 import { ThumbsUpIcon } from '@/features/beauty-summit/icons';
+import { apiConfig } from '@/lib/api-client';
 
 interface VoteCandidateCardProps {
   category: VoteCategory;
@@ -14,9 +15,20 @@ interface VoteCandidateCardProps {
   onToggleVote: (category: VoteCategory, brand: VoteBrand) => void;
 }
 
-const VOTE_IMAGE_PATTERN = /^(data:image\/|https?:\/\/|\/)/i;
+const VOTE_IMAGE_PATTERN = /^(data:image\/|https?:\/\/|\/?(avatars|images|public)\/)/i;
 
 const isVoteImage = (value?: string): boolean => VOTE_IMAGE_PATTERN.test(String(value ?? '').trim());
+
+const getAbsoluteImageUrl = (url?: string): string | undefined => {
+  if (!url) return undefined;
+  const trimmed = url.trim();
+  if (!trimmed) return undefined;
+  if (/^(https?:\/\/|data:image\/)/i.test(trimmed)) return trimmed;
+  // If it's a relative path starting with avatars/ or images/, give it a slash
+  const path = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  // For dev environment and API resolution
+  return `${apiConfig.baseURL}${path}`;
+};
 
 const buildVoteFallback = (value: string): string =>
   value
@@ -67,7 +79,7 @@ const VoteCandidateCard: React.FC<VoteCandidateCardProps> = ({
           >
             {isVoteImage(brand.logo || brand.link) ? (
               <img
-                src={brand.logo || brand.link}
+                src={getAbsoluteImageUrl(brand.logo || brand.link)}
                 alt={title}
                 className="h-[58px] w-[58px] shrink-0 rounded-[0.9rem] object-cover shadow-[0_6px_14px_rgba(36,22,41,0.1)]"
               />

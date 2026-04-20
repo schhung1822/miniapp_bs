@@ -222,10 +222,13 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
         {isReferralAction ? (
           <button
             type="button"
-            onClick={() => onChange("")}
+            onClick={() => {
+              navigator.clipboard?.writeText("abc").catch(() => {});
+              onChange("abc");
+            }}
             className="mb-4 flex w-full items-center justify-center rounded-2xl border border-[#eadfd2] bg-white px-4 py-3 text-sm font-semibold text-[#241629]"
           >
-            Sao chép link giới thiệu
+            {value === "abc" ? "Đã sao chép link" : "Sao chép link giới thiệu"}
           </button>
         ) : null}
 

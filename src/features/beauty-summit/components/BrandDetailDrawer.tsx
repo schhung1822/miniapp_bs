@@ -100,14 +100,11 @@ const BrandDetailDrawer: React.FC<BrandDetailDrawerProps> = ({
           </div>
         </div>
 
-        <div className="mb-5 rounded-[1.1rem] border border-[#eadfd2] bg-white p-4 shadow-[0_10px_22px_rgba(184,134,11,0.06)]">
+        <div className="mb-5 rounded-[1.1rem] border border-[#eadfd2] bg-white p-4 shadow-[0_10px_22px_rgba(184,134,11,0.06)] max-h-[220px] overflow-y-auto">
           <div className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#9a8f9d]">
             Tóm tắt
           </div>
-          <p className="text-sm leading-6 text-[#5b5360]">{summary}</p>
-        </div>
-
-        <div className="mb-6">
+            <p className="text-sm leading-6 text-[#5b5360] whitespace-pre-wrap break-words">{summary}</p>
           <div className="mb-2 flex items-center justify-between text-xs">
             <span className="text-[#8a7e8b]">Tỷ lệ vote</span>
             <span className="font-semibold" style={{ color: category.color }}>
