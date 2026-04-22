@@ -5,8 +5,8 @@ import { MissionIcon, ProfileIcon, QrIcon, VoucherIcon, VoteIcon } from '@/featu
 import FooterWave from '@/features/beauty-summit/components/FooterWave';
 import type { BeautyTab } from '@/features/beauty-summit/types';
 
-const ACTIVE_NAV_COLOR = '#241629';
-const INACTIVE_NAV_COLOR = '#c7ad62';
+const ACTIVE_NAV_COLOR = '#ffffff';
+const INACTIVE_NAV_COLOR = '#b7b0c3';
 
 interface FooterNavProps {
   activeTab: BeautyTab;
@@ -52,10 +52,10 @@ const FooterNav: React.FC<FooterNavProps> = ({ activeTab, onChange, onQrClick, h
       <FooterWave
         className="absolute inset-x-0 bottom-[var(--safe-bottom)] z-10 -mb-6 h-24"
         style={{
-          filter: 'drop-shadow(0px 4px 20px rgba(0, 0, 0, 0.08))',
+          filter: 'drop-shadow(0px 8px 24px rgba(73, 5, 105, 0.28))',
         }}
       />
-      <div className="pointer-events-auto relative z-20 grid w-full grid-cols-[1fr_1fr_1fr_1fr_1fr] justify-center bg-white px-4 pb-[var(--safe-bottom)] pt-2 text-[11px] leading-4">
+      <div className="pointer-events-auto relative z-20 grid w-full grid-cols-[1fr_1fr_1fr_1fr_1fr] justify-center bg-[linear-gradient(180deg,rgba(122,16,164,0.92)_0%,rgba(92,8,131,0.98)_100%)] px-4 pb-[var(--safe-bottom)] pt-2 text-[11px] leading-4">
           {tabs.slice(0, 2).map((tab) => {
             const active = tab.key === activeTab;
 
@@ -69,7 +69,7 @@ const FooterNav: React.FC<FooterNavProps> = ({ activeTab, onChange, onQrClick, h
                 <div className="flex h-6 w-6 items-center justify-center">{tab.renderIcon(active)}</div>
                 <span
                   className={`truncate text-[12px] leading-4 ${
-                    active ? 'text-[#241629]' : 'text-[#c7ad62]'
+                    active ? 'text-[#ffffff]' : 'text-[#b7b0c3]'
                   }`}
                 >
                   {tab.label}
@@ -84,8 +84,12 @@ const FooterNav: React.FC<FooterNavProps> = ({ activeTab, onChange, onQrClick, h
             className="flex flex-col items-center p-1 active:scale-105"
             aria-label="Mở mã QR"
           >
-            <span className="footer-qr-scan -mt-4 flex h-[50px] w-[50px] items-center justify-center overflow-hidden rounded-full bg-[linear-gradient(135deg,#ffd54a,#d9a400)] shadow-lg shadow-[#f5c84b4d]">
-              <QrIcon size={30} color="#ffffff" />
+            <span className="footer-qr-scan -mt-4 flex h-[50px] w-[50px] items-center justify-center overflow-hidden rounded-full border border-[#ffb4d8] bg-[linear-gradient(135deg,#DF2757_20%,#612C8F_80%)] shadow-lg shadow-[#ff4b9766]">
+              <QrIcon
+                size={30}
+                color="#ffffff"
+                className="drop-shadow-[0_1px_4px_rgba(255,255,255,0.28)]"
+              />
             </span>
           </button>
 
@@ -102,7 +106,7 @@ const FooterNav: React.FC<FooterNavProps> = ({ activeTab, onChange, onQrClick, h
                 <div className="flex h-6 w-6 items-center justify-center">{tab.renderIcon(active)}</div>
                 <span
                   className={`truncate text-[12px] leading-4 ${
-                    active ? 'text-[#241629]' : 'text-[#c7ad62]'
+                    active ? 'text-[#ffffff]' : 'text-[#b7b0c3]'
                   }`}
                 >
                   {tab.label}

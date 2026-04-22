@@ -8,6 +8,11 @@ interface IconProps {
   className?: string;
 }
 
+interface GradientIconProps extends IconProps {
+  gradientFrom?: string;
+  gradientTo?: string;
+}
+
 export const BrandMark: React.FC<{ size?: number; className?: string }> = ({
   size = 34,
   className,
@@ -92,15 +97,51 @@ export const SearchIcon: React.FC<IconProps> = ({ size = 16, color = '#778', cla
   </svg>
 );
 
-export const QrIcon: React.FC<IconProps> = ({ size = 18, color = '#fff', className }) => (
-  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
-    <path d="M3 7V3h4" />
-    <path d="M17 3h4v4" />
-    <path d="M21 17v4h-4" />
-    <path d="M7 21H3v-4" />
-    <path d="M3 12h18" strokeDasharray="3 2" />
-  </svg>
-);
+export const QrIcon: React.FC<GradientIconProps> = ({
+  size = 18,
+  color = '#fff',
+  className,
+  gradientFrom,
+  gradientTo,
+}) => {
+  const gradientId = React.useId().replace(/:/g, '');
+  const strokeColor =
+    gradientFrom && gradientTo ? `url(#${gradientId})` : color;
+
+  return (
+    <svg
+      className={className}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={strokeColor}
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      {gradientFrom && gradientTo ? (
+        <defs>
+          <linearGradient
+            id={gradientId}
+            x1="3"
+            y1="3"
+            x2="21"
+            y2="21"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stopColor={gradientFrom} />
+            <stop offset="1" stopColor={gradientTo} />
+          </linearGradient>
+        </defs>
+      ) : null}
+      <path d="M3 7V3h4" />
+      <path d="M17 3h4v4" />
+      <path d="M21 17v4h-4" />
+      <path d="M7 21H3v-4" />
+      <path d="M3 12h18" strokeDasharray="3 2" />
+    </svg>
+  );
+};
 
 export const CopyIcon: React.FC<IconProps> = ({ size = 18, color = '#fff', className }) => (
   <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

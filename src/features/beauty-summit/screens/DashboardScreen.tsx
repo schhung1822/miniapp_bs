@@ -1,5 +1,10 @@
 import React from 'react';
 
+import goldTicketBadge from '@/assets/gold.svg';
+import logoOnboarding from '@/assets/logo-onboarding.png';
+import bpointStarBadge from '@/assets/star.svg';
+import vipTicketBadge from '@/assets/vip.svg';
+
 import { MILESTONES } from '@/features/beauty-summit/data';
 import type {
   BeautyTab,
@@ -18,7 +23,6 @@ import {
   ClockIcon,
   GiftIcon,
   QrIcon,
-  StarIcon,
 } from '@/features/beauty-summit/icons';
 import BrandDetailDrawer from '@/features/beauty-summit/components/BrandDetailDrawer';
 import BeautyQrCode from '@/features/beauty-summit/components/BeautyQrCode';
@@ -105,6 +109,17 @@ interface DashboardScreenProps {
   onRunScanner: () => void;
 }
 
+const HOME_PHASE_ACTIVE_ICON = '#fff3ff';
+const HOME_PHASE_INACTIVE_ICON = '#d8b4fe';
+const HOME_MISSION_ACCENT = '#f4b2ff';
+
+const HoangTuWordmark: React.FC = () => (
+  <div className="text-center">
+    <div className="text-[10px] font-medium uppercase leading-none tracking-[0.05em] text-[#ffffff]">HOANG TU</div>
+    <div className="mt-[1px] text-[6px] font-medium leading-none tracking-[0.24em] text-[#f4dfff]">HOLDINGS</div>
+  </div>
+);
+
 const phaseItems: Array<{
   key: MissionPhase;
   label: string;
@@ -113,21 +128,26 @@ const phaseItems: Array<{
 }> = [
   {
     key: 'before',
-    label: 'Trước sự kiện',
-    sub: '.',
-    renderIcon: (active) => <ClockIcon size={18} color={active ? '#b8860b' : '#9a8f9d'} />,
+    label: 'NHIỆM VỤ\nTRƯỚC SỰ KIỆN',
+    renderIcon: (active) => (
+      <ClockIcon size={18} color={active ? HOME_PHASE_ACTIVE_ICON : HOME_PHASE_INACTIVE_ICON} />
+    ),
   },
   {
     key: 'day1',
-    label: 'Ngày 1',
-    sub: '19/06/2026',
-    renderIcon: (active) => <CalendarIcon size={18} color={active ? '#b8860b' : '#9a8f9d'} />,
+    label: 'NHIỆM VỤ NGÀY 1',
+    sub: '19.06.2026',
+    renderIcon: (active) => (
+      <CalendarIcon size={18} color={active ? HOME_PHASE_ACTIVE_ICON : HOME_PHASE_INACTIVE_ICON} />
+    ),
   },
   {
     key: 'day2',
-    label: 'Ngày 2',
-    sub: '20/06/2026',
-    renderIcon: (active) => <CalendarIcon size={18} color={active ? '#b8860b' : '#9a8f9d'} />,
+    label: 'NHIỆM VỤ NGÀY 2',
+    sub: '20.06.2026',
+    renderIcon: (active) => (
+      <CalendarIcon size={18} color={active ? HOME_PHASE_ACTIVE_ICON : HOME_PHASE_INACTIVE_ICON} />
+    ),
   },
 ];
 
@@ -212,14 +232,12 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
   const previousTabRef = React.useRef<BeautyTab>(activeTab);
   const [qrPreviewOpen, setQrPreviewOpen] = React.useState(false);
   const hasQr = qrGenerated && orderCode.trim().length > 0;
-
-  const maskedPhone = React.useMemo(() => {
-    const digits = userPhone.replace(/\D/g, '');
-    const localDigits =
-      digits.length === 11 && digits.startsWith('84') ? `0${digits.slice(2)}` : digits;
-    if (localDigits.length !== 10) return userPhone;
-    return `${localDigits.slice(0, 4)} *** ${localDigits.slice(7)}`;
-  }, [userPhone]);
+  const normalizedTicketLabel = ticketLabel.trim().toUpperCase();
+  const displayTicketLabel = normalizedTicketLabel.startsWith('VÉ ')
+    ? normalizedTicketLabel
+    : `VÉ ${normalizedTicketLabel}`;
+  const passHolderName = userName.trim().length > 0 ? userName.trim().toUpperCase() : userName;
+  const showVipTicketImage = normalizedTicketLabel.includes('VIP');
 
   const phaseMissionsPending = React.useMemo(
     () => currentPhaseMissions.filter((mission) => !completedSet.has(mission.id)),
@@ -228,20 +246,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
   const phaseMissionsDone = React.useMemo(
     () => currentPhaseMissions.filter((mission) => completedSet.has(mission.id)),
     [completedSet, currentPhaseMissions]
-  );
-  const redeemableVoucherCount = React.useMemo(
-    () =>
-      bpointVouchers.filter(
-        (voucher) =>
-          !voucher.isGrand &&
-          !redeemedSet.has(voucher.id) &&
-          availablePoints >= (voucher.cost ?? Number.POSITIVE_INFINITY)
-      ).length,
-    [availablePoints, bpointVouchers, redeemedSet]
-  );
-  const freeVoucherClaimedCount = React.useMemo(
-    () => freeVouchers.filter((voucher) => claimedFreeSet.has(voucher.id)).length,
-    [claimedFreeSet, freeVouchers]
   );
   const overallVoteCount = React.useMemo(
     () => voteCategories.reduce((sum, category) => sum + (category.totalVotes ?? 0), 0),
@@ -255,37 +259,73 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
   }, [activeTab]);
 
   const renderPassCard = (): React.ReactNode => (
-    <div className="beauty-glow beauty-crisp-edge mb-5 overflow-hidden rounded-[1.8rem] border border-[#715318] bg-[linear-gradient(135deg,#241d12_0%,#251b15_56%,#311225_100%)] shadow-[0_14px_28px_rgba(0,0,0,0.18)]">
-      <div className="relative px-4 pb-4 pt-5">
-        <div className="pointer-events-none absolute right-8 top-5 h-16 w-16 rounded-full bg-[radial-gradient(circle,rgba(255,59,177,0.14)_0%,rgba(255,59,177,0)_72%)]" />
-        <div className="grid grid-cols-[minmax(0,1fr)_104px] items-start gap-3 sm:grid-cols-[minmax(0,1fr)_118px]">
-          <div className="min-w-0 pt-1">
-            <div className="mb-3 flex items-center gap-2.5">
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-[#f4c50a] px-3.5 py-2 text-[12px] font-black !text-white">
-                <StarIcon size={15} color="#ffffff" />
-                <span>{ticketLabel}</span>
+    <div className="
+      beauty-glow beauty-crisp-edge mb-4 overflow-hidden 
+      rounded-[1rem] 
+      border-[2px] border-[#f24ab2] 
+      bg-[linear-gradient(135deg,rgba(149,25,171,0.94)_0%,rgba(141,22,162,0.96)_52%,rgba(111,14,153,0.96)_100%)] 
+      
+    ">  
+      <div className="relative p-3">
+        <div className="pointer-events-none absolute inset-x-6 top-0 h-20 bg-[radial-gradient(circle_at_top,rgba(255,173,232,0.22)_0%,rgba(255,173,232,0)_72%)]" />
+        <div className="pointer-events-none absolute right-4 top-8 h-24 w-24 rounded-full bg-[radial-gradient(circle,rgba(129,92,255,0.2)_0%,rgba(129,92,255,0)_72%)]" />
+        <div className="grid grid-cols-[minmax(0,1fr)_110px] items-start gap-3 sm:grid-cols-[minmax(0,1fr)_126px] sm:gap-4">
+          <div className="min-w-0">
+            <div className="flex flex-col sm:min-h-[186px]">
+              <div>
+                <div className="flex items-center gap-3">
+                  <img
+                    src={logoOnboarding}
+                    alt="Beauty Summit"
+                    className="h-[22px] w-auto max-w-[92px] object-contain sm:h-[26px]"
+                  />
+                  <HoangTuWordmark />
+                </div>
+                <div className="mt-2 text-[1rem] truncate font-black uppercase leading-[0.95] tracking-[-0.03em] text-[#ffffff] sm:text-[2.05rem]">
+                  {passHolderName}
+                </div>
+                <div className="mt-0.5">
+                  {showVipTicketImage ? (
+                    <img
+                      src={vipTicketBadge}
+                      alt={displayTicketLabel}
+                      className="h-[2.1rem] w-auto max-w-[7.2rem] object-contain drop-shadow-[0_10px_20px_rgba(95,28,144,0.28)]"
+                    />
+                  ) : (
+                    <div className="relative inline-flex h-[2.1rem] min-w-[6.95rem] items-center justify-center px-4">
+                      <img
+                        src={goldTicketBadge}
+                        alt=""
+                        aria-hidden="true"
+                        className="absolute inset-0 h-full w-full object-fill"
+                      />
+                      <span className="relative text-[0.65rem] font-black uppercase leading-none tracking-[-0.02em] text-[#fff4db]">
+                        {displayTicketLabel}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
-              <img
-                src={userAvatar}
-                alt={userName}
-                className="h-10 w-10 shrink-0 rounded-full border border-white/18 object-cover shadow-[0_8px_20px_rgba(0,0,0,0.18)]"
-              />
-            </div>
-            <div className="text-[19px] font-black leading-[0.95] text-white sm:text-[23px]">
-              {userName}
-            </div>
-            <div className="mt-1.5 truncate text-[11px] font-medium leading-none text-[#8a8a92] sm:text-[13px]">
-              {maskedPhone}
-            </div>
-            <div className="mt-4 inline-flex items-center gap-2 rounded-[0.9rem] bg-[#3a2b10] px-3.5 py-2.5 text-[#ffd23f]">
-              <StarIcon size={14} color="#ffd23f" />
-              <span className="text-[14px] font-black leading-none">{availablePoints}</span>
-              <span className="text-[11px] font-medium text-[#9d937b]">BP</span>
+
+              <div className="p-1.5 inline-flex w-fit items-center  rounded-[0.5rem] border border-[#7f1d88] bg-[rgba(88,10,106,0.84)] text-[#ffffff] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                <img
+                  src={bpointStarBadge}
+                  alt=""
+                  aria-hidden="true"
+                  className="h-4 w-4 shrink-0 object-contain"
+                />
+                <div className="flex items-end gap-1">
+                  <span className="ms-1 text-[1.3rem] font-black leading-[1.1] tracking-[-0.1em] text-[#ffffff]">
+                    {availablePoints}
+                  </span>
+                  <span className="pb-1 text-[1rem] text-[#f1d4ff]">BP</span>
+                </div>
+              </div>
             </div>
           </div>
 
           <button type="button" onClick={onOpenQr} className="shrink-0 text-center">
-            <div className="beauty-crisp-edge relative rounded-[1.45rem] border-[3px] border-[#d4be83] bg-white p-2.5 shadow-[0_10px_20px_rgba(211,80,168,0.14)]">
+            <div className="beauty-crisp-edge relative rounded-[1.45rem] border border-[#7f49ff] bg-[linear-gradient(180deg,#32095f_0%,#250746_100%)] p-2.5 shadow-[0_12px_24px_rgba(43,2,72,0.34)]">
               {hasQr ? (
                 <BeautyQrCode
                   value={qrValue}
@@ -296,13 +336,13 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                   logoRingClassName="border-[4px] shadow-[0_4px_12px_rgba(178,71,125,0.12)]"
                 />
               ) : (
-                <div className="flex h-[82px] w-[82px] flex-col items-center justify-center rounded-[0.8rem] bg-white sm:h-[92px] sm:w-[92px]">
-                  <QrIcon size={36} color="#1c1530" />
-                  <p className="text-[#000]">Tạo mã QR</p>
+                <div className="flex h-[82px] w-[82px] flex-col items-center justify-center rounded-[0.8rem] bg-[rgba(39,7,74,0.96)] sm:h-[92px] sm:w-[92px]">
+                  <QrIcon size={36} color="#ffffff" />
+                  <p className="text-[#ffffff]">Tạo mã QR</p>
                 </div>
               )}
               {hasQr ? (
-                <div className="absolute bottom-[-10px] left-4.5 rounded-full bg-gradient-to-br from-[#b8860b] to-[#ffd700] px-2 text-[9px] font-black !text-white">
+                <div className="absolute bottom-[-10px] left-5.5 rounded-full border border-white/24 bg-[linear-gradient(90deg,#ff5fb8_0%,#ff8a63_100%)] px-2 text-[9px] font-black text-[#ffffff]">
                   CHECK-IN
                 </div>
               ) : null}
@@ -331,10 +371,10 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
     );
 
     return (
-      <div className="mb-4 rounded-[1.55rem] border border-[#eadfd2] bg-white px-4 py-4 shadow-[0_12px_28px_rgba(184,134,11,0.08)]">
+      <div className="mb-4 rounded-[1.55rem] border border-white/50 bg-[linear-gradient(180deg,rgba(119,17,161,0.94)_0%,rgba(102,11,148,0.96)_100%)] px-4 py-4 shadow-[0_18px_34px_rgba(68,5,108,0.24)]">
         <div className="mb-4 flex items-center justify-between gap-4">
-          <div className="text-[14px] font-semibold text-[#9ba1b2]">Tiến độ nhiệm vụ</div>
-          <div className="text-[15px] font-black text-[#ff58ba]">
+          <div className="text-[14px] font-semibold text-[#ffffff]">Tiến độ nhiệm vụ</div>
+          <div className="text-[15px] font-black text-[#ff69c9]">
             {completedIds.length}/{allMissionCount}
           </div>
         </div>
@@ -347,8 +387,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
             const iconColor = claimed
               ? '#ffffff'
               : item.unlocked || isFinal
-                ? '#c89d10'
-                : '#5b5c67';
+                ? '#fff4ff'
+                : '#d7b7ef';
             const node = (
               <div className="flex w-[36px] flex-col items-center">
                 {item.milestone ? (
@@ -364,19 +404,19 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                     } ${isFinal ? 'border-dashed' : ''}`}
                     style={{
                       borderColor: claimed
-                        ? '#22c55e'
+                        ? '#ff8bd7'
                         : item.unlocked
-                          ? '#c99b17'
+                          ? 'rgba(255,255,255,0.78)'
                           : isFinal
-                            ? 'rgba(201,155,23,0.55)'
-                            : '#d7ced9',
+                            ? 'rgba(255,255,255,0.55)'
+                            : 'rgba(255,255,255,0.18)',
                       background: claimed
-                        ? 'linear-gradient(135deg, #34d399, #16a34a)'
+                        ? 'linear-gradient(135deg, #ff62c4, #8d65ff)'
                         : item.unlocked
-                          ? 'rgba(255,214,102,0.24)'
+                          ? 'rgba(255,255,255,0.16)'
                           : isFinal
-                            ? 'rgba(255,214,102,0.12)'
-                            : '#f4f1f5',
+                            ? 'rgba(255,255,255,0.08)'
+                            : 'rgba(56,7,92,0.9)',
                     }}
                   >
                     {claimed ? (
@@ -390,12 +430,12 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                     className="flex h-[33px] w-[33px] items-center justify-center rounded-[1rem]"
                     style={{
                       background: item.unlocked
-                        ? 'linear-gradient(135deg, #b88908, #e5b61a)'
-                        : '#f4f1f5',
+                        ? 'linear-gradient(135deg, #ff62c4, #8d65ff)'
+                        : 'rgba(255,255,255,0.12)',
                     }}
                   >
                     <span
-                      className={`text-[18px] leading-none ${item.unlocked ? '!text-white' : 'text-[#9a8f9d]'}`}
+                      className={`text-[18px] leading-none ${item.unlocked ? 'text-[#ffffff]' : 'text-[#d7b7ef]'}`}
                     >
                       ✓
                     </span>
@@ -404,7 +444,11 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                   <div
                     className="ms-1 mt-1 text-[12px] font-black"
                     style={{
-                      color: claimed ? '#16a34a' : item.unlocked || isFinal ? '#c89d10' : '#5b5c67',
+                      color: claimed
+                        ? '#ffe5fa'
+                        : item.unlocked || isFinal
+                          ? '#ffffff'
+                          : '#d7b7ef',
                     }}
                   >
                     {item.label}
@@ -416,12 +460,12 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
             return (
               <React.Fragment key={item.pct}>
                 {node}
-                <div className="mt-[15px] h-[5px] flex-1 rounded-full bg-[#e8e1ea]">
+                <div className="mt-[15px] h-[5px] flex-1 rounded-full bg-[rgba(255,255,255,0.18)]">
                   <div
                     className="h-full rounded-full"
                     style={{
                       width: item.unlocked ? '100%' : '0%',
-                      background: 'linear-gradient(90deg, #b88908, #d6ad1b)',
+                      background: 'linear-gradient(90deg, #8c73ff, #ff6fc9)',
                     }}
                   />
                 </div>
@@ -436,41 +480,39 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
     <>
       <div className="mb-4 grid grid-cols-3 gap-2">
         {[
-          { label: 'Đã xong', value: completedIds.length, tone: 'bg-[#fef3c7] text-[#9a6700]' },
+          {
+            label: 'Đã xong',
+            value: completedIds.length,
+            tone: 'border border-white/16 bg-[rgba(122,18,146,0.88)] text-[#ffe2ff]',
+          },
           {
             label: 'Đang mở',
             value: phaseMissionsPending.length,
-            tone: 'bg-[#fce7f3] text-[#b83280]',
+            tone: 'border border-white/18 bg-[rgba(203,28,135,0.9)] text-[#ffffff]',
           },
-          { label: 'BPoint', value: availablePoints, tone: 'bg-[#ecfdf3] text-[#15803d]' },
+          {
+            label: 'BPoint',
+            value: availablePoints,
+            tone: 'border border-white/16 bg-[rgba(92,21,140,0.88)] text-[#fff2ff]',
+          },
         ].map((item) => (
           <div
             key={item.label}
-            className="rounded-[1rem] border border-[#eadfd2] bg-white px-3 py-3 text-center"
+            className="rounded-[1rem] border border-[#ff76c9] bg-[linear-gradient(180deg,rgba(148,24,163,0.92)_0%,rgba(115,16,151,0.96)_100%)] p-2 text-center shadow-[0_14px_28px_rgba(76,8,121,0.2)]"
           >
             <div
-              className={`mx-auto mb-2 inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold ${item.tone}`}
+              className={`mx-auto inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold ${item.tone}`}
             >
               {item.label}
             </div>
-            <div className="text-lg font-black text-[#241629]">{item.value}</div>
+            <div className="text-lg font-black text-[#ffffff]">{item.value}</div>
           </div>
         ))}
       </div>
 
-      <div className="mb-4 rounded-[1.2rem] border border-[#eadfd2] bg-white p-3.5 shadow-[0_10px_24px_rgba(184,134,11,0.06)]">
-        <div className="mb-3 flex items-center justify-between">
-          <div>
-            <div className="text-[12px] font-semibold text-[#8a7e8b]">Giai đoạn nhiệm vụ</div>
-            <div className="mt-1 text-[14px] font-bold text-[#241629]">
-              {phaseItems.find((item) => item.key === activePhase)?.label}
-            </div>
-          </div>
-          <div className="rounded-full bg-[#fff2cc] px-3 py-1.5 text-[12px] font-black text-[#b8860b]">
-            {phaseProgressMap[activePhase]}%
-          </div>
-        </div>
-        <div className="grid grid-cols-3 gap-2">
+      <div className="mb-4">
+        <div className="mb-2 px-1 text-[12px] font-semibold text-[#f3cfff]">Giai đoạn nhiệm vụ</div>
+        <div className="grid grid-cols-3 gap-2.5">
           {phaseItems.map((item) => {
             const active = item.key === activePhase;
             const percent = phaseProgressMap[item.key];
@@ -479,24 +521,37 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                 key={item.key}
                 type="button"
                 onClick={() => onPhaseChange(item.key)}
-                className={`rounded-[1rem] border px-2 py-3 text-center transition ${active ? 'border-[#d8b45b] bg-[#fff8df]' : 'border-[#eadfd2] bg-[#fffdf9]'}`}
+                className={`relative flex flex-col items-center overflow-hidden rounded-[1rem] border px-2 pb-2 pt-1.5 text-center transition ${
+                  active
+                    ? 'border-[#ff85d5] bg-[linear-gradient(180deg,rgba(142,34,185,0.94)_0%,rgba(118,24,169,0.97)_100%)] shadow-[0_14px_28px_rgba(96,10,141,0.24)]'
+                    : 'border-[#ff91d6] bg-[linear-gradient(180deg,rgba(228,57,143,0.14)_0%,rgba(223,39,87,0.1)_100%)] shadow-[0_10px_20px_rgba(88,8,104,0.12)]'
+                }`}
               >
-                <div className="mb-2 flex items-center justify-center gap-1.5">
-                  <span className="flex h-5 items-center">{item.renderIcon(active)}</span>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[10px] font-black ${active ? 'bg-[#f2c94c] !text-white' : 'bg-[#f4edf2] text-[#8b8790]'}`}
-                  >
-                    {percent}%
-                  </span>
-                </div>
+                <span
+                  className={`rounded-[0.42rem] mt-2 px-2 py-0.5 text-[10px] font-black leading-none ${
+                    active
+                      ? 'bg-[rgba(114,12,125,0.86)] text-[#ffffff]'
+                      : 'bg-[rgba(122,11,105,0.78)] text-[#ffffff]'
+                  }`}
+                >
+                  {percent}%
+                </span>
                 <div
-                  className={`text-[11px] font-semibold leading-4 ${active ? 'text-[#7a5200]' : 'text-[#73737c]'}`}
+                  className={`mt-1 mb-1 flex justify-center text-center text-[0.7rem] font-black uppercase leading-[1.4] tracking-[-0.02em] ${
+                    item.key === 'before' ? 'whitespace-pre-line' : 'whitespace-nowrap'
+                  } ${
+                    active ? 'text-[#ffffff]' : 'text-[#fff3fb]'
+                  }`}
                 >
                   {item.label}
                 </div>
-                {item.sub ? (
-                  <div className="mt-1 text-[10px] text-[#8a7e8b]">{item.sub}</div>
-                ) : null}
+                <div
+                  className={`mt-0.25 min-h-[0.72rem] text-[10px] leading-none ${
+                    active ? 'text-[#ffe7f7]' : 'text-[#ffe7f4]'
+                  }`}
+                >
+                  <span className={item.sub ? '' : 'opacity-0'}>{item.sub}</span>
+                </div>
               </button>
             );
           })}
@@ -505,8 +560,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
 
       {phaseMissionsPending.length > 0 ? (
         <div className="mb-3 flex items-center justify-between">
-          <div className="text-[13px] font-bold text-[#241629]">Cần làm ngay</div>
-          <div className="rounded-full bg-[#fff5d6] px-2.5 py-1 text-[10px] font-semibold text-[#9a6700]">
+          <div className="text-[13px] font-bold text-[#ffffff]">Cần làm ngay</div>
+          <div className="rounded-full border border-white/14 bg-[rgba(182,21,127,0.88)] px-2.5 py-1 text-[10px] font-semibold text-[#ffffff]">
             {phaseMissionsPending.length} nhiệm vụ
           </div>
         </div>
@@ -518,17 +573,17 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
               key={mission.id}
               mission={mission}
               completed={false}
-              accentColor={tier.color}
+              accentColor={HOME_MISSION_ACCENT}
               delay={index * 60}
               onOpen={onOpenMission}
             />
           ))
         ) : (
-          <div className="rounded-[1.15rem] border border-dashed border-[#e8d9c0] bg-[#fffdf9] px-4 py-5 text-center">
-            <div className="text-[13px] font-semibold text-[#241629]">
+          <div className="rounded-[1.15rem] border border-dashed border-white/24 bg-[rgba(72,10,108,0.52)] px-4 py-5 text-center">
+            <div className="text-[13px] font-semibold text-[#ffffff]">
               Không còn nhiệm vụ đang mở
             </div>
-            <div className="mt-1 text-[11px] text-[#8a7e8b]">
+            <div className="mt-1 text-[11px] text-[#f1d0ff]">
               Bạn đã hoàn thành hết nhiệm vụ trong giai đoạn này.
             </div>
           </div>
@@ -538,8 +593,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
       {phaseMissionsDone.length > 0 ? (
         <div className="mt-5">
           <div className="mb-3 flex items-center justify-between">
-            <div className="text-[13px] font-bold text-[#241629]">Đã hoàn thành</div>
-            <div className="rounded-full bg-[#ecfdf3] px-2.5 py-1 text-[10px] font-semibold text-[#15803d]">
+            <div className="text-[13px] font-bold text-[#ffffff]">Đã hoàn thành</div>
+            <div className="rounded-full border border-white/14 bg-[rgba(98,18,141,0.88)] px-2.5 py-1 text-[10px] font-semibold text-[#ffe6ff]">
               {phaseMissionsDone.length} mục
             </div>
           </div>
@@ -549,7 +604,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                 key={mission.id}
                 mission={mission}
                 completed
-                accentColor={tier.color}
+                accentColor={HOME_MISSION_ACCENT}
                 delay={index * 40}
                 onOpen={onOpenMission}
               />
@@ -560,201 +615,191 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
     </>
   );
 
-  const renderVoucherTab = (): React.ReactNode => (
-    <div className="space-y-4">
-      <div className="rounded-[1.2rem] border border-[#eadfd2] bg-[linear-gradient(145deg,#fffdf8,#fff6ea)] p-4 shadow-[0_10px_24px_rgba(184,134,11,0.06)]">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="text-[12px] font-semibold text-[#8a7e8b]">Ví voucher</div>
-            <div className="mt-1 flex items-end gap-2">
-              <span className="text-[1.75rem] font-black text-[#241629]">{availablePoints}</span>
-              <span className="pb-1 text-[12px] font-semibold text-[#b8860b]">BP khả dụng</span>
-            </div>
-          </div>
-          <div className="rounded-full bg-[#fff2cc] px-3 py-1.5 text-[11px] text-[#9a6700]">
-            {redeemableVoucherCount} có thể đổi
-          </div>
-        </div>
-        <div className="mt-4 grid grid-cols-3 gap-2">
-          <div className="rounded-[0.95rem] bg-white px-3 py-3 text-center">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a7e8b]">
-              Tổng
-            </div>
-            <div className="mt-1 text-[15px] font-black text-[#241629]">{totalPoints}</div>
-          </div>
-          <div className="rounded-[0.95rem] bg-white px-3 py-3 text-center">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a7e8b]">
-                Đã dùng
-            </div>
-            <div className="mt-1 text-[15px] font-black text-[#db2777]">{spentPoints}</div>
-          </div>
-          <div className="rounded-[0.95rem] bg-white px-3 py-3 text-center">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a7e8b]">
-              Đã nhận
-            </div>
-            <div className="mt-1 text-[15px] font-black text-[#15803d]">
-              {voucherTab === 'bpoint' ? redeemedVoucherIds.length : freeVoucherClaimedCount}
-            </div>
-          </div>
-        </div>
-      </div>
+  const renderVoucherTab = (): React.ReactNode => {
+    const voucherHelper =
+      voucherTab === 'bpoint'
+        ? 'Dùng BPoint tích được từ nhiệm vụ để đổi voucher'
+        : 'Voucher miễn phí từ nhãn hàng — nhấn để nhận mã ngay';
+    const actionBoxClass =
+      'flex h-12 w-12 shrink-0 items-center justify-center rounded-[0.5rem] border border-white/18 bg-[linear-gradient(180deg,rgba(168,36,199,0.3)_0%,rgba(113,15,145,0.9)_100%)] px-1.5 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]';
 
-      <div className="grid grid-cols-2 gap-2 rounded-[1rem] border border-[#eadfd2] bg-[#fffaf2] p-1">
-        {(
-          [
-            { key: 'bpoint', label: `Đổi BPoint (${bpointVouchers.length})` },
-            { key: 'free', label: `Miễn phí (${freeVouchers.length})` },
-          ] as const
-        ).map((item) => (
-          <button
-            key={item.key}
-            type="button"
-            onClick={() => onVoucherTabChange(item.key)}
-            className={`rounded-[0.85rem] px-3 py-2.5 text-sm font-semibold transition ${voucherTab === item.key ? '!text-white' : 'text-[#7a7280]'}`}
-            style={
-              voucherTab === item.key
-                ? { background: 'linear-gradient(135deg, #ec4899, #f59e0b)' }
-                : undefined
-            }
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
-
-      {voucherTab === 'bpoint' ? (
-        <div className="space-y-3">
-          {bpointVouchers.map((voucher) => {
-            const redeemed = redeemedSet.has(voucher.id);
-            const canAfford = availablePoints >= (voucher.cost ?? 0);
-            const grandPrize = voucher.isGrand;
-            const canClaimGrandPrize = progress >= 100;
-            return (
-              <div
-                key={voucher.id}
-                className={`rounded-[1.25rem] border bg-white p-3.5 shadow-[0_10px_22px_rgba(184,134,11,0.05)] ${grandPrize ? 'beauty-grand-prize-card beauty-crisp-edge' : ''}`}
-                style={{
-                  borderColor: redeemed
-                    ? 'rgba(74,222,128,0.24)'
-                    : grandPrize
-                      ? 'rgba(246,194,52,0.42)'
-                      : 'rgba(184,134,11,0.14)',
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  <VoucherLogoBadge
-                    logo={voucher.logo}
-                    brand={voucher.brand}
-                    color={voucher.color}
-                    className="h-12 w-12 shrink-0"
-                    grandPrize={grandPrize}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="mb-1 flex items-center gap-2">
-                      <span
-                        className="truncate text-[13px] font-semibold"
-                        style={{ color: voucher.color }}
-                      >
-                        {voucher.brand}
-                      </span>
-                      {voucher.isGrand ? (
-                        <span className="beauty-grand-prize-badge truncate rounded-full px-2 py-0.5 text-[10px] font-semibold">
-                          Giải đặc biệt
-                        </span>
-                      ) : null}
-                    </div>
-                    <div className="truncate text-[17px] font-black leading-tight text-[#241629]">
-                      {voucher.discount}
-                    </div>
-                    <div className="mt-1 truncate text-[12px] text-[#7a7280]">{voucher.desc}</div>
-                  </div>
-                  <div className="shrink-0">
-                    {redeemed ? (
-                      <button
-                        type="button"
-                        onClick={() => onOpenVoucher(voucher)}
-                        className="min-w-[82px] rounded-[0.95rem] bg-[#ecfdf3] px-3.5 py-1 text-center text-[13px] font-bold text-[#15803d]"
-                      >
-                        Đã nhận
-                      </button>
-                    ) : voucher.isGrand ? (
-                      <button
-                        type="button"
-                        onClick={() => onRedeemVoucher(voucher)}
-                        disabled={!canClaimGrandPrize}
-                        className="beauty-grand-prize-button min-w-[82px] rounded-[0.95rem] px-3.5 py-1 text-center text-[13px] font-bold !text-white disabled:cursor-not-allowed disabled:opacity-45"
-                      >
-                        Nhận
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => onRedeemVoucher(voucher)}
-                        disabled={!canAfford}
-                        className="min-w-[82px] rounded-[0.95rem] px-3.5 py-1 text-center text-[13px] font-bold disabled:cursor-not-allowed disabled:bg-[#f1edf2] disabled:text-[#a69ba8]"
-                        style={
-                          canAfford
-                            ? {
-                                background: `linear-gradient(135deg, ${voucher.color}, ${voucher.color}bb)`,
-                                color: '#fff',
-                              }
-                            : undefined
-                        }
-                      >
-                        {voucher.cost} BP
-                      </button>
-                    )}
-                  </div>
-                </div>
+    return (
+      <div className="space-y-4">
+        <div className="rounded-[1.45rem] border border-[#f09de0] bg-[linear-gradient(135deg,rgba(121,22,167,0.96)_0%,rgba(122,21,171,0.96)_58%,rgba(103,14,155,0.98)_100%)] px-5 py-3 shadow-[0_18px_34px_rgba(77,4,108,0.22)]">
+          <div className="flex items-start justify-between gap-5">
+            <div className="min-w-0">
+              <div className="text-[0.9rem] font-medium text-white/88">BPoint khả dụng</div>
+              <div className="mt-2 flex items-end gap-1 text-white">
+                <span className="text-[1.5rem] font-black text-white/90 leading-none">{availablePoints}</span>
+                <span className="pb-0.5 text-[1.15rem] font-semibold leading-none text-white/70">
+                  /{totalPoints}
+                </span>
+                <span className="pb-[0.22rem] text-[1rem] font-medium leading-none text-white/75">
+                  tổng
+                </span>
               </div>
-            );
-          })}
+            </div>
+            <div className="shrink-0 text-right">
+              <div className="text-[0.95rem] font-medium text-white/88">Đã dùng</div>
+              <div className="mt-2 text-[1.5rem] font-black leading-none text-white/70">{spentPoints}</div>
+            </div>
+          </div>
         </div>
-      ) : (
-        <div className="space-y-3">
-          {freeVouchers.map((voucher) => {
-            const claimed = claimedFreeSet.has(voucher.id);
+
+        <div className="grid grid-cols-2 gap-3">
+          {(
+            [
+              { key: 'bpoint', label: 'Đổi BPoint' },
+              { key: 'free', label: 'Miễn Phí' },
+            ] as const
+          ).map((item) => {
+            const active = voucherTab === item.key;
             return (
               <button
-                key={voucher.id}
+                key={item.key}
                 type="button"
-                onClick={() => (claimed ? onOpenVoucher(voucher) : onClaimVoucher(voucher))}
-                className="flex w-full items-center gap-3 rounded-[1.25rem] border border-[#eadfd2] bg-white p-3.5 text-left shadow-[0_10px_22px_rgba(184,134,11,0.05)]"
+                onClick={() => onVoucherTabChange(item.key)}
+                className={`rounded-[0.4rem] border px-3 py-1.5 text-sm font-bold transition ${
+                  active ? 'text-[#8f1ab0]' : 'text-white/92'
+                }`}
+                style={{
+                  borderColor: active ? 'rgba(255,255,255,0.95)' : 'rgba(255, 202, 242, 0.9)',
+                  background: active
+                    ? 'linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,220,245,0.94))'
+                    : 'rgba(255,255,255,0.03)',
+                  boxShadow: active
+                    ? '0 10px 22px rgba(110, 13, 116, 0.16), inset 0 1px 0 rgba(255,255,255,0.88)'
+                    : 'none',
+                }}
               >
-                <VoucherLogoBadge
-                  logo={voucher.logo}
-                  brand={voucher.brand}
-                  color={voucher.color}
-                  className="h-12 w-12 shrink-0"
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="text-[13px] font-semibold" style={{ color: voucher.color }}>
-                    {voucher.brand}
-                  </div>
-                  <div className="truncate text-[17px] font-black leading-tight text-[#241629]">
-                    {voucher.discount}
-                  </div>
-                  <div className="mt-1 truncate text-[12px] text-[#7a7280]">{voucher.desc}</div>
-                </div>
-                <div
-                  className={`shrink-0 rounded-[0.95rem] px-3.5 py-1 text-center text-[13px] font-bold ${claimed ? 'bg-[#ecfdf3] text-[#15803d]' : '!text-white'}`}
-                  style={
-                    claimed
-                      ? undefined
-                      : {
-                          background: `linear-gradient(135deg, ${voucher.color}, ${voucher.color}bb)`,
-                        }
-                  }
-                >
-                  {claimed ? 'Đã nhận' : 'Nhận'}
-                </div>
+                {item.label}
               </button>
             );
           })}
         </div>
-      )}
-    </div>
-  );
+
+        <div className="px-2 text-center text-[0.8rem] leading-relaxed text-white/88">{voucherHelper}</div>
+
+        {voucherTab === 'bpoint' ? (
+          <div className="space-y-3">
+            {bpointVouchers.map((voucher) => {
+              const redeemed = redeemedSet.has(voucher.id);
+              const grandPrize = voucher.isGrand;
+              const canAfford = availablePoints >= (voucher.cost ?? 0);
+              const canClaimGrandPrize = progress >= 100;
+
+              return (
+                <div
+                  key={voucher.id}
+                  className={`rounded-[1.25rem] border px-3.5 py-3 shadow-[0_16px_30px_rgba(68,6,109,0.22)] ${
+                    grandPrize ? 'beauty-grand-prize-card beauty-crisp-edge' : ''
+                  }`}
+                  style={{
+                    borderColor: grandPrize ? 'rgba(255,214,115,0.68)' : '#f09de0',
+                    background: grandPrize
+                      ? undefined
+                      : 'linear-gradient(135deg, rgba(123,25,173,0.96) 0%, rgba(111,20,167,0.97) 58%, rgba(96,13,155,0.98) 100%)',
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <VoucherLogoBadge
+                      logo={voucher.logo}
+                      brand={voucher.brand}
+                      color={voucher.color}
+                      className="h-11 w-11 shrink-0 rounded-[0.95rem]"
+                      grandPrize={grandPrize}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className={`min-w-0 truncate text-[0.98rem] font-black leading-tight ${grandPrize ? '' : 'text-white/90'}`}>
+                          {voucher.discount}
+                        </div>
+                      </div>
+                      <div className={`mt-1 truncate text-[0.84rem] leading-[1.25] ${grandPrize ? '' : 'text-white/70'}`}>
+                        {voucher.desc}
+                      </div>
+                    </div>
+                    <div className="">
+                      {redeemed ? (
+                        <button
+                          type="button"
+                          onClick={() => onOpenVoucher(voucher)}
+                          className={`text-[0.56rem] font-bold uppercase leading-[1.05]`}
+                        >
+                          Đã nhận
+                        </button>
+                      ) : voucher.isGrand ? (
+                        <button
+                          type="button"
+                          onClick={() => onRedeemVoucher(voucher)}
+                          disabled={!canClaimGrandPrize}
+                          className="beauty-grand-prize-button min-w-[4.9rem] rounded-full py-1.5 text-center text-[0.82rem] font-black uppercase leading-none disabled:cursor-not-allowed "
+                        >
+                          MAX
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => onRedeemVoucher(voucher)}
+                          disabled={!canAfford}
+                          className={`${actionBoxClass} text-[0.9rem] uppercase tracking-[-0.03em] text-white/90 disabled:cursor-not-allowed`}
+                        >
+                          {voucher.cost}BP
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {freeVouchers.map((voucher) => {
+              const claimed = claimedFreeSet.has(voucher.id);
+
+              return (
+                <button
+                  key={voucher.id}
+                  type="button"
+                  onClick={() => (claimed ? onOpenVoucher(voucher) : onClaimVoucher(voucher))}
+                  className="flex w-full items-center gap-3 rounded-[1.25rem] border border-[#f09de0] bg-[linear-gradient(135deg,rgba(123,25,173,0.96)_0%,rgba(111,20,167,0.97)_58%,rgba(96,13,155,0.98)_100%)] px-3.5 py-3 text-left shadow-[0_16px_30px_rgba(68,6,109,0.22)]"
+                >
+                  <VoucherLogoBadge
+                    logo={voucher.logo}
+                    brand={voucher.brand}
+                    color={voucher.color}
+                    className="h-11 w-11 shrink-0 rounded-[0.95rem]"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[0.98rem] leading-tight text-white/90">
+                      {voucher.discount}
+                    </div>
+                    <div className="mt-1 truncate text-[0.84rem] leading-[1.25] text-white/70">
+                      {voucher.desc}
+                    </div>
+                  </div>
+                  <div
+                    className={`${actionBoxClass} text-[0.56rem] font-bold uppercase leading-[1.05] !text-white`}
+                    style={
+                      claimed
+                        ? undefined
+                        : {
+                            background:
+                              'linear-gradient(180deg, rgba(255,118,202,0.38) 0%, rgba(163,34,169,0.58) 100%)',
+                          }
+                    }
+                  >
+                    {claimed ? 'Đã nhận' : 'Nhận'}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderProfileTab = (): React.ReactNode => (
     <ProfilePanel
@@ -774,9 +819,13 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
 
   return (
     <div className="relative h-full">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,#5816b7_0%,#8916b1_28%,#bf118f_62%,#dd0f76_100%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0)_74%)]" />
+      <div className="pointer-events-none absolute left-[-5rem] top-[14rem] h-52 w-52 rounded-full bg-[radial-gradient(circle,rgba(96,199,255,0.14)_0%,rgba(96,199,255,0)_72%)]" />
+      <div className="pointer-events-none absolute bottom-[6rem] right-[-4rem] h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(255,162,221,0.18)_0%,rgba(255,162,221,0)_72%)]" />
       <div
         ref={scrollContainerRef}
-        className="beauty-scroll h-full overflow-y-auto px-4 pb-40 pt-5"
+        className="beauty-scroll relative z-[1] h-full overflow-y-auto px-4 pb-40 pt-5"
       >
         {activeTab !== 'profile' ? (
           <>

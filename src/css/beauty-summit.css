@@ -168,7 +168,7 @@
   position: absolute;
   top: 0;
   right: 0;
-  padding: 0.38rem 1rem 0.44rem;
+  padding: 0.2rem 1rem 0.3rem;
   border-bottom-left-radius: 1rem;
   background: linear-gradient(135deg, #f9c529 0%, #ffb347 46%, #ff72bc 100%);
   color: #fff;
@@ -199,15 +199,48 @@
 .beauty-grand-prize-button {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #4f3409 0%, #2d200c 100%);
-  border: 1px solid rgba(255, 210, 31, 0.14);
+  isolation: isolate;
+  background: linear-gradient(135deg, rgba(79, 52, 9, 0.98) 0%, rgba(45, 32, 12, 0.98) 100%);
+  border: 1px solid rgba(255, 210, 31, 0.18);
   box-shadow:
     0 10px 18px rgba(0, 0, 0, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    0 0 20px rgba(255, 194, 61, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
   color: transparent !important;
   text-indent: -9999px;
   white-space: nowrap;
   text-shadow: none !important;
+  animation: beauty-grand-prize-button-wave 2.8s ease-in-out infinite;
+}
+
+.beauty-grand-prize-button::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      104deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 233, 148, 0.08) 20%,
+      rgba(255, 214, 94, 0.44) 38%,
+      rgba(255, 166, 94, 0.52) 50%,
+      rgba(255, 218, 126, 0.34) 62%,
+      rgba(255, 255, 255, 0) 82%
+    ),
+    linear-gradient(
+      104deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 246, 201, 0.04) 30%,
+      rgba(255, 246, 201, 0.18) 48%,
+      rgba(255, 255, 255, 0) 70%
+    ),
+    radial-gradient(circle at 20% 50%, rgba(255, 210, 31, 0.12), transparent 34%);
+  background-size: 210% 100%, 170% 100%, 140% 140%;
+  background-position: -170% 50%, -150% 50%, 0% 50%;
+  opacity: 0.96;
+  z-index: 0;
+  animation: beauty-grand-prize-button-surf 2.35s linear infinite;
 }
 
 .beauty-grand-prize-button::after {
@@ -224,18 +257,28 @@
   font-size: 0.94rem;
   font-weight: 900;
   letter-spacing: 0.04em;
-  text-shadow: 0 0 12px rgba(255, 210, 31, 0.12);
+  text-shadow:
+    0 0 10px rgba(255, 210, 31, 0.16),
+    0 1px 0 rgba(0, 0, 0, 0.32);
   transform: translateY(-0.5px);
+  z-index: 1;
 }
 
-.beauty-grand-prize-button::before {
-  content: "";
-  position: absolute;
-  inset: 1px;
-  border-radius: inherit;
-  background: linear-gradient(120deg, transparent 10%, rgba(255, 255, 255, 0.12) 42%, transparent 68%);
-  transform: translateX(-130%);
-  animation: beauty-grand-prize-shine 2.6s ease-in-out infinite;
+.beauty-grand-prize-button:disabled {
+  filter: saturate(0.84) brightness(0.95);
+  box-shadow:
+    0 8px 14px rgba(0, 0, 0, 0.2),
+    0 0 14px rgba(255, 194, 61, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.beauty-grand-prize-button:disabled::before {
+  opacity: 0.58;
+  animation-duration: 3.4s;
+}
+
+.beauty-grand-prize-button:disabled::after {
+  opacity: 0.76;
 }
 
 .beauty-reward-screen {
@@ -314,8 +357,8 @@
 
 .beauty-milestone-node--ready {
   box-shadow:
-    0 0 0 1px rgba(217, 119, 6, 0.14),
-    0 0 18px rgba(250, 204, 21, 0.2);
+    0 0 0 1px rgba(255, 120, 210, 0.2),
+    0 0 18px rgba(178, 112, 255, 0.24);
   animation: beauty-milestone-ready-glow 1.9s ease-in-out infinite;
 }
 
@@ -324,14 +367,14 @@
   position: absolute;
   inset: -5px;
   border-radius: 0.72rem;
-  background: radial-gradient(circle, rgba(250, 204, 21, 0.2) 0%, rgba(250, 204, 21, 0) 72%);
+  background: radial-gradient(circle, rgba(255, 110, 199, 0.24) 0%, rgba(255, 110, 199, 0) 72%);
   z-index: -1;
   animation: beauty-milestone-ready-pulse 2.2s ease-in-out infinite;
 }
 
 .beauty-milestone-node--claimed {
   box-shadow:
-    0 10px 18px rgba(34, 197, 94, 0.18),
+    0 10px 18px rgba(184, 82, 255, 0.24),
     inset 0 1px 0 rgba(255, 255, 255, 0.34);
 }
 
@@ -467,20 +510,57 @@
   }
 }
 
+@keyframes beauty-grand-prize-button-wave {
+  0%, 100% {
+    box-shadow:
+      /* Bóng đổ dưới chân đậm hơn */
+      0 8px 15px rgba(0, 0, 0, 0.2),
+      /* Hào quang vàng hồng rực (Glow) */
+      0 0 20px rgba(255, 194, 61, 0.5),
+      /* Viền sáng trắng bên trong sắc nét hơn */
+      inset 0 2px 2px rgba(255, 255, 255, 0.1);
+  }
+
+  /* Giai đoạn lên đỉnh: Rực nhất */
+  50% {
+    box-shadow:
+      /* Bóng dưới chân xa hơn và nhòe hơn */
+      0 15px 25px rgba(0, 0, 0, 0.3),
+      /* Hào quang tỏa ra rộng hơn và đậm hơn */
+      0 0 35px rgba(255, 194, 61, 0.7), 
+      /* Ánh sáng viền trong mạnh hơn */
+      inset 0 2px 4px rgba(255, 255, 255, 0.6);
+  }
+}
+
+@keyframes beauty-grand-prize-button-surf {
+  0% {
+    background-position: -175% 50%, -150% 50%, 0% 50%;
+  }
+
+  50% {
+    background-position: 22% 50%, 8% 50%, 10% 50%;
+  }
+
+  100% {
+    background-position: 180% 50%, 160% 50%, 0% 50%;
+  }
+}
+
 @keyframes beauty-milestone-ready-glow {
   0%,
   100% {
     transform: translateY(0);
     box-shadow:
-      0 0 0 1px rgba(217, 119, 6, 0.14),
-      0 0 18px rgba(250, 204, 21, 0.18);
+      0 0 0 1px rgba(255, 120, 210, 0.2),
+      0 0 18px rgba(178, 112, 255, 0.22);
   }
 
   50% {
     transform: translateY(-1px);
     box-shadow:
-      0 0 0 1px rgba(217, 119, 6, 0.22),
-      0 0 24px rgba(250, 204, 21, 0.28);
+      0 0 0 1px rgba(255, 120, 210, 0.32),
+      0 0 24px rgba(178, 112, 255, 0.34);
   }
 }
 

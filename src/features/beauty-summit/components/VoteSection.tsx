@@ -109,7 +109,7 @@ const VoteSection: React.FC<VoteSectionProps> = ({
         <>
           {filteredTopThree.length > 0 ? (
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-[1.05rem] font-black text-[#2f3b57]">
+              <div className="flex items-center gap-2 text-[1.05rem] text-white/90 text-[#2f3b57]">
                 <TrophyIcon size={18} color="#f5b700" />
                 Top 3 Dẫn đầu
               </div>
@@ -132,7 +132,7 @@ const VoteSection: React.FC<VoteSectionProps> = ({
           ) : null}
 
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-[1.05rem] font-black text-[#2f3b57]">
+            <div className="flex items-center gap-2 text-[1.05rem] text-white/90 text-[#2f3b57]">
               <VoteIcon color="#6366f1" size={18} />
               Tất Cả Nhãn Hàng
             </div>

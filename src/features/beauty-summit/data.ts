@@ -11,25 +11,25 @@ import type {
 } from '@/features/beauty-summit/types';
 
 export const TIERS: Record<TierKey, TierMeta> = {
-  STANDARD: {
-    key: 'STANDARD',
-    name: 'Standard',
-    color: '#8B7355',
-    gradient: 'linear-gradient(135deg, #8B7355, #C4A882)',
-    icon: '✦',
-  },
-  PREMIUM: {
-    key: 'PREMIUM',
-    name: 'Premium',
+  GOLD: {
+    key: 'GOLD',
+    name: 'Gold',
     color: '#B8860B',
     gradient: 'linear-gradient(135deg, #B8860B, #FFD700)',
+    icon: '✦',
+  },
+  RUBY: {
+    key: 'RUBY',
+    name: 'Ruby',
+    color: '#C41E7F',
+    gradient: 'linear-gradient(135deg, #B3125E, #FF5B8F)',
     icon: '✧',
   },
   VIP: {
     key: 'VIP',
     name: 'VIP',
-    color: '#C41E7F',
-    gradient: 'linear-gradient(135deg, #C41E7F, #FF6FB5)',
+    color: '#7C4DFF',
+    gradient: 'linear-gradient(135deg, #5D2DE1, #B26DFF)',
     icon: '♛',
   },
 };
@@ -135,7 +135,7 @@ export const CHECKIN_ZONES: CheckinZone[] = [
     name: 'Cổng vào sự kiện',
     location: 'VEC Hà Nội - cổng chính',
     color: '#C41E7F',
-    tiers: ['STANDARD', 'PREMIUM', 'VIP'],
+    tiers: ['GOLD', 'RUBY', 'VIP'],
     desc: 'Check-in xác nhận tham dự tại cổng.',
   },
   {
@@ -143,7 +143,7 @@ export const CHECKIN_ZONES: CheckinZone[] = [
     name: 'Phòng Coach 1:1',
     location: 'Tầng 2 - phòng V2',
     color: '#8B5CF6',
-    tiers: ['PREMIUM', 'VIP'],
+    tiers: ['RUBY', 'VIP'],
     desc: 'Khu vực tư vấn riêng cùng chuyên gia.',
   },
   {
@@ -307,7 +307,7 @@ const createBaseMissions = (tier: TierKey): MissionSet => {
           'Di chuyển qua khu booth nhãn hàng.',
           tier === 'VIP'
             ? 'Quét QR tại ít nhất 7 gian hàng.'
-            : tier === 'PREMIUM'
+            : tier === 'RUBY'
               ? 'Quét QR tại ít nhất 5 gian hàng.'
               : 'Quét QR tại ít nhất 3 gian hàng.',
           'Tiến độ được cập nhật khi staff ghi nhận đủ số lượt.',
@@ -363,7 +363,7 @@ const createBaseMissions = (tier: TierKey): MissionSet => {
     ],
   };
 
-  if (tier === 'PREMIUM' || tier === 'VIP') {
+  if (tier === 'RUBY' || tier === 'VIP') {
     shared.before.push({
       id: `${tier}-b4`,
       title: 'Mời bạn bè tham gia',

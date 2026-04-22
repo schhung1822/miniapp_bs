@@ -494,6 +494,20 @@ const syncMiniAppUser = async (user: CachedZaloUser): Promise<void> => {
 
 const formatTicketLabel = (value: string): string => value.trim().toUpperCase();
 
+const resolveTierKeyFromTicketLabel = (value: string): TierKey => {
+  const normalized = formatTicketLabel(value);
+
+  if (normalized.includes('VIP')) {
+    return 'VIP';
+  }
+
+  if (normalized.includes('RUBY') || normalized.includes('PRE')) {
+    return 'RUBY';
+  }
+
+  return 'GOLD';
+};
+
 const fetchMiniAppTicketOrders = async (zid: string, phone: string): Promise<MiniAppTicketOrder[]> => {
   const response = await apiClient.post<MiniAppTicketsResponse>('/api/tickets', {
     action: 'list',
@@ -636,7 +650,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const [searchParams] = useSearchParams();
   const [screen, setScreen] = React.useState<ExperienceScreen>('onboarding');
   const [slideIndex, setSlideIndex] = React.useState<number>(0);
-  const [tier, setTier] = React.useState<TierKey>('PREMIUM');
+  const [tier, setTier] = React.useState<TierKey>('RUBY');
   const [agreed, setAgreed] = React.useState<boolean>(false);
   const [orderCode, setOrderCode] = React.useState<string>('');
   const [qrGenerated, setQrGenerated] = React.useState<boolean>(false);
@@ -928,6 +942,16 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   );
   const currentTicket = ticketOrders.find((ticket) => ticket.code === normalizeTicketCode(orderCode));
   const currentTicketLabel = formatTicketLabel(currentTicket?.ticketClass || currentTier.name);
+
+  React.useEffect(() => {
+    const tierSource = currentTicket?.ticketClass || ticketOrders[0]?.ticketClass;
+    if (!tierSource) {
+      return;
+    }
+
+    const nextTier = resolveTierKeyFromTicketLabel(tierSource);
+    setTier((current) => (current === nextTier ? current : nextTier));
+  }, [currentTicket?.ticketClass, ticketOrders]);
 
   const showToast = React.useCallback((message: string) => {
     setToast(message);
@@ -1528,7 +1552,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     setPermissionsGranted(false);
     setAgreed(false);
     setSlideIndex(0);
-    setTier('PREMIUM');
+    setTier('RUBY');
     setActiveTab('missions');
     setActivePhase('before');
     setVoucherTab('bpoint');
