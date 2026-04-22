@@ -88,12 +88,16 @@ export interface MissionSet {
 }
 
 export interface CheckinZone {
-  id: string;
-  name: string;
-  allowedTiers: TierKey[];
-  imageUrl: string | null;
-  isActive: boolean;
-  eventDate: string | null;
+  id?: string;
+  name?: string;
+  allowedTiers?: TierKey[];
+  imageUrl?: string | null;
+  isActive?: boolean;
+  eventDate?: string | null;
+  location?: string | null;
+  color?: string | null;
+  tiers: any;
+  desc?: string | null;
 }
 
 export interface CheckinLog {

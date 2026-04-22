@@ -120,3 +120,11 @@
 .scholarship-select:valid {
   color: #141415;
 }
+@font-face {
+  font-family: 'Fz Poppins';
+  src: url('./assets/fonts/Poppins-Regular.ttf') format('truetype'); 
+}
+
+@theme {
+  --font-poppins: "Fz Poppins", sans-serif;
+}

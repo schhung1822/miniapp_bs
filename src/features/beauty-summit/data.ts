@@ -38,23 +38,26 @@ export const ONBOARDING_SLIDES: OnboardingSlide[] = [
   {
     id: 'qr',
     badge: 'Bước 1/3',
-    title: 'Tạo mã QR check-in',
-    desc: 'Nhập mã vé để lấy QR cá nhân, dùng xuyên suốt hai ngày sự kiện tại Beauty Summit 2026.',
-    accent: '#FFD700',
+    title: 'TẠO MÃ QR CHECK-IN',
+    desc:
+      'Cho phép Zalo chia sẻ SĐT, hệ thống tự tìm vé và tạo mã QR cho bạn. Mỗi khách có 1 mã QR duy nhất, dùng xuyên suốt 2 ngày sự kiện.',
+    accent: '#f142aa',
   },
   {
     id: 'mission',
     badge: 'Bước 2/3',
-    title: 'Làm nhiệm vụ, tích BPoint',
-    desc: 'Hoàn thành các thử thách trước sự kiện và tại booth để tích điểm, mở khóa quà và ưu đãi.',
-    accent: '#FF6FB5',
+    title: 'LÀM NHIỆM VỤ\nTÍCH ĐIỂM - ĐỔI QUÀ',
+    desc:
+      'Hoàn thành nhiệm vụ BTC giao. Được cộng điểm BPoint. Dùng điểm đổi quà trực tiếp trong sự kiện.',
+    accent: '#ff72bc',
   },
   {
     id: 'reward',
     badge: 'Bước 3/3',
-    title: 'Đổi voucher và săn grand prize',
-    desc: 'Dùng BPoint đổi voucher ngay trong app. Hoàn thành toàn bộ nhiệm vụ để đủ điều kiện bốc thăm giải lớn.',
-    accent: '#5BC8D8',
+    title: 'NHẬN VÔ VÀN VOUCHER',
+    desc:
+      'Các nhãn hàng tại sự kiện tặng voucher trực tiếp qua app. Mở app, nhận ngay - không cần xếp hàng!',
+    accent: '#ffd35d',
   },
 ];
 
