@@ -42,46 +42,51 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-[1.35rem] border border-[#eadfd2] bg-white p-4 shadow-[0_18px_38px_rgba(184,134,11,0.08)]">
+      <div className="rounded-[1.4rem] border border-[#ffb4eb]/45 bg-[linear-gradient(135deg,rgba(150,25,178,0.98)_0%,rgba(122,16,171,0.98)_52%,rgba(208,24,122,0.94)_100%)] p-4 shadow-[0_20px_40px_rgba(92,7,120,0.24)]">
         <div className="flex items-start gap-3">
           {userAvatar ? (
             <img
               src={userAvatar}
               alt={userName}
-              className="h-14 w-14 shrink-0 rounded-[1.1rem] border border-white/10 object-cover"
+              className="h-14 w-14 shrink-0 rounded-[1.1rem] border border-white/20 object-cover shadow-[0_10px_20px_rgba(42,7,63,0.26)]"
             />
           ) : (
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.1rem] bg-[linear-gradient(135deg,#ec4899,#f59e0b)] text-lg font-black !text-white">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.1rem] border border-white/16 bg-[linear-gradient(135deg,#ff4ec2,#8f3cff)] text-lg font-black !text-white shadow-[0_10px_20px_rgba(53,8,89,0.3)]">
               {getInitials(userName)}
             </div>
           )}
+
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <div className="text-[15px] font-bold text-[#241629]">{userName}</div>
-              <div className="rounded-full bg-[#f4edf2] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#7a7280]">
+              <div className="text-[15px] font-bold text-white/90">{userName}</div>
+              <div className="rounded-full border border-white/18 bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ">
                 {roleLabel}
               </div>
             </div>
-            <div className="mt-1 text-[12px] text-zinc-400">{userPhone}</div>
+
+            <div className="mt-1 text-[12px] text-white/72">{userPhone}</div>
+
             <div className="mt-3 grid grid-cols-[1.15fr_0.92fr_0.92fr] gap-2">
-              <div className="flex min-w-0 flex-col items-center justify-center rounded-[0.95rem] border border-[#eadfd2] bg-[#fffaf2] px-3 py-2 text-center">
-                <div className="text-[10px] uppercase tracking-[0.12em] text-[#8b8790]">Hạng vé</div>
-                <div className="mt-1 w-full whitespace-nowrap text-center text-[12px] font-semibold text-[#241629]">
+              <div className="flex min-w-0 flex-col items-center justify-center rounded-[0.95rem] border border-white/16 bg-white/10 px-3 py-2 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                <div className="text-[10px] uppercase tracking-[0.12em] font-bold">Hạng vé</div>
+                <div className="mt-1 w-full whitespace-nowrap text-center text-[12px] font-semibold text-white">
                   {ticketLabel}
                 </div>
               </div>
-              <div className="flex min-w-0 flex-col items-center justify-center rounded-[0.95rem] border border-[#eadfd2] bg-[#fffaf2] px-3 py-2 text-center">
-                <div className="whitespace-nowrap text-[10px] uppercase tracking-[0.08em] text-[#8b8790]">
+
+              <div className="flex min-w-0 flex-col items-center justify-center rounded-[0.95rem] border border-white/16 bg-white/10 px-3 py-2 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                <div className="whitespace-nowrap text-[10px] uppercase tracking-[0.08em] font-bold">
                   Nhiệm vụ
                 </div>
-                <div className="mt-1 text-[12px] font-semibold text-[#241629]">
+                <div className="mt-1 text-[12px] font-semibold text-white">
                   {completedCount}/{totalMissionCount}
                 </div>
               </div>
-              <div className="flex min-w-0 flex-col items-center justify-center rounded-[0.95rem] border border-[#eadfd2] bg-[#fffaf2] px-3 py-2 text-center">
-                <div className="text-[10px] uppercase tracking-[0.12em] text-[#8b8790]">BPoint</div>
-                <div className="mt-1 inline-flex items-center gap-1 text-[12px] font-semibold text-[#241629]">
-                  <StarIcon size={12} color="#ffd23f" />
+
+              <div className="flex min-w-0 flex-col items-center justify-center rounded-[0.95rem] border border-white/16 bg-white/10 px-3 py-2 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                <div className="text-[10px] uppercase tracking-[0.12em] font-bold">BPoint</div>
+                <div className="mt-1 inline-flex items-center gap-1 text-[12px] font-semibold text-white">
+                  <StarIcon size={12} color="#000" />
                   {availablePoints}
                 </div>
               </div>
@@ -93,18 +98,18 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
       <button
         type="button"
         onClick={onOpenPolicy}
-        className="flex w-full items-center gap-3 rounded-[1.2rem] border border-[#eadfd2] bg-white px-4 py-4 text-left shadow-[0_10px_24px_rgba(184,134,11,0.06)]"
+        className="flex w-full items-center gap-3 rounded-[1.2rem] border border-[#ffb4eb]/40 bg-[linear-gradient(135deg,rgba(145,23,181,0.96)_0%,rgba(121,16,171,0.96)_58%,rgba(189,17,125,0.92)_100%)] px-4 py-4 text-left shadow-[0_16px_28px_rgba(77,5,110,0.2)]"
       >
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1rem] bg-[#fff2cc] text-[#b8860b]">
-          <PolicyIcon size={21} color="#b8860b" />
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1rem] border border-white/16 bg-[linear-gradient(135deg,rgba(255,84,196,0.34)_0%,rgba(151,36,212,0.42)_100%)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+          <PolicyIcon size={21} color="#ffffff" />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-[13px] font-bold text-[#241629]">Chính sách ứng dụng</div>
-          <div className="mt-1 text-[11px] leading-5 text-[#7a7280]">
-            Xem quy định sự kiện, BPoint, voucher và chính sách dữ liệu cá nhân.
+          <div className="text-[13px] font-bold text-white/90">Chính sách ứng dụng</div>
+          <div className="mt-1 text-[11px] leading-5 text-white/72">
+            Xem quy định chung và quy định nhiệm vụ áp dụng cho Beauty Summit 2026.
           </div>
         </div>
-        <div className="shrink-0 text-zinc-500">
+        <div className="shrink-0 text-white/72">
           <ChevronRightIcon size={16} color="currentColor" />
         </div>
       </button>
@@ -112,18 +117,18 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
       <button
         type="button"
         onClick={onOpenDeveloperInfo}
-        className="flex w-full items-center gap-3 rounded-[1.2rem] border border-[#eadfd2] bg-white px-4 py-4 text-left shadow-[0_10px_24px_rgba(184,134,11,0.06)]"
+        className="flex w-full items-center gap-3 rounded-[1.2rem] border border-[#ffb4eb]/30 bg-[linear-gradient(135deg,rgba(115,17,167,0.94)_0%,rgba(96,14,151,0.96)_100%)] px-4 py-4 text-left shadow-[0_16px_28px_rgba(64,5,98,0.18)]"
       >
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1rem] bg-[#dbeafe] text-[#2563eb]">
-          <ProfileIcon size={21} color="#2563eb" />
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1rem] border border-white/16 bg-[linear-gradient(135deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.06)_100%)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+          <ProfileIcon size={21} color="#ffffff" />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-[13px] font-bold text-[#241629]">Thông tin nhà phát triển</div>
-          <div className="mt-1 text-[11px] leading-5 text-[#7a7280]">
+          <div className="text-[13px] font-bold text-white/90">Thông tin nhà phát triển</div>
+          <div className="mt-1 text-[11px] leading-5 text-white/72">
             Xem mã số doanh nghiệp, số điện thoại hỗ trợ và phiên bản Mini App hiện tại.
           </div>
         </div>
-        <div className="shrink-0 text-zinc-500">
+        <div className="shrink-0 text-white/72">
           <ChevronRightIcon size={16} color="currentColor" />
         </div>
       </button>
@@ -131,7 +136,7 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
       <button
         type="button"
         onClick={onLogout}
-        className="w-full rounded-[1.2rem] border border-[#fecaca] bg-[#fff1f2] px-4 py-4 text-center text-[13px] font-bold text-[#dc2626] shadow-[0_10px_24px_rgba(220,38,38,0.06)]"
+        className="w-full rounded-full border border-[#ff95cf]/42 bg-[linear-gradient(135deg,rgba(183,20,121,0.92)_0%,rgba(134,14,91,0.94)_100%)] px-4 py-4 text-center text-[15px] font-bold text-white/90 shadow-[0_16px_28px_rgba(110,7,74,0.18)]"
       >
         Đăng xuất
       </button>

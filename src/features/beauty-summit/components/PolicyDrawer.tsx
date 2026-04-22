@@ -1,14 +1,21 @@
 import React from 'react';
 
 import { POLICY_SECTIONS } from '@/features/beauty-summit/data';
-import { CloseIcon, PolicyIcon } from '@/features/beauty-summit/icons';
+import { CloseIcon, MissionIcon, PolicyIcon } from '@/features/beauty-summit/icons';
 import type { PolicySection } from '@/features/beauty-summit/types';
-import { getToneClasses } from '@/features/beauty-summit/utils';
 
 interface PolicyDrawerProps {
   open: boolean;
   onClose: () => void;
 }
+
+const renderSectionIcon = (sectionId: string): React.ReactNode => {
+  if (sectionId === 'missions') {
+    return <MissionIcon size={24} color="#ffffff" />;
+  }
+
+  return <PolicyIcon size={24} color="#ffffff" />;
+};
 
 const PolicyDrawer: React.FC<PolicyDrawerProps> = ({ open, onClose }) => {
   if (!open) {
@@ -16,67 +23,55 @@ const PolicyDrawer: React.FC<PolicyDrawerProps> = ({ open, onClose }) => {
   }
 
   return (
-    <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-sm">
-      <div className="absolute inset-x-0 bottom-0 max-h-[82%] rounded-t-[1.75rem] border-t border-white/8 bg-[#121320] px-5 pb-8 pt-3 shadow-[0_-24px_60px_rgba(0,0,0,0.45)]">
-        <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-white/12" />
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-lg font-bold text-white">
-              <PolicyIcon color="#d7b15c" />
+    <div className="absolute inset-0 z-40 bg-[linear-gradient(180deg,#7e13b7_0%,#a913b8_34%,#d2138b_72%,#de2b73_100%)] backdrop-blur-sm">
+      <div className="beauty-scroll relative h-full overflow-y-auto px-4 pb-8 pt-4">
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <div className="text-[1rem] font-black uppercase tracking-[0.06em] text-white/90">
               Chính sách ứng dụng
             </div>
-            <div className="mt-1 text-sm text-zinc-400">
-              Quy định sự kiện, BPoint, voucher và dữ liệu người dùng.
+            <div className="mt-1 text-[12px] leading-5 text-white/78">
+              Quy định áp dụng cho khách tham dự Beauty Summit 2026.
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full bg-white/6 p-2 text-zinc-400"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 "
           >
-            <CloseIcon />
+            <CloseIcon color="currentColor" />
           </button>
         </div>
 
-        <div className="beauty-scroll max-h-[calc(82vh-6.5rem)] space-y-3 overflow-y-auto">
-          {POLICY_SECTIONS.map((section: PolicySection) => {
-            const tone = getToneClasses(section.tone);
-            const bulletColor =
-              section.tone === 'gold'
-                ? '#ffd36c'
-                : section.tone === 'green'
-                  ? '#5fe0b4'
-                  : section.tone === 'blue'
-                    ? '#62b7ff'
-                    : section.tone === 'red'
-                      ? '#ff7878'
-                      : '#ff70b8';
-
-            return (
-              <div
-                key={section.id}
-                className="overflow-hidden rounded-[1.1rem] border border-white/6 bg-white/[0.03]"
-              >
-                <div
-                  className={`flex items-center gap-2 border-b border-white/6 px-4 py-3 text-sm font-bold`}
-                >
-                  <PolicyIcon color="currentColor" />
-                  <div className={`${tone}`}>{section.title}</div>
+        <div className="space-y-4">
+          {POLICY_SECTIONS.map((section: PolicySection) => (
+            <div
+              key={section.id}
+              className="overflow-hidden rounded-[1.8rem] border border-[#ffd2f4]/88 bg-[linear-gradient(135deg,rgba(178,18,196,0.95)_0%,rgba(131,12,188,0.96)_100%)] shadow-[0_20px_34px_rgba(98,4,103,0.22)]"
+            >
+              <div className="px-2 pb-5 pt-2">
+                <div className="flex items-center ">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[1rem] ">
+                    {renderSectionIcon(section.id)}
+                  </div>
+                  <div className="min-w-0 text-[1rem] font-black uppercase tracking-[0.02em] text-white/90">
+                    {section.title}
+                  </div>
                 </div>
-                <div className="space-y-3 px-4 py-4">
+
+                <div className="mt-1 h-px w-full bg-white" />
+
+                <div className="mt-2 space-y-4">
                   {section.items.map((item) => (
-                    <div key={item} className="flex items-start gap-3 text-sm leading-6 text-zinc-300">
-                      <span
-                        className="mt-2 h-1.5 w-1.5 rounded-full"
-                        style={{ background: bulletColor }}
-                      />
+                    <div key={item} className="flex items-start gap-3 text-left text-[13px] text-white/78">
+                      <span className="mt-[10px] h-[5px] w-[5px] shrink-0 rounded-full bg-white" />
                       <span>{item}</span>
                     </div>
                   ))}
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
     </div>

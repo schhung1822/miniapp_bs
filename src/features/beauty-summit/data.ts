@@ -159,52 +159,25 @@ export const CHECKIN_ZONES: CheckinZone[] = [
 export const POLICY_SECTIONS: PolicySection[] = [
   {
     id: 'general',
-    title: 'Quy định chung',
+    title: 'QUY ĐỊNH CHUNG',
     tone: 'pink',
     items: [
-      'Mini App áp dụng cho khách tham dự Beauty Summit 2026 tại VEC Hà Nội.',
-      'Mỗi số điện thoại chỉ được đăng ký một tài khoản duy nhất.',
-      'Hạng vé được xác định theo vé mua và không thay đổi sau khi kích hoạt.',
+      'Mini App chỉ áp dụng cho khách tham dự Beauty Summit 2026 (19–20/06/2026) tại VEC Hà Nội.',
+      'Mỗi điện thoại chỉ được đăng ký 1 tài khoản duy nhất trên Mini App.',
+      'Hạng vé (Standard / Premium / VIP) được xác định theo vé mua và không thể thay đổi sau khi đăng ký.',
+      'Nghiêm cấm sử dụng thông tin giả mạo hoặc gian lận để tham gia chương trình.',
     ],
   },
   {
     id: 'missions',
-    title: 'Quy định nhiệm vụ',
-    tone: 'gold',
-    items: [
-      'Nhiệm vụ chia làm 3 giai đoạn: trước sự kiện, ngày 1 và ngày 2.',
-      'Bằng chứng nhiệm vụ được duyệt thủ công hoặc tự động theo loại nhiệm vụ.',
-      'Bài đăng mạng xã hội phải ở chế độ công khai và đúng hashtag yêu cầu.',
-    ],
-  },
-  {
-    id: 'voucher',
-    title: 'Quy định voucher & BPoint',
-    tone: 'green',
-    items: [
-      'BPoint tích lũy khi hoàn thành nhiệm vụ và dùng để đổi voucher.',
-      'Voucher đã đổi không hoàn lại và không quy đổi thành tiền mặt.',
-      'Grand prize yêu cầu hoàn thành 100% nhiệm vụ.',
-    ],
-  },
-  {
-    id: 'privacy',
-    title: 'Quyền riêng tư & dữ liệu',
-    tone: 'blue',
-    items: [
-      'Số điện thoại dùng để định danh tài khoản, check-in và gửi thông báo.',
-      'Thông tin cá nhân không chia sẻ ngoài phạm vi đã cam kết với đối tác.',
-      'Bạn có thể yêu cầu xóa dữ liệu sau sự kiện qua kênh hỗ trợ.',
-    ],
-  },
-  {
-    id: 'violation',
-    title: 'Xử lý vi phạm',
+    title: 'QUY ĐỊNH NHIỆM VỤ',
     tone: 'red',
     items: [
-      'Gian lận nhiệm vụ có thể bị hủy toàn bộ BPoint và voucher.',
-      'Dùng nhiều tài khoản cho cùng một người sẽ bị khóa toàn bộ tài khoản liên quan.',
-      'Quyết định cuối cùng thuộc về Ban tổ chức.',
+      'Nhiệm vụ chia làm 3 giai đoạn: Trước sự kiện, Ngày 1 (19/06), Ngày 2 (20/06). Mỗi giai đoạn mỗi khóa đồng thời thời điểm.',
+      'Nhiệm vụ yêu cầu bằng chứng (link bài đăng, ảnh chụp màn hình, mã xác nhận) sẽ được duyệt trong vòng tối đa 15 phút.',
+      'Nhiệm vụ check-in (quét QR) sẽ được ghi nhận từ ứng dụng và không thể thay đổi.',
+      'Bài đăng trên Facebook phải được đăng trên trang chính thức và kèm theo hashtag theo yêu cầu. Bài viết thiếu hashtag sẽ không được duyệt.',
+      'Ban tổ chức có quyền từ chối các bài viết có nội dung không phù hợp hoặc có dấu hiệu gian lận.',
     ],
   },
 ];

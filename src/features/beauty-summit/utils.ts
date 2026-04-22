@@ -27,7 +27,10 @@ export const generateQrMarkup = (text: string): string => {
   return `<svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg"><rect width="${size}" height="${size}" fill="white" rx="12"/><g fill="#150b26">${rects}</g></svg>`;
 };
 
-export const normalizeQuery = (value: string): string => value.trim().toLowerCase();
+export const normalizeQuery = (value: string | null | undefined): string =>
+  String(value ?? '')
+    .trim()
+    .toLowerCase();
 
 export const getToneClasses = (tone: string): string => {
   switch (tone) {

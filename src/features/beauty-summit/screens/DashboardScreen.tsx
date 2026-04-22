@@ -325,7 +325,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
           </div>
 
           <button type="button" onClick={onOpenQr} className="shrink-0 text-center">
-            <div className="beauty-crisp-edge relative rounded-[1.45rem] border border-[#7f49ff] bg-[linear-gradient(180deg,#32095f_0%,#250746_100%)] p-2.5 shadow-[0_12px_24px_rgba(43,2,72,0.34)]">
+            <div className="flex relative justify-center items-center bg-[rgba(39,7,74,0.96)] beauty-crisp-edge rounded-[1.45rem] border border-[#7f49ff] p-2.5 shadow-[0_12px_24px_rgba(43,2,72,0.34)]">
               {hasQr ? (
                 <BeautyQrCode
                   value={qrValue}
@@ -336,7 +336,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                   logoRingClassName="border-[4px] shadow-[0_4px_12px_rgba(178,71,125,0.12)]"
                 />
               ) : (
-                <div className="flex h-[82px] w-[82px] flex-col items-center justify-center rounded-[0.8rem] bg-[rgba(39,7,74,0.96)] sm:h-[92px] sm:w-[92px]">
+                <div className="flex h-[82px] w-[82px] flex-col items-center justify-center rounded-[0.8rem] sm:h-[92px] sm:w-[92px]">
                   <QrIcon size={36} color="#ffffff" />
                   <p className="text-[#ffffff]">Tạo mã QR</p>
                 </div>
@@ -478,38 +478,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
   };
   const renderMissionsTab = (): React.ReactNode => (
     <>
-      <div className="mb-4 grid grid-cols-3 gap-2">
-        {[
-          {
-            label: 'Đã xong',
-            value: completedIds.length,
-            tone: 'border border-white/16 bg-[rgba(122,18,146,0.88)] text-[#ffe2ff]',
-          },
-          {
-            label: 'Đang mở',
-            value: phaseMissionsPending.length,
-            tone: 'border border-white/18 bg-[rgba(203,28,135,0.9)] text-[#ffffff]',
-          },
-          {
-            label: 'BPoint',
-            value: availablePoints,
-            tone: 'border border-white/16 bg-[rgba(92,21,140,0.88)] text-[#fff2ff]',
-          },
-        ].map((item) => (
-          <div
-            key={item.label}
-            className="rounded-[1rem] border border-[#ff76c9] bg-[linear-gradient(180deg,rgba(148,24,163,0.92)_0%,rgba(115,16,151,0.96)_100%)] p-2 text-center shadow-[0_14px_28px_rgba(76,8,121,0.2)]"
-          >
-            <div
-              className={`mx-auto inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold ${item.tone}`}
-            >
-              {item.label}
-            </div>
-            <div className="text-lg font-black text-[#ffffff]">{item.value}</div>
-          </div>
-        ))}
-      </div>
-
       <div className="mb-4">
         <div className="mb-2 px-1 text-[12px] font-semibold text-[#f3cfff]">Giai đoạn nhiệm vụ</div>
         <div className="grid grid-cols-3 gap-2.5">

@@ -1298,8 +1298,9 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           brandId: brand.id,
           orderCode,
         });
-        if (zaloUserId && zaloPhone) {
-          await loadRewardBundle(zaloUserId, zaloPhone);
+        const currentUser = buildCurrentMiniAppUser();
+        if (currentUser) {
+          await loadRewardBundle(currentUser.id, currentUser.phone);
         }
         setPendingVoteAction(null);
         showToast(
