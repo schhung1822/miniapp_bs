@@ -135,7 +135,7 @@ const VoteSection: React.FC<VoteSectionProps> = (props) => {
         className="relative mx-auto w-full max-w-[10.75rem] overflow-hidden rounded-[1.05rem] border border-[#f2d4ff] bg-white text-left shadow-[0_14px_26px_rgba(94,8,118,0.18)] transition-transform duration-200 active:scale-[0.985]"
       >
         {selected ? (
-          <div className="absolute left-0 top-0 z-[2] rounded-br-[0.95rem] bg-[linear-gradient(135deg,#ff4ec2,#8f3cff)] px-3 text-[0.62rem] font-black uppercase tracking-[0.05em] text-white/90 shadow-[0_8px_18px_rgba(166,34,169,0.28)]">
+          <div className="absolute left-[-1px] top-[-1px] rounded-br-[0.95rem] bg-[linear-gradient(135deg,#ff4ec2,#8f3cff)] px-3 text-[0.62rem] font-black uppercase tracking-[0.05em] text-white/90 shadow-[0_8px_18px_rgba(166,34,169,0.28)]">
             Voted
           </div>
         ) : null}
@@ -266,7 +266,7 @@ const VoteSection: React.FC<VoteSectionProps> = (props) => {
                     </div>
 
                     <div className="min-w-0">
-                      <div className="text-[1.02rem] font-black leading-tight text-white/90">
+                      <div className="text-[1.02rem] font-black truncate leading-tight text-white/90">
                         {category.title}{' '}
                         <span className="font-medium text-white/76">({displayCount})</span>
                       </div>

@@ -121,6 +121,8 @@ export interface MiniAppTicketOrder {
   canOpen?: boolean;
   checkinTime: string | null;
   zoneId?: string;
+  checkedZones?: string[];
+  checkinCount?: number;
   createdAt: string | null;
   buyerName?: string;
   buyerPhone?: string;

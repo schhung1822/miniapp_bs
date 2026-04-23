@@ -692,7 +692,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                         <button
                           type="button"
                           onClick={() => onOpenVoucher(voucher)}
-                          className={`text-[0.56rem] font-bold uppercase leading-[1.05]`}
+                          className={`${actionBoxClass} text-[0.56rem] font-bold uppercase leading-[1.05] !text-white`}
                         >
                           Đã nhận
                         </button>

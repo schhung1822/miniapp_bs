@@ -53,7 +53,7 @@ const MilestoneModal: React.FC<MilestoneModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-white/12 bg-white/[0.06] p-2 text-white/70"
+            className="rounded-full border border-white/12 bg-white/[0.06] p-2 text-black"
             aria-label="Đóng mốc quà"
           >
             <CloseIcon color="currentColor" />
@@ -62,9 +62,9 @@ const MilestoneModal: React.FC<MilestoneModalProps> = ({
 
         <p className="mb-5 text-sm leading-6 text-white/72">{milestone.desc}</p>
 
-        <div className="mb-5 rounded-[1.15rem] border border-white/10 bg-white/[0.04] p-4">
+        <div className="mb-5 rounded-[1.15rem] border border-white/10 p-4">
           <div className="mb-2 flex items-center justify-between text-xs">
-            <span className="text-white/48">Tiến độ hiện tại</span>
+            <span className="text-white/90">Tiến độ hiện tại</span>
             <span className="font-semibold" style={{ color: milestone.color }}>
               {progress}% / {milestone.pct}%
             </span>
@@ -75,7 +75,7 @@ const MilestoneModal: React.FC<MilestoneModalProps> = ({
               style={{ width: `${ratio}%`, background: `linear-gradient(90deg, ${milestone.color}, ${milestone.color}bb)` }}
             />
           </div>
-          <div className="text-xs text-white/56">
+          <div className="text-xs text-white/70">
             {claimed
               ? 'Bạn đã nhận mốc quà này.'
               : unlocked
@@ -88,7 +88,7 @@ const MilestoneModal: React.FC<MilestoneModalProps> = ({
           type="button"
           onClick={onClaim}
           disabled={!unlocked || claimed}
-          className="w-full rounded-[1rem] px-4 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/36"
+          className="w-full rounded-[1rem] px-4 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/80"
           style={unlocked && !claimed ? { background: 'linear-gradient(135deg,#ff4fb6 0%,#a53cff 100%)' } : undefined}
         >
           {claimed ? 'Đã nhận' : unlocked ? 'Nhận phần quà' : 'Tiếp tục làm nhiệm vụ'}

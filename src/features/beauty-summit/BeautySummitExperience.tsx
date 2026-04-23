@@ -694,15 +694,24 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const [developerInfoOpen, setDeveloperInfoOpen] = React.useState<boolean>(false);
 
   const applyOrdersToCheckinLog = React.useCallback((orders: MiniAppTicketOrder[]) => {
-    const logs = orders.filter((t) => t.checkedIn).map((t) => {
-      const timeStr = t.checkinTime ? new Date(t.checkinTime).toLocaleTimeString('vi-VN') : '';
-      const dayStr = t.checkinTime ? new Date(t.checkinTime).toLocaleDateString('en-GB') : '';
-      return {
-        id: `log-${t.code}`,
-        zoneId: t.zoneId || '',
+    const logs = orders.flatMap((ticket) => {
+      const zoneIds =
+        ticket.checkedZones?.filter((zoneId) => zoneId.trim().length > 0) ??
+        (ticket.checkedIn && ticket.zoneId ? [ticket.zoneId] : []);
+
+      if (!zoneIds.length) {
+        return [];
+      }
+
+      const timeStr = ticket.checkinTime ? new Date(ticket.checkinTime).toLocaleTimeString('vi-VN') : '';
+      const dayStr = ticket.checkinTime ? new Date(ticket.checkinTime).toLocaleDateString('en-GB') : '';
+
+      return zoneIds.map((zoneId, index) => ({
+        id: `log-${ticket.code}-${zoneId}-${index}`,
+        zoneId,
         time: timeStr,
         day: dayStr,
-      };
+      }));
     });
     setCheckinLog(logs);
   }, []);
