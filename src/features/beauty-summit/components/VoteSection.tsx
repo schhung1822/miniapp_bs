@@ -190,10 +190,10 @@ const VoteSection: React.FC<VoteSectionProps> = (props) => {
             <VoteIcon size={24} color="#ffffff" />
           </div>
           <div className="min-w-0">
-            <div className="text-[1.1rem] font-black leading-tight text-white/90">
+            <div className="text-[1.1rem] font-black leading-tight text-white/100">
               BÌNH CHỌN NHÃN HÀNG
             </div>
-            <div className="mt-1 text-[0.92rem] leading-[1.35] text-white/86">
+            <div className="mt-1 text-[0.75rem] leading-[1.35] text-white/70">
               Nhấn vào sản phẩm để xem thông tin và bình chọn cho hạng mục bạn yêu thích.
             </div>
           </div>

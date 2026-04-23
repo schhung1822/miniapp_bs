@@ -23,8 +23,14 @@ const PolicyDrawer: React.FC<PolicyDrawerProps> = ({ open, onClose }) => {
   }
 
   return (
-    <div className="absolute inset-0 z-40 bg-[linear-gradient(180deg,#7e13b7_0%,#a913b8_34%,#d2138b_72%,#de2b73_100%)] backdrop-blur-sm">
-      <div className="beauty-scroll relative h-full overflow-y-auto px-4 pb-8 pt-4">
+    <div
+      className="absolute inset-0 z-40 bg-[linear-gradient(180deg,#7e13b7_0%,#a913b8_34%,#d2138b_72%,#de2b73_100%)] backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="beauty-scroll relative h-full overflow-y-auto px-4 pb-8 pt-4"
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="mb-4 flex items-center justify-between gap-4">
           <div className="min-w-0">
             <div className="text-[1rem] font-black uppercase tracking-[0.06em] text-white/90">

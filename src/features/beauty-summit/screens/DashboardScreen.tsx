@@ -281,10 +281,10 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                   />
                   <HoangTuWordmark />
                 </div>
-                <div className="mt-2 text-[1rem] truncate font-black uppercase leading-[0.95] tracking-[-0.03em] text-[#ffffff] sm:text-[2.05rem]">
+                <div className="mt-2 text-[1rem] truncate font-black uppercase leading-[1.5em] tracking-[-0.03em] text-[#ffffff] ">
                   {passHolderName}
                 </div>
-                <div className="mt-0.5">
+                <div className="">
                   {showVipTicketImage ? (
                     <img
                       src={vipTicketBadge}

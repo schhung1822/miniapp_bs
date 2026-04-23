@@ -19,7 +19,6 @@ import {
 } from 'zmp-sdk/apis';
 
 import {
-  CHECKIN_ZONES,
   MILESTONES,
   ONBOARDING_SLIDES,
   TIERS,
@@ -722,6 +721,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const [appBootstrapping, setAppBootstrapping] = React.useState<boolean>(true);
 
   const toastTimer = React.useRef<number | null>(null);
+  const qrSuccessMessageRef = React.useRef<string>('Tạo mã QR thành công');
 
   React.useEffect(() => {
     const tabFromUrl = searchParams.get('tab');
@@ -904,7 +904,9 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const progress =
     allMissions.length === 0 ? 0 : Math.round((completedIds.length / allMissions.length) * 100);
   const currentTier = TIERS[tier];
-  const accessibleZones = checkinZones.filter((zone) => zone.allowedTiers.includes(tier));
+  const accessibleZones = checkinZones.filter((zone) =>
+    (zone.allowedTiers ?? []).some((allowedTier) => String(allowedTier).trim().toUpperCase() === tier),
+  );
 
   const phaseProgressMap: Record<MissionPhase, number> = {
     before: Math.round(
@@ -1213,17 +1215,28 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   }, [loadTicketOrders, permissionsGranted, screen, ticketOrders.length, zaloPhone, zaloUserId]);
 
   const markMissionComplete = React.useCallback(
-    async (missionId: string, message = 'Nhiệm vụ đã hoàn thành'): Promise<boolean> => {
+    async (
+      missionId: string,
+      message = 'Nhiệm vụ đã hoàn thành',
+      options?: {
+        silentError?: boolean;
+        silentSuccess?: boolean;
+      },
+    ): Promise<boolean> => {
       if (completedSet.has(missionId)) {
         return true;
       }
 
       try {
         await runRewardStateUpdate('complete-mission', { missionId });
-        showToast(message);
+        if (!options?.silentSuccess) {
+          showToast(message);
+        }
         return true;
       } catch (error) {
-        showToast(readApiErrorMessage(error, 'Không thể cập nhật nhiệm vụ'));
+        if (!options?.silentError) {
+          showToast(readApiErrorMessage(error, 'Không thể cập nhật nhiệm vụ'));
+        }
         return false;
       }
     },
@@ -1374,6 +1387,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       return;
     }
 
+    let successMessage = 'Tạo mã QR thành công';
     let selectedTicket = ticketOrders.find((ticket) => ticket.code === normalizedCode);
     if (!selectedTicket) {
       const resolvedUserId = zaloUserId.trim();
@@ -1396,7 +1410,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           const withoutClaimed = current.filter((ticket) => ticket.code !== selectedTicket?.code);
           return selectedTicket ? [selectedTicket, ...withoutClaimed] : current;
         });
-        showToast('Mã vé đã được cập nhật thông tin');
+        successMessage = 'Đồng bộ dữ liệu thành công';
       } catch (error) {
         showToast(readApiErrorMessage(error, 'Không thể cập nhật mã vé'));
         return;
@@ -1414,15 +1428,20 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     setOrderCode(normalizedCode);
 
     if (permissionsGranted) {
-      finalizeQr(normalizedCode);
+      finalizeQr(normalizedCode, undefined, successMessage);
       return;
     }
 
+    qrSuccessMessageRef.current = successMessage;
     setPermissionIntent('generate-qr');
     setPermissionStep('profile');
   };
 
-  const finalizeQr = (nextTicketCode?: string, nextUserId?: string): void => {
+  const finalizeQr = (
+    nextTicketCode?: string,
+    nextUserId?: string,
+    successMessage = qrSuccessMessageRef.current,
+  ): void => {
     const normalizedCode = normalizeTicketCode(nextTicketCode ?? orderCode);
     const resolvedUserId = nextUserId?.trim() || zaloUserId.trim();
 
@@ -1449,11 +1468,16 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     setOrderCode(normalizedCode);
     setQrValue(nextQrValue);
     setQrGenerated(true);
-    void markMissionComplete(`${tier}-b1`, 'QR created successfully');
-    showToast('App is ready for check-in');
+    qrSuccessMessageRef.current = 'Tạo mã QR thành công';
+    void markMissionComplete(`${tier}-b1`, 'Đã hoàn thành nhiệm vụ tạo mã QR', {
+      silentError: true,
+      silentSuccess: true,
+    });
+    showToast(successMessage);
   };
   const handleEditTicketCode = (): void => {
     clearCachedQrTicket();
+    qrSuccessMessageRef.current = 'Tạo mã QR thành công';
     setQrGenerated(false);
     setQrValue('');
     setOrderCode('');
@@ -1464,6 +1488,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     }
 
     clearBeautySummitNativeStorage();
+    qrSuccessMessageRef.current = 'Tạo mã QR thành công';
     setPermissionStep(null);
     setPermissionIntent(null);
     setPermissionsGranted(false);
@@ -1783,14 +1808,11 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
 
       {screen === 'qr' ? (
         <QrScreen
-          tier={currentTier}
           ticketLabel={currentTicketLabel}
           orderCode={orderCode}
           qrGenerated={qrGenerated}
           availablePoints={availablePoints}
-          totalPoints={totalPoints}
           userName={userName}
-          userAvatar={userAvatar}
           userPhone={userPhone}
           qrValue={qrValue}
           zones={accessibleZones}
@@ -1805,6 +1827,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           onCopyTicketCode={handleCopyTicketCode}
           onRefreshTickets={handleRefreshTicketOrders}
           onOpenTicketHelp={() => setTicketHelpOpen(true)}
+          onClose={() => setScreen('main')}
         />
       ) : null}
 
@@ -1929,16 +1952,6 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
         }}
         onConfirm={handleConfirmVote}
       />
-
-      {screen === 'qr' && qrGenerated ? (
-        <button
-          type="button"
-          onClick={() => setScreen('main')}
-          className="absolute right-4 bottom-4 z-30 rounded-full bg-[linear-gradient(135deg,#ec4899,#f59e0b)] px-4 py-3 text-sm font-semibold text-white shadow-[0_16px_32px_rgba(236,72,153,0.28)]"
-        >
-          Về dashboard
-        </button>
-      ) : null}
     </BeautyShell>
   );
 };

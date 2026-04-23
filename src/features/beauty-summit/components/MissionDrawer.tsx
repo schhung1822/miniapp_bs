@@ -1,8 +1,8 @@
 import React from 'react';
 import { chooseImage } from 'zmp-sdk/apis';
 
-import type { Mission } from '@/features/beauty-summit/types';
 import { CameraIcon, CloseIcon, LinkIcon, QrIcon, VoteIcon } from '@/features/beauty-summit/icons';
+import type { Mission } from '@/features/beauty-summit/types';
 
 interface MissionDrawerProps {
   mission: Mission | null;
@@ -52,9 +52,7 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
     }
   };
 
-  const handleFileInputChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ): Promise<void> => {
+  const handleFileInputChange = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     const selectedFile = event.target.files?.[0];
     if (!selectedFile) {
       return;
@@ -82,57 +80,62 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
   };
 
   return (
-    <div className="absolute inset-0 z-40 bg-black/55 backdrop-blur-sm">
-      <div className="absolute inset-x-0 bottom-0 rounded-t-[1.75rem] border-t border-[#eadfd2] bg-[#fffdf9] px-4 pb-7 pt-3 shadow-[0_-24px_60px_rgba(36,22,41,0.18)]">
-        <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-[#e3d8df]" />
+    <div
+      className="absolute inset-0 z-40 bg-[linear-gradient(180deg,rgba(39,23,62,0.4)_0%,rgba(12,11,24,0.88)_100%)] backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="absolute inset-x-0 bottom-0 rounded-t-[1.85rem] border-t border-[#ff96da]/18 bg-[linear-gradient(180deg,#241f3c_0%,#19172c_100%)] px-4 pb-7 pt-3 text-white shadow-[0_-24px_60px_rgba(15,11,31,0.5)]"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-white/14" />
 
         <div className="mb-5 flex items-start justify-between gap-4">
           <div className="flex min-w-0 gap-3">
             <div
-              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl"
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
               style={{
-                background: `linear-gradient(135deg, ${accentColor}1e, #ffffff)`,
-                border: `1px solid ${accentColor}33`,
+                background: `linear-gradient(135deg, ${accentColor}22, rgba(255,255,255,0.04))`,
+                borderColor: `${accentColor}44`,
               }}
             >
               {renderMissionIcon()}
             </div>
             <div className="min-w-0">
-              <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9a8f9d]">
+              <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
                 Chi tiết nhiệm vụ
               </div>
-              <div className="text-[1.05rem] font-bold text-[#241629]">{mission.title}</div>
-              <div className="mt-1 text-sm leading-6 text-[#7a7280]">{mission.desc}</div>
+              <div className="text-[1.02rem] font-black text-white/90">{mission.title}</div>
+              <div className="mt-1 text-sm leading-6 text-white/66">{mission.desc}</div>
             </div>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-[#eadfd2] bg-white p-2 text-[#8a7e8b]"
+            className="rounded-full border border-white/12 bg-white/[0.06] p-2"
+            aria-label="Đóng nhiệm vụ"
           >
-            <CloseIcon />
+            <CloseIcon color="currentColor" />
           </button>
         </div>
 
-        <div className="mb-4 rounded-[1.15rem] border border-[#eadfd2] bg-white p-4 shadow-[0_10px_22px_rgba(184,134,11,0.06)]">
-          <div className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#9a8f9d]">
-            Cách thực hiện
-          </div>
+        <div className="mb-4 rounded-[1rem] border border-white/10 bg-[#fff] p-4 shadow-[0_18px_34px_rgba(8,7,18,0.2)]">
+          <div className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] ">Cách thực hiện</div>
           <div className="space-y-3">
             {mission.steps.map((step, index) => (
               <div key={step} className="flex items-start gap-3">
                 <div
-                  className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold"
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[12px] font-bold"
                   style={{
-                    background: `${accentColor}1c`,
-                    border: `1px solid ${accentColor}38`,
+                    background: `${accentColor}1f`,
+                    border: `1px solid ${accentColor}44`,
                     color: accentColor,
                   }}
                 >
                   {index + 1}
                 </div>
-                <div className="text-sm leading-6 text-[#534a56]">{step}</div>
+                <div className="text-sm leading-6">{step}</div>
               </div>
             ))}
           </div>
@@ -140,14 +143,12 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
 
         {showInput ? (
           <div className="mb-4">
-            <label className="mb-2 block text-xs font-semibold text-[#5f5662]">
-              {mission.proofLabel}
-            </label>
+            <label className="mb-2 block text-xs font-semibold text-white/62">{mission.proofLabel}</label>
             <input
               value={value}
               onChange={(event) => onChange(event.target.value)}
               placeholder={mission.proofPlaceholder ?? mission.proofLabel}
-              className="w-full rounded-2xl border border-[#eadfd2] bg-white px-4 py-3 text-sm text-[#241629] placeholder:text-[#a69ba8]"
+              className="w-full rounded-[1rem] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm text-white placeholder:text-white/28"
             />
           </div>
         ) : null}
@@ -169,24 +170,22 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
                 void handleChooseImage();
               }}
               className="mb-4 flex w-full flex-col items-center rounded-[1.15rem] border border-dashed px-4 py-5 text-center"
-              style={{ borderColor: `${accentColor}38`, background: `${accentColor}0d` }}
+              style={{ borderColor: `${accentColor}3d`, background: `${accentColor}12` }}
             >
               {hasUploadedImage ? (
                 <>
                   <img
                     src={value}
                     alt="Mission proof"
-                    className="h-24 w-24 rounded-[1rem] object-cover shadow-[0_10px_22px_rgba(184,134,11,0.14)]"
+                    className="h-24 w-24 rounded-[1rem] object-cover shadow-[0_10px_22px_rgba(0,0,0,0.24)]"
                   />
-                  <div className="mt-3 text-xs text-[#7a7280]">Nhấn để chọn lại ảnh khác.</div>
+                  <div className="mt-3 text-xs text-white/62">Nhấn để chọn lại ảnh khác.</div>
                 </>
               ) : (
                 <>
                   <CameraIcon color={accentColor} size={26} />
-                  <div className="mt-3 text-sm font-semibold text-[#241629]">{mission.proofLabel}</div>
-                  <div className="mt-1 text-xs text-[#7a7280]">
-                    Chọn ảnh từ thư viện hoặc máy của bạn.
-                  </div>
+                  <div className="mt-3 text-sm font-semibold text-white">{mission.proofLabel}</div>
+                  <div className="mt-1 text-xs text-white/80">Chọn ảnh từ thư viện hoặc máy của bạn.</div>
                 </>
               )}
             </button>
@@ -197,14 +196,14 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
           <button
             type="button"
             onClick={onGoVote}
-            className="mb-4 flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold"
+            className="mb-4 flex w-full items-center justify-center gap-2 rounded-[1rem] border px-4 py-3 text-sm font-semibold"
             style={{
-              borderColor: `${accentColor}2e`,
-              background: `${accentColor}12`,
-              color: accentColor,
+              borderColor: `${accentColor}35`,
+              background: `${accentColor}16`,
+              color: '#fff',
             }}
           >
-            <VoteIcon color={accentColor} />
+            <VoteIcon color='#fff' />
             Chuyển sang tab Vote
           </button>
         ) : null}
@@ -213,7 +212,7 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
           <button
             type="button"
             onClick={() => onChange('survey')}
-            className="mb-4 flex w-full items-center justify-center rounded-2xl border border-[#eadfd2] bg-white px-4 py-3 text-sm font-semibold text-[#241629]"
+            className="mb-4 flex w-full items-center justify-center rounded-[1rem] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-semibold text-white"
           >
             Mở khảo sát
           </button>
@@ -223,12 +222,12 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
           <button
             type="button"
             onClick={() => {
-              navigator.clipboard?.writeText("abc").catch(() => {});
-              onChange("abc");
+              navigator.clipboard?.writeText('abc').catch(() => {});
+              onChange('abc');
             }}
-            className="mb-4 flex w-full items-center justify-center rounded-2xl border border-[#eadfd2] bg-white px-4 py-3 text-sm font-semibold text-[#241629]"
+            className="mb-4 flex w-full items-center justify-center rounded-[1rem] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-semibold text-white"
           >
-            {value === "abc" ? "Đã sao chép link" : "Sao chép link giới thiệu"}
+            {value === 'abc' ? 'Đã sao chép link' : 'Sao chép link giới thiệu'}
           </button>
         ) : null}
 
@@ -236,12 +235,12 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
           type="button"
           onClick={onSubmit}
           disabled={disableSubmit}
-          className="w-full rounded-2xl px-4 py-3 text-sm font-bold !text-white transition disabled:cursor-not-allowed disabled:bg-[#ece7ec] disabled:!text-[#a69ba8]"
-          style={{
-            background: disableSubmit
+          className="w-full rounded-[1rem] px-4 py-3 text-sm text-white/90 transition disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/36"
+          style={
+            disableSubmit
               ? undefined
-              : `linear-gradient(135deg, ${accentColor}, ${accentColor}cc)`,
-          }}
+              : { background: 'linear-gradient(135deg, #ff4fb6 0%, #a53cff 100%)' }
+          }
         >
           Xác nhận hoàn thành
         </button>

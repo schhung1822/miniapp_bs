@@ -28,30 +28,33 @@ const QrPreviewModal: React.FC<QrPreviewModalProps> = ({
   }
 
   return (
-    <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/35 px-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-[22.5rem]">
+    <div
+      className="absolute inset-0 z-40 flex items-center justify-center bg-[linear-gradient(180deg,rgba(39,23,62,0.36)_0%,rgba(12,11,24,0.88)_100%)] px-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div className="relative w-full max-w-[22.5rem]" onClick={(event) => event.stopPropagation()}>
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-2 top-2 z-10 flex h-10 w-10 items-center justify-center text-[#7a7280]"
-          aria-label="Close QR"
+          className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/[0.06]"
+          aria-label="Đóng QR"
         >
           <CloseIcon size={16} color="currentColor" />
         </button>
 
-        <div className="beauty-crisp-edge rounded-[1.8rem] bg-white p-2.5 shadow-[0_18px_44px_rgba(15,23,42,0.18)]">
-          <div className="rounded-[1.55rem] bg-[linear-gradient(180deg,#fff9fc_0%,#fdf2f7_100%)] px-3.5 pb-3.5 pt-4">
+        <div className="beauty-crisp-edge rounded-[1.8rem] border border-[#ff96da]/18 bg-[linear-gradient(180deg,#241f3c_0%,#19172c_100%)] p-2.5 shadow-[0_24px_60px_rgba(15,11,31,0.5)]">
+          <div className="rounded-[1.55rem] px-3.5 pb-3.5 pt-4">
             <div className="mb-3 text-center">
-              <div className="mx-auto max-w-[15.5rem] truncate text-[0.95rem] font-black tracking-[0.03em] text-[#241629]">
+              <div className="uppercase mx-auto max-w-[15.5rem] truncate text-[1.1rem] font-black tracking-[0.03em] text-white/90">
                 {userName}
               </div>
             </div>
 
             <div className="flex justify-center">
-              <div className="beauty-crisp-edge w-full rounded-[1.35rem] bg-white px-3.5 pb-4 pt-4 shadow-[0_12px_22px_rgba(182,127,148,0.12)]">
+              <div className="beauty-crisp-edge w-full rounded-[1.35rem] bg-white px-3.5 pb-4 pt-4 shadow-[0_12px_22px_rgba(0,0,0,0.18)]">
                 <div className="mb-4 flex items-center justify-center gap-2 text-center">
                   <img src={beautySummitIcon} alt="Beauty Summit" className="h-7 w-7 rounded-full object-cover" />
-                  <div className="whitespace-nowrap text-[10px] font-black tracking-[0.04em] text-[#b2477d]">
+                  <div className="whitespace-nowrap text-[12px] font-black tracking-[0.04em] text-[#b2477d]">
                     BEAUTY SUMMIT | CHECK-IN
                   </div>
                 </div>
@@ -77,15 +80,15 @@ const QrPreviewModal: React.FC<QrPreviewModalProps> = ({
               <button
                 type="button"
                 onClick={onChangeTicket}
-                className="flex w-full items-center justify-center gap-2 rounded-[0.95rem] bg-white px-4 py-3 text-sm font-bold text-[#b2477d] shadow-[0_10px_18px_rgba(182,127,148,0.08)]"
+                className="flex w-full items-center justify-center gap-2 rounded-[0.95rem] border border-white/10 bg-[#730C87] px-4 py-3 font-bold text-white/90"
               >
-                <QrIcon size={17} color="#b2477d" />
+                <QrIcon size={17} color="#ffffff" />
                 Đổi vé
               </button>
             </div>
 
-            <div className="mt-3 px-1 text-center text-[11px] font-medium leading-5 text-[#8a7480]">
-              Bạn có thể chụp màn hình lưu lại mã QR phòng trường hợp không có internet.
+            <div className="mt-3 px-1 text-center text-[12px] font-medium leading-5 text-white/72">
+              Lên chụp màn hình lưu lại mã QR phòng trường hợp không có internet hoặc server quá tải.
             </div>
           </div>
         </div>
