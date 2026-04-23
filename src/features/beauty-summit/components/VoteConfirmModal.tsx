@@ -60,14 +60,14 @@ const VoteConfirmModal: React.FC<VoteConfirmModalProps> = ({
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="rounded-full border border-white/12 bg-white/[0.06] p-2 text-white/70 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-full border border-white/12 bg-white/[0.06] text-black p-2 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Đóng xác nhận vote"
           >
             <CloseIcon color="currentColor" />
           </button>
         </div>
 
-        <div className="rounded-[1.15rem] border border-white/10 bg-white/[0.04] px-4 py-4">
+        <div className="rounded-[1.15rem] border border-white/10 px-4 py-4">
           <div className="text-[1.05rem] font-black text-white">{displayTitle}</div>
           <p className="mt-2 text-sm leading-6 text-white/72">{description}</p>
         </div>
@@ -77,7 +77,7 @@ const VoteConfirmModal: React.FC<VoteConfirmModalProps> = ({
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="rounded-[1rem] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-bold text-white/84 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-[1rem] border border-white/10 px-4 py-3 text-sm font-bold text-white/84 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Hủy
           </button>

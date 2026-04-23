@@ -85,23 +85,23 @@ const TermsScreen: React.FC<TermsScreenProps> = ({ agreed, onToggleAgree, onCont
           <div className="beauty-scroll mt-2 min-h-0 flex-1 overflow-y-auto rounded-[1.35rem] bg-[rgba(47,7,78,0.96)] px-4 py-3.5 text-center text-[11px] leading-5 text-[#ffffff] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
             <div>
               <div className="text-[13px] text-[#ffffff]">1. Quy định chung</div>
-              <div className="mt-2">
+              <div className="mt-1">
                 Mini App Beauty Summit 2026 chỉ áp dụng cho khách tham dự sự kiện ngày 19-20/06/2026 tại VEC Hà Nội.
                 Mỗi số điện thoại chỉ được đăng ký 1 tài khoản duy nhất. Nghiêm cấm sử dụng thông tin giả mạo hoặc gian lận.
               </div>
             </div>
 
             <div className="mt-5">
-              <div className="text-[15px] text-[#ffffff]">2. Thu thập & sử dụng dữ liệu</div>
-              <div className="mt-2">
+              <div className="text-[13px] text-[#ffffff]">2. Thu thập & sử dụng dữ liệu</div>
+              <div className="mt-1">
                 Số điện thoại được sử dụng để xác nhận check-in và gửi thông báo sự kiện. Thông tin cá nhân không chia sẻ
                 cho bên thứ ba ngoài nhãn hàng tài trợ đã cam kết bảo mật. Bạn có quyền yêu cầu xóa dữ liệu sau sự kiện.
               </div>
             </div>
 
             <div className="mt-5">
-              <div className="text-[15px] text-[#ffffff]">3. Chương trình BPoint & Voucher</div>
-              <div className="mt-2">
+              <div className="text-[13px] text-[#ffffff]">3. Chương trình BPoint & Voucher</div>
+              <div className="mt-1">
                 BPoint tích lũy qua nhiệm vụ, dùng để đổi voucher. BPoint đã đổi không hoàn lại. Voucher chỉ có hiệu lực
                 tại sự kiện trong 2 ngày và không quy đổi thành tiền mặt.
               </div>

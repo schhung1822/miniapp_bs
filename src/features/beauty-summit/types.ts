@@ -50,6 +50,7 @@ export interface VoteBrand {
   summary?: string;
   link?: string;
   logo?: string;
+  productImage?: string;
   voteCount?: number;
   rank?: number;
   progressPct?: number;

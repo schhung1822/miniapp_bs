@@ -139,7 +139,7 @@ const VoteSection: React.FC<VoteSectionProps> = (props) => {
             Voted
           </div>
         ) : null}
-        <div className="absolute right-0 top-0 z-[2] border border-[#f2d4ff] rounded-bl-[0.95rem] bg-white px-3 py-0.5 shadow-[0_10px_18px_rgba(94,8,118,0.2)]">
+        <div className="absolute right-[-1px] top-[-1px] border border-[#f2d4ff] rounded-bl-[0.95rem] bg-white px-3 py-0.5 shadow-[0_10px_18px_rgba(94,8,118,0.2)]">
           <div className="flex items-end gap-1 text-right leading-none">
             <div className="text-[0.84rem] font-black text-[#65108e]">{voteCount}</div>
             <div className="pb-[1px] text-[0.56rem] font-semibold uppercase tracking-[0.04em] text-[#b34ad7]">

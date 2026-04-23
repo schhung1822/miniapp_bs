@@ -78,7 +78,7 @@ const VoucherCodeModal: React.FC<VoucherCodeModalProps> = ({ voucher, onClose })
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-white/12 bg-white/[0.06] p-2"
+            className="rounded-full border border-white/12 bg-white/[0.06] p-2 text-black"
             aria-label="Đóng voucher"
           >
             <CloseIcon color="currentColor" />
@@ -115,7 +115,7 @@ const VoucherCodeModal: React.FC<VoucherCodeModalProps> = ({ voucher, onClose })
             type="button"
             onClick={handleCopy}
             disabled={!voucher.code}
-            className="flex items-center justify-center gap-2 rounded-[1rem] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:text-white/34"
+            className="flex items-center justify-center text-black gap-2 rounded-[1rem] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:text-white/34"
           >
             <CopyIcon color={voucher.code ? '#000' : 'rgba(255,255,255,0.34)'} size={16} />
             {copied ? 'Đã copy' : 'Copy mã'}

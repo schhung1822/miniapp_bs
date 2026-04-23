@@ -69,7 +69,7 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
             <div className="mt-3 grid grid-cols-[1.15fr_0.92fr_0.92fr] gap-2">
               <div className="flex min-w-0 flex-col items-center justify-center rounded-[0.95rem] border border-white/16 bg-white/10 px-3 py-2 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
                 <div className="text-[10px] uppercase tracking-[0.12em] font-bold">Hạng vé</div>
-                <div className="mt-1 w-full whitespace-nowrap text-center text-[12px] font-semibold text-white">
+                <div className="mt-1 w-full whitespace-nowrap text-center text-[12px] font-semibold">
                   {ticketLabel}
                 </div>
               </div>
@@ -78,14 +78,14 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
                 <div className="whitespace-nowrap text-[10px] uppercase tracking-[0.08em] font-bold">
                   Nhiệm vụ
                 </div>
-                <div className="mt-1 text-[12px] font-semibold text-white">
+                <div className="mt-1 text-[12px] font-semibold">
                   {completedCount}/{totalMissionCount}
                 </div>
               </div>
 
               <div className="flex min-w-0 flex-col items-center justify-center rounded-[0.95rem] border border-white/16 bg-white/10 px-3 py-2 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
                 <div className="text-[10px] uppercase tracking-[0.12em] font-bold">BPoint</div>
-                <div className="mt-1 inline-flex items-center gap-1 text-[12px] font-semibold text-white">
+                <div className="mt-1 inline-flex items-center gap-1 text-[12px] font-semibold">
                   <StarIcon size={12} color="#000" />
                   {availablePoints}
                 </div>
