@@ -164,7 +164,7 @@ export const POLICY_SECTIONS: PolicySection[] = [
     items: [
       'Mini App chỉ áp dụng cho khách tham dự Beauty Summit 2026 (19–20/06/2026) tại VEC Hà Nội.',
       'Mỗi điện thoại chỉ được đăng ký 1 tài khoản duy nhất trên Mini App.',
-      'Hạng vé (Standard / Premium / VIP) được xác định theo vé mua và không thể thay đổi sau khi đăng ký.',
+      'Hạng vé (RUBY / GOLD / VIP) được xác định theo vé mua và không thể thay đổi sau khi đăng ký.',
       'Nghiêm cấm sử dụng thông tin giả mạo hoặc gian lận để tham gia chương trình.',
     ],
   },
@@ -200,7 +200,7 @@ export const MILESTONES: Milestone[] = [
   {
     pct: 100,
     title: 'Grand Prize VinFast VF3',
-    brand: 'Beauty Summit 2026',
+    brand: 'Beauty Summit',
     desc: 'Hoàn thành toàn bộ nhiệm vụ để đủ điều kiện bốc thăm xe VinFast VF3.',
     color: '#FFD700',
   },

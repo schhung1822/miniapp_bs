@@ -270,11 +270,7 @@ const VoteSection: React.FC<VoteSectionProps> = (props) => {
                         {category.title}{' '}
                         <span className="font-medium text-white/76">({displayCount})</span>
                       </div>
-                      {expanded ? (
-                        <div className="mt-1 text-[0.88rem] leading-[1.32] text-white/82">
-                          {category.desc}
-                        </div>
-                      ) : null}
+                      
                     </div>
                   </div>
 

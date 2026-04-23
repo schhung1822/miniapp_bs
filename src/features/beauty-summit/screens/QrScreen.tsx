@@ -301,7 +301,7 @@ const QrScreen: React.FC<QrScreenProps> = ({
   };
 
   const renderManualTicketInput = (): React.ReactNode => (
-    <div className="rounded-[0.7rem] border border-white/12 bg-white/[0.05] p-4">
+    <div className="rounded-[0.7rem] border border-white/12 bg-[#25223b] p-4">
       <label className="mb-2 block text-[0.72rem] font-semibold uppercase tracking-[0.18em]">
         Nhập mã vé
       </label>
@@ -393,7 +393,7 @@ const QrScreen: React.FC<QrScreenProps> = ({
               <button
                 type="button"
                 onClick={onOpenTicketHelp}
-                className="rounded-full bg-white px-3.5 py-1.5 text-[0.82rem] font-semibold"
+                className="rounded-full bg-white px-3.5 py-1.5 text-[0.82rem] font-semibold text-black"
               >
                 Tìm mã vé ở đâu?
               </button>

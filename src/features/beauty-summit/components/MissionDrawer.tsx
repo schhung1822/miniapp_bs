@@ -113,14 +113,14 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-white/12 bg-white/[0.06] p-2"
+            className="rounded-full border border-white/12 bg-white/[0.06] p-2 text-black"
             aria-label="Đóng nhiệm vụ"
           >
             <CloseIcon color="currentColor" />
           </button>
         </div>
 
-        <div className="mb-4 rounded-[1rem] border border-white/10 bg-[#fff] p-4 shadow-[0_18px_34px_rgba(8,7,18,0.2)]">
+        <div className="mb-4 rounded-[1rem] border border-white/10 bg-[#fff] p-4 shadow-[0_18px_34px_rgba(8,7,18,0.2)] text-black">
           <div className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] ">Cách thực hiện</div>
           <div className="space-y-3">
             {mission.steps.map((step, index) => (

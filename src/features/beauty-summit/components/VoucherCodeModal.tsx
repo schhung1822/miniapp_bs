@@ -58,7 +58,7 @@ const VoucherCodeModal: React.FC<VoucherCodeModalProps> = ({ voucher, onClose })
       >
         <div className="mb-5 flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <div className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-white/46">Voucher đã nhận</div>
+            <div className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-white/90">Voucher đã nhận</div>
             <div className="flex items-center gap-3">
               <VoucherLogoBadge
                 logo={voucher.logo}
@@ -67,7 +67,7 @@ const VoucherCodeModal: React.FC<VoucherCodeModalProps> = ({ voucher, onClose })
                 className="h-11 w-11 shrink-0"
               />
               <div className="min-w-0">
-                <div className="truncate text-lg font-bold text-white">{voucher.brand}</div>
+                <div className="truncate text-lg font-bold text-white/90">{voucher.brand}</div>
                 <div className="mt-1 text-xs font-medium" style={{ color: voucher.color }}>
                   {voucher.discount}
                 </div>
@@ -78,7 +78,7 @@ const VoucherCodeModal: React.FC<VoucherCodeModalProps> = ({ voucher, onClose })
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-white/12 bg-white/[0.06] p-2 text-white/70"
+            className="rounded-full border border-white/12 bg-white/[0.06] p-2"
             aria-label="Đóng voucher"
           >
             <CloseIcon color="currentColor" />
@@ -92,7 +92,7 @@ const VoucherCodeModal: React.FC<VoucherCodeModalProps> = ({ voucher, onClose })
             background: `linear-gradient(145deg, ${voucher.color}1c, rgba(255,255,255,0.04))`,
           }}
         >
-          <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/48">Mã voucher</div>
+          <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/90">Mã voucher</div>
           <div
             className="rounded-[1rem] border border-white/10 bg-[rgba(18,16,32,0.74)] px-4 py-4 text-center text-[1.05rem] font-black tracking-[0.24em]"
             style={{ color: voucher.code ? '#ffffff' : '#ffd970' }}
@@ -102,7 +102,7 @@ const VoucherCodeModal: React.FC<VoucherCodeModalProps> = ({ voucher, onClose })
           <div className="mt-3 text-xs leading-5 text-white/62">
             {voucher.code ? (
               <>
-                Xuất trình mã này tại quầy <b className="font-bold text-white">{voucher.brand}</b> để nhận ưu đãi.
+                Xuất trình mã này tại quầy <b className="font-bold text-white/90">{voucher.brand}</b> để nhận ưu đãi.
               </>
             ) : (
               'Grand prize chỉ mở khóa khi đạt 100% nhiệm vụ.'
@@ -115,15 +115,15 @@ const VoucherCodeModal: React.FC<VoucherCodeModalProps> = ({ voucher, onClose })
             type="button"
             onClick={handleCopy}
             disabled={!voucher.code}
-            className="flex items-center justify-center gap-2 rounded-[1rem] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:text-white/34"
+            className="flex items-center justify-center gap-2 rounded-[1rem] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:text-white/34"
           >
-            <CopyIcon color={voucher.code ? '#ffffff' : 'rgba(255,255,255,0.34)'} size={16} />
+            <CopyIcon color={voucher.code ? '#000' : 'rgba(255,255,255,0.34)'} size={16} />
             {copied ? 'Đã copy' : 'Copy mã'}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-[1rem] bg-[linear-gradient(135deg,#ff4fb6 0%,#a53cff 100%)] px-4 py-3 text-sm font-semibold text-white"
+            className="px-4 py-3 text-sm font-semibold text-white/90"
           >
             Đóng
           </button>

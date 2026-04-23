@@ -21,7 +21,7 @@ const Header: React.FC<HeaderProps> = (props) => {
             className="h-8 w-8 rounded-lg object-contain"
           />
           <span className="whitespace-nowrap text-base font-semibold text-primary">
-            Beauty Summit 2026
+            Beauty Summit
           </span>
         </div>
       ) : (

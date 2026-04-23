@@ -36,7 +36,7 @@ const TermsScreen: React.FC<TermsScreenProps> = ({ agreed, onToggleAgree, onCont
           </div>
 
           <div className="mt-5 text-[9px] font-medium uppercase tracking-[0.08em] text-[#ffe8ff]">
-            BEAUTY SUMMIT 2026
+            BEAUTY SUMMIT
           </div>
           <div className='relative'>
             {/* Thẻ "bóng ma" (vẫn chiếm không gian nhưng không hiển thị) */}
@@ -123,7 +123,7 @@ const TermsScreen: React.FC<TermsScreenProps> = ({ agreed, onToggleAgree, onCont
               {agreed ? '✓' : null}
             </div>
             <span className="text-[11px] leading-4.5 text-[#f7e8ff]">
-              Tôi đã đọc, hiểu và đồng ý với toàn bộ điều khoản & điều kiện của Beauty Summit 2026
+              Tôi đã đọc, hiểu và đồng ý với toàn bộ điều khoản & điều kiện của Beauty Summit
             </span>
           </button>
 

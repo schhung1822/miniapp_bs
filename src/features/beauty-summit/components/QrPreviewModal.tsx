@@ -42,10 +42,10 @@ const QrPreviewModal: React.FC<QrPreviewModalProps> = ({
           <CloseIcon size={16} color="currentColor" />
         </button>
 
-        <div className="beauty-crisp-edge rounded-[1.8rem] border border-[#ff96da]/18 bg-[linear-gradient(180deg,#241f3c_0%,#19172c_100%)] p-2.5 shadow-[0_24px_60px_rgba(15,11,31,0.5)]">
+        <div className="beauty-crisp-edge rounded-[1.8rem] border border-[#ff96da]/18 bg-[linear-gradient(180deg,rgba(255,53,170,0.45)_0%,rgba(88,28,135,0.9)_100%)] p-2.5 shadow-[0_24px_60px_rgba(15,11,31,0.5)]">
           <div className="rounded-[1.55rem] px-3.5 pb-3.5 pt-4">
             <div className="mb-3 text-center">
-              <div className="uppercase mx-auto max-w-[15.5rem] truncate text-[1.1rem] font-black tracking-[0.03em] text-white/90">
+              <div className="uppercase mx-auto max-w-[15.5rem] truncate text-[1rem] leading-[1.5em] font-black tracking-[0.03em] text-white/90">
                 {userName}
               </div>
             </div>
@@ -80,9 +80,9 @@ const QrPreviewModal: React.FC<QrPreviewModalProps> = ({
               <button
                 type="button"
                 onClick={onChangeTicket}
-                className="flex w-full items-center justify-center gap-2 rounded-[0.95rem] border border-white/10 bg-[#730C87] px-4 py-3 font-bold text-white/90"
+                className="flex w-full items-center justify-center gap-2 rounded-[0.95rem] border border-white/10 bg-[#fff] px-4 py-3 font-bold"
               >
-                <QrIcon size={17} color="#ffffff" />
+                <QrIcon size={17} color="#000" />
                 Đổi vé
               </button>
             </div>

@@ -56,7 +56,7 @@ const DeveloperInfoDrawer: React.FC<DeveloperInfoDrawerProps> = ({ open, onClose
                   CÔNG TY TNHH CIVI GLOBAL
                 </div>
                 <div className="mt-1 text-[12px] leading-5 text-white/78">
-                  Đơn vị phát triển và vận hành Mini App Beauty Summit 2026.
+                  Đơn vị phát triển và vận hành Mini App Beauty Summit.
                 </div>
               </div>
             </div>

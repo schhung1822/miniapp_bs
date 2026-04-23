@@ -37,7 +37,7 @@ const PolicyDrawer: React.FC<PolicyDrawerProps> = ({ open, onClose }) => {
               Chính sách ứng dụng
             </div>
             <div className="mt-1 text-[12px] leading-5 text-white/78">
-              Quy định áp dụng cho khách tham dự Beauty Summit 2026.
+              Quy định áp dụng cho khách tham dự Beauty Summit.
             </div>
           </div>
           <button

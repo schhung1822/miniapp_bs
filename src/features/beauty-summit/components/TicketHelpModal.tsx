@@ -31,7 +31,7 @@ const TicketHelpModal: React.FC<TicketHelpModalProps> = ({ open, onClose, onOpen
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-white/12 bg-white/[0.06] p-2"
+            className="rounded-full border border-white/12 bg-white/[0.06] p-2 text-black"
             aria-label="Đóng hướng dẫn mã vé"
           >
             <CloseIcon color="currentColor" />
@@ -51,7 +51,7 @@ const TicketHelpModal: React.FC<TicketHelpModalProps> = ({ open, onClose, onOpen
               Mã vé sẽ được chuyển qua nhãn hàng hoặc đối tác mời tham dự. Bạn có thể liên hệ trực tiếp đầu mối đã gửi thư mời.
             </div>
           </div>
-          <div className="rounded-[1.1rem] border border-white/10 bg-white/[0.04] p-4 text-sm leading-6">
+          <div className="rounded-[1.1rem] border border-white/10 bg-white p-4 text-sm leading-6 text-black">
             Vẫn chưa tìm thấy mã? Liên hệ hotline hoặc nhắn{' '}
             <button
               type="button"

@@ -8,15 +8,6 @@
   font-family: "Be Vietnam Pro", sans-serif;
 }
 
-.beauty-light {
-  color: #241629;
-}
-
-.beauty-light .text-white,
-.beauty-light .text-zinc-200,
-.beauty-light .text-zinc-300 {
-  color: #241629 !important;
-}
 
 .beauty-light .text-zinc-400,
 .beauty-light .text-zinc-500 {

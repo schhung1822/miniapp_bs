@@ -106,7 +106,7 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
         <div className="min-w-0 flex-1">
           <div className="text-[13px] font-bold text-white/90">Chính sách ứng dụng</div>
           <div className="mt-1 text-[11px] leading-5 text-white/72">
-            Xem quy định chung và quy định nhiệm vụ áp dụng cho Beauty Summit 2026.
+            Xem quy định chung và quy định nhiệm vụ áp dụng cho Beauty Summit.
           </div>
         </div>
         <div className="shrink-0 text-white/72">
