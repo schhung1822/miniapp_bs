@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { apiConfig } from '@/lib/api-client';
+
 interface VoucherLogoBadgeProps {
   logo: string;
   brand: string;
@@ -8,11 +10,12 @@ interface VoucherLogoBadgeProps {
   grandPrize?: boolean;
 }
 
-const IMAGE_SOURCE_PATTERN = /^(data:image\/|https?:\/\/|\/)/i;
+const IMAGE_SOURCE_PATTERN = /^(data:image\/|https?:\/\/|\/?(avatars|images|public)\/)/i;
+const IMAGE_FILE_PATTERN = /\.(png|jpe?g|gif|webp|svg)(\?.*)?$/i;
 
 const buildFallbackLabel = (logo: string, brand: string): string => {
   const normalizedLogo = logo.trim();
-  if (normalizedLogo && !IMAGE_SOURCE_PATTERN.test(normalizedLogo)) {
+  if (normalizedLogo && !IMAGE_SOURCE_PATTERN.test(normalizedLogo) && !IMAGE_FILE_PATTERN.test(normalizedLogo)) {
     return normalizedLogo.slice(0, 3).toUpperCase();
   }
 
@@ -24,7 +27,24 @@ const buildFallbackLabel = (logo: string, brand: string): string => {
     .join('');
 };
 
-const isImageLogo = (logo: string): boolean => IMAGE_SOURCE_PATTERN.test(logo.trim());
+const isImageLogo = (logo: string): boolean => {
+  const normalizedLogo = logo.trim();
+  return IMAGE_SOURCE_PATTERN.test(normalizedLogo) || IMAGE_FILE_PATTERN.test(normalizedLogo);
+};
+
+const getAbsoluteImageUrl = (logo: string): string => {
+  const normalizedLogo = logo.trim();
+  if (!normalizedLogo) {
+    return normalizedLogo;
+  }
+
+  if (/^(https?:\/\/|data:image\/)/i.test(normalizedLogo)) {
+    return normalizedLogo;
+  }
+
+  const path = normalizedLogo.startsWith('/') ? normalizedLogo : `/${normalizedLogo}`;
+  return `${apiConfig.baseURL}${path}`;
+};
 
 const VoucherLogoBadge: React.FC<VoucherLogoBadgeProps> = ({
   logo,
@@ -34,6 +54,7 @@ const VoucherLogoBadge: React.FC<VoucherLogoBadgeProps> = ({
   grandPrize = false,
 }) => {
   const normalizedLogo = logo.trim();
+  const imageUrl = getAbsoluteImageUrl(normalizedLogo);
 
   if (isImageLogo(normalizedLogo)) {
     return (
@@ -48,9 +69,11 @@ const VoucherLogoBadge: React.FC<VoucherLogoBadgeProps> = ({
         }}
       >
         <img
-          src={normalizedLogo}
+          src={imageUrl}
           alt={brand}
           className={`h-full w-full object-contain ${grandPrize ? 'p-1.5' : 'p-1.5'}`}
+          loading="lazy"
+          decoding="async"
         />
       </div>
     );

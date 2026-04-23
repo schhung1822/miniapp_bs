@@ -442,13 +442,13 @@ const QrScreen: React.FC<QrScreenProps> = ({
   }
 
   return (
-    <div className="beauty-scroll relative h-full overflow-y-auto px-4 pb-10 text-white">
+    <div className="beauty-scroll relative h-full overflow-x-hidden overflow-y-auto overscroll-x-none px-4 pb-10 text-white">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,#5816b7_0%,#8916b1_26%,#bf118f_62%,#dd0f76_100%)]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0)_76%)]" />
       <div className="pointer-events-none absolute left-[-5rem] top-[11rem] h-44 w-44 rounded-full bg-[radial-gradient(circle,rgba(90,214,255,0.12)_0%,rgba(90,214,255,0)_72%)]" />
       <div className="pointer-events-none absolute bottom-[8rem] right-[-4rem] h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(255,175,225,0.18)_0%,rgba(255,175,225,0)_72%)]" />
 
-      <div className="relative z-[1]">
+      <div className="relative z-[1] min-w-0 overflow-x-hidden">
         <div className="beauty-glow beauty-crisp-edge mt-4 overflow-hidden rounded-[1.45rem] border border-[#ff53bf] bg-[linear-gradient(135deg,rgba(122,23,170,0.95)_0%,rgba(141,19,167,0.97)_52%,rgba(113,14,153,0.98)_100%)] shadow-[0_18px_34px_rgba(85,8,123,0.24)]">
           <div className="relative p-4">
             <div className="pointer-events-none absolute inset-x-6 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(255,198,237,0.22)_0%,rgba(255,198,237,0)_72%)]" />
@@ -469,7 +469,7 @@ const QrScreen: React.FC<QrScreenProps> = ({
                   <TicketTypeBadge label={selectedTicketLabel} isVip={selectedTicketIsVip} />
                 </div>
 
-                <div className="mt-1 truncate text-[1.08rem] font-black uppercase tracking-[-0.03em] text-white/90">
+                <div className="mt-1 truncate text-[1.08rem] leading-[1.5em] font-black uppercase tracking-[-0.03em] text-white/90">
                   {passHolderName}
                 </div>
                 <div className="mt-1 text-[0.82rem] font-medium text-white/58">{maskedPhone}</div>
@@ -496,17 +496,17 @@ const QrScreen: React.FC<QrScreenProps> = ({
         </div>
 
         <div className="mt-4 grid grid-cols-3 gap-3">
-          <div className="rounded-[1.2rem] border border-white/26 bg-[rgba(75,22,118,0.56)] px-3 py-4 text-center shadow-[0_12px_24px_rgba(78,6,109,0.14)] backdrop-blur-[2px]">
+          <div className="min-w-0 overflow-hidden rounded-[1.2rem] border border-white/26 bg-[rgba(75,22,118,0.56)] px-3 py-4 text-center shadow-[0_12px_24px_rgba(78,6,109,0.14)] backdrop-blur-[2px]">
             <div className="text-[2rem] font-black leading-none text-[#ff59c6]">{checkinLog.length}</div>
             <div className="mt-1 text-[0.78rem] font-medium leading-none text-white/90">Lần check-in</div>
           </div>
-          <div className="rounded-[1.2rem] border border-white/26 bg-[rgba(75,22,118,0.56)] px-3 py-4 text-center shadow-[0_12px_24px_rgba(78,6,109,0.14)] backdrop-blur-[2px]">
+          <div className="min-w-0 overflow-hidden rounded-[1.2rem] border border-white/26 bg-[rgba(75,22,118,0.56)] px-3 py-4 text-center shadow-[0_12px_24px_rgba(78,6,109,0.14)] backdrop-blur-[2px]">
             <div className="text-[2rem] font-black leading-none text-[#ff59c6]">
               {checkedZoneCount}/{zones.length}
             </div>
             <div className="mt-1 text-[0.78rem] font-medium leading-none text-white/90">Khu vực</div>
           </div>
-          <div className="rounded-[1.2rem] border border-white/26 bg-[rgba(75,22,118,0.56)] px-3 py-4 text-center shadow-[0_12px_24px_rgba(78,6,109,0.14)] backdrop-blur-[2px]">
+          <div className="min-w-0 overflow-hidden rounded-[1.2rem] border border-white/26 bg-[rgba(75,22,118,0.56)] px-3 py-4 text-center shadow-[0_12px_24px_rgba(78,6,109,0.14)] backdrop-blur-[2px]">
             <div className="text-[2rem] font-black leading-none text-[#ff59c6]">{availablePoints}</div>
             <div className="mt-1 text-[0.78rem] font-medium leading-none text-white/90">B-point</div>
           </div>
@@ -532,7 +532,7 @@ const QrScreen: React.FC<QrScreenProps> = ({
               return (
                 <div
                   key={zoneId}
-                  className="rounded-[1.25rem] border border-white/24 bg-[linear-gradient(135deg,rgba(118,23,163,0.94)_0%,rgba(112,21,159,0.96)_100%)] px-4 py-4 shadow-[0_16px_30px_rgba(72,6,103,0.18)]"
+                  className="overflow-hidden rounded-[1.25rem] border border-white/24 bg-[linear-gradient(135deg,rgba(118,23,163,0.94)_0%,rgba(112,21,159,0.96)_100%)] px-4 py-4 shadow-[0_16px_30px_rgba(72,6,103,0.18)]"
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-[3.1rem] w-[3.1rem] shrink-0 items-center justify-center rounded-[0.9rem] border border-[#ff7fd7]/34 bg-[#ff50b81a]">

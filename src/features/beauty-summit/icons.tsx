@@ -51,17 +51,8 @@ export const MissionIcon: React.FC<IconProps> = ({ size = 18, color = '#fff', cl
         inset: 0,
       }}
     />
-    <Target
-      size={Math.max(10, Math.round(size * 0.56))}
-      color={color}
-      strokeWidth={2}
-      style={{
-        position: 'absolute',
-        right: size * -0.02,
-        bottom: size * -0.04,
-        filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.08))',
-      }}
-    />
+    
+  
   </span>
 );
 
