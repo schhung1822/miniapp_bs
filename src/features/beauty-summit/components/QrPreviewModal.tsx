@@ -36,7 +36,7 @@ const QrPreviewModal: React.FC<QrPreviewModalProps> = ({
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/[0.06]"
+          className="absolute text-black right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/[0.06]"
           aria-label="Đóng QR"
         >
           <CloseIcon size={16} color="currentColor" />
@@ -80,7 +80,7 @@ const QrPreviewModal: React.FC<QrPreviewModalProps> = ({
               <button
                 type="button"
                 onClick={onChangeTicket}
-                className="flex w-full items-center justify-center gap-2 rounded-[0.95rem] border border-white/10 bg-[#fff] px-4 py-3 font-bold"
+                className="flex w-full text-black items-center justify-center gap-2 rounded-[0.95rem] border border-white/10 bg-[#fff] px-4 py-3 font-bold"
               >
                 <QrIcon size={17} color="#000" />
                 Đổi vé

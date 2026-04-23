@@ -165,15 +165,9 @@ const VoteSection: React.FC<VoteSectionProps> = (props) => {
           )}
         </div>
 
-        <div className="flex flex-col border-t border-[#f2d4ff] bg-[linear-gradient(135deg,rgba(168,36,199,0.98),rgba(122,19,170,0.98))] px-2.5 py-2.5">
+        <div className="flex flex-col border-t border-[#f2d4ff] bg-[linear-gradient(135deg,rgba(168,36,199,0.98),rgba(122,19,170,0.98))] px-2.5 pt-2">
           <div
-            className="min-h-[2.05rem] text-center text-[0.8rem] font-semibold leading-[1.1] text-white/90"
-            style={{
-              display: '-webkit-box',
-              WebkitBoxOrient: 'vertical',
-              WebkitLineClamp: 2,
-              overflow: 'hidden',
-            }}
+            className="min-h-[2.05rem] text-center text-[0.8rem] font-semibold truncate text-white/90"
           >
             {title}
           </div>

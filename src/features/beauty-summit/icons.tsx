@@ -1,4 +1,5 @@
 import React from 'react';
+import { Gift, ListChecks, Target, Tickets } from 'lucide-react';
 
 import beautySummitLogo from '@/assets/logo.png';
 
@@ -31,10 +32,37 @@ export const BrandMark: React.FC<{ size?: number; className?: string }> = ({
 );
 
 export const MissionIcon: React.FC<IconProps> = ({ size = 18, color = '#fff', className }) => (
-  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
-    <circle cx="12" cy="12" r="9" />
-    <path d="M9 12l2 2 4-4" />
-  </svg>
+  <span
+    className={className}
+    style={{
+      position: 'relative',
+      display: 'inline-block',
+      width: size,
+      height: size,
+      flexShrink: 0,
+    }}
+  >
+    <ListChecks
+      size={size}
+      color={color}
+      strokeWidth={2}
+      style={{
+        position: 'absolute',
+        inset: 0,
+      }}
+    />
+    <Target
+      size={Math.max(10, Math.round(size * 0.56))}
+      color={color}
+      strokeWidth={2}
+      style={{
+        position: 'absolute',
+        right: size * -0.02,
+        bottom: size * -0.04,
+        filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.08))',
+      }}
+    />
+  </span>
 );
 
 export const StarIcon: React.FC<IconProps> = ({ size = 18, color = '#fff', className }) => (
@@ -44,19 +72,62 @@ export const StarIcon: React.FC<IconProps> = ({ size = 18, color = '#fff', class
 );
 
 export const VoucherIcon: React.FC<IconProps> = ({ size = 18, color = '#fff', className }) => (
-  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
-    <rect x="2.5" y="6" width="19" height="12" rx="2.5" />
-    <path d="M2.5 10h19" />
-    <path d="M12 6v12" strokeDasharray="2 2" />
-  </svg>
+  <span
+    className={className}
+    style={{
+      position: 'relative',
+      display: 'inline-block',
+      width: size,
+      height: size,
+      flexShrink: 0,
+    }}
+  >
+    <Tickets
+      size={size}
+      color={color}
+      strokeWidth={1.9}
+      style={{
+        position: 'absolute',
+        inset: 0,
+      }}
+    />
+    <Gift
+      size={Math.max(8, Math.round(size * 0.42))}
+      color={color}
+      strokeWidth={2}
+      style={{
+        position: 'absolute',
+        left: size * 0.24,
+        top: size * 0.44,
+        transform: 'translate(25%, -10%)',
+      }}
+    />
+  </span>
 );
 
 export const VoteIcon: React.FC<IconProps> = ({ size = 18, color = '#fff', className }) => (
-  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
-    <path d="M14 9V5a3 3 0 0 0-6 0v4" />
-    <rect x="2.5" y="9" width="19" height="12" rx="2" />
-    <path d="M8 15l2.5 2.5L16 12" />
-  </svg>
+  <svg
+  className={className}
+  width={size}
+  height={size}
+  viewBox="0 0 256 256"
+  fill="none"
+  stroke={color}
+  strokeWidth="8" 
+  strokeLinecap="round"
+  strokeLinejoin="round"
+>
+  <path d="M190.878,111.272c31.017-11.186,53.254-40.907,53.254-75.733l-0.19-8.509h-48.955V5H64.222v22.03H15.266l-0.19,8.509
+	c0,34.825,22.237,64.546,53.254,75.733c7.306,18.421,22.798,31.822,41.878,37.728v20c-0.859,15.668-14.112,29-30,29v18h-16v35H195
+	v-35h-16v-18c-15.888,0-29.141-13.332-30-29v-20C168.08,143.094,183.572,129.692,190.878,111.272z M195,44h30.563
+	c-0.06,0.427-0.103,1.017-0.171,1.441c-3.02,18.856-14.543,34.681-30.406,44.007C195.026,88.509,195,44,195,44z M33.816,45.441
+	c-0.068-0.424-0.111-1.014-0.171-1.441h30.563c0,0-0.026,44.509,0.013,45.448C48.359,80.122,36.837,64.297,33.816,45.441z
+	 M129.604,86.777l-20.255,13.52l6.599-23.442L96.831,61.77l24.334-0.967l8.44-22.844l8.44,22.844l24.334,0.967L143.26,76.856
+	l6.599,23.442L129.604,86.777z"/>
+  
+  <line x1="100" y1="125" x2="156" y2="125" strokeWidth="8" />
+  <line x1="110" y1="140" x2="146" y2="140" strokeWidth="8" />
+</svg>
 );
 
 export const ThumbsUpIcon: React.FC<IconProps> = ({ size = 18, color = '#fff', className }) => (

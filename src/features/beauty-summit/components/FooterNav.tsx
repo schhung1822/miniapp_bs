@@ -22,7 +22,7 @@ const tabs: Array<{
 }> = [
   {
     key: 'missions',
-    label: 'Trang chủ',
+    label: 'Nhiệm vụ',
     renderIcon: (active) => <MissionIcon size={24} color={active ? ACTIVE_NAV_COLOR : INACTIVE_NAV_COLOR} />,
   },
   {
@@ -37,7 +37,7 @@ const tabs: Array<{
   },
   {
     key: 'vote',
-    label: 'Vote',
+    label: 'Award',
     renderIcon: (active) => <VoteIcon size={24} color={active ? ACTIVE_NAV_COLOR : INACTIVE_NAV_COLOR} />,
   },
 ];
@@ -68,7 +68,7 @@ const FooterNav: React.FC<FooterNavProps> = ({ activeTab, onChange, onQrClick, h
               >
                 <div className="flex h-6 w-6 items-center justify-center">{tab.renderIcon(active)}</div>
                 <span
-                  className={`truncate text-[12px] leading-4 ${
+                  className={`max-w-[72px] text-center whitespace-pre-line text-[12px] leading-4 ${
                     active ? 'text-[#ffffff]' : 'text-[#b7b0c3]'
                   }`}
                 >
@@ -105,7 +105,7 @@ const FooterNav: React.FC<FooterNavProps> = ({ activeTab, onChange, onQrClick, h
               >
                 <div className="flex h-6 w-6 items-center justify-center">{tab.renderIcon(active)}</div>
                 <span
-                  className={`truncate text-[12px] leading-4 ${
+                  className={`text-center line-clamp-2 text-[12px] leading-4 ${
                     active ? 'text-[#ffffff]' : 'text-[#b7b0c3]'
                   }`}
                 >
