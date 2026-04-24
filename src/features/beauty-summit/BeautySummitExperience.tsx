@@ -143,6 +143,7 @@ interface MiniAppBootstrapResponse {
       role?: string;
       status?: string;
     };
+    eventDay1?: string;
     tickets?: MiniAppTicketOrder[];
     rewards?: {
       state?: MiniAppRewardState;
@@ -573,6 +574,7 @@ const loadMiniAppRewards = async (user: CachedZaloUser): Promise<{
 const loadMiniAppBootstrapBundle = async (user: CachedZaloUser): Promise<{
   tickets: MiniAppTicketOrder[];
   checkinZones: CheckinZone[];
+  eventDay1: string | null;
   rewards: {
     state: MiniAppRewardState;
     vouchers: {
@@ -601,6 +603,7 @@ const loadMiniAppBootstrapBundle = async (user: CachedZaloUser): Promise<{
   return {
     tickets: data?.tickets ?? [],
     checkinZones: data?.checkinZones ?? [],
+    eventDay1: data?.eventDay1 ?? null,
     rewards: {
       state,
       vouchers: {
@@ -685,6 +688,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const [voucherRedeemSubmitting, setVoucherRedeemSubmitting] = React.useState<boolean>(false);
   const [toast, setToast] = React.useState<string | null>(null);
   const [checkinZones, setCheckinZones] = React.useState<CheckinZone[]>([]);
+  const [eventDay1, setEventDay1] = React.useState<string | null>(null);
   const [checkinLog, setCheckinLog] = React.useState<CheckinLog[]>([]);
   const [ticketHelpOpen, setTicketHelpOpen] = React.useState<boolean>(false);
   const [oaPromptOpen, setOaPromptOpen] = React.useState<boolean>(false);
@@ -1168,6 +1172,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       syncCachedQrWithTicketOrders(bundle.tickets, normalizedZid, normalizedPhone);
       setTicketOrders(bundle.tickets);
       setCheckinZones(bundle.checkinZones);
+      setEventDay1(bundle.eventDay1);
       applyOrdersToCheckinLog(bundle.tickets);
       
       applyLoadedRewards(bundle.rewards);
@@ -1508,6 +1513,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     setZaloUserId('');
     setZaloPhone('');
     setTicketOrders([]);
+    setEventDay1(null);
     setTicketsError(null);
     setOrderCode('');
     setQrValue('');
@@ -1893,6 +1899,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           availablePoints={availablePoints}
           qrGenerated={qrGenerated}
           voteCategories={voteCategories}
+          eventDay1={eventDay1}
           userName={userName}
           userAvatar={userAvatar}
           userPhone={userPhone}

@@ -54,6 +54,7 @@ interface DashboardScreenProps {
   availablePoints: number;
   qrGenerated: boolean;
   voteCategories: VoteCategory[];
+  eventDay1: string | null;
   userName: string;
   userAvatar: string;
   userPhone: string;
@@ -165,9 +166,10 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
     totalPoints,
     spentPoints,
     availablePoints,
-    qrGenerated,
-    voteCategories,
-    userName,
+  qrGenerated,
+  voteCategories,
+  eventDay1,
+  userName,
     userAvatar,
     userPhone,
     userRole,
@@ -810,6 +812,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
               ? (
                 <VoteSection
                   voteCategories={voteCategories}
+                  eventDay1={eventDay1}
                   votes={votes}
                   voteQuery={voteQuery}
                   onVoteQueryChange={onVoteQueryChange}

@@ -11,6 +11,7 @@ import { apiConfig } from '@/lib/api-client';
 
 interface VoteSectionProps {
   voteCategories: VoteCategory[];
+  eventDay1?: string | null;
   votes: Record<string, string>;
   voteQuery: string;
   onVoteQueryChange: (value: string) => void;
@@ -49,9 +50,34 @@ const sortVoteBrands = (brands: VoteBrand[]): VoteBrand[] =>
     return (left.product || left.name).localeCompare(right.product || right.name, 'vi');
   });
 
+const getCountdownParts = (eventDay1?: string | null) => {
+  if (!eventDay1 || !/^\d{4}-\d{2}-\d{2}$/.test(eventDay1)) {
+    return null;
+  }
+
+  const target = new Date(`${eventDay1}T00:00:00+07:00`).getTime();
+  const diff = Math.max(target - Date.now(), 0);
+  const totalSeconds = Math.floor(diff / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return {
+    done: diff <= 0,
+    days,
+    hours,
+    minutes,
+    seconds,
+  };
+};
+
+const padCountdown = (value: number): string => String(value).padStart(2, '0');
+
 const VoteSection: React.FC<VoteSectionProps> = (props) => {
   const {
     voteCategories,
+    eventDay1,
     votes,
     voteQuery,
     onVoteQueryChange,
@@ -59,9 +85,19 @@ const VoteSection: React.FC<VoteSectionProps> = (props) => {
   } = props;
 
   const query = normalizeQuery(voteQuery);
+  const [countdown, setCountdown] = React.useState(() => getCountdownParts(eventDay1));
   const [expandedCategoryIds, setExpandedCategoryIds] = React.useState<string[]>(
     voteCategories[0]?.id ? [voteCategories[0].id] : []
   );
+
+  React.useEffect(() => {
+    setCountdown(getCountdownParts(eventDay1));
+    const timer = window.setInterval(() => {
+      setCountdown(getCountdownParts(eventDay1));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [eventDay1]);
 
   const filteredCategories = React.useMemo(
     () =>
@@ -95,6 +131,7 @@ const VoteSection: React.FC<VoteSectionProps> = (props) => {
         .filter((item) => item.brands.length > 0),
     [query, voteCategories]
   );
+  const countdownActive = Boolean(countdown && !countdown.done);
 
   React.useEffect(() => {
     if (filteredCategories.length === 0) {
@@ -178,6 +215,7 @@ const VoteSection: React.FC<VoteSectionProps> = (props) => {
 
   return (
     <div className="space-y-4">
+      {countdown ? null : 
       <div className="rounded-[1.45rem] border border-[#f09de0] bg-[linear-gradient(135deg,rgba(143,23,181,0.98)_0%,rgba(127,20,174,0.98)_56%,rgba(111,17,165,0.98)_100%)] px-4 py-4 shadow-[0_18px_34px_rgba(77,4,108,0.18)]">
         <div className="flex items-start gap-3">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1rem] border border-white/14 bg-[linear-gradient(135deg,rgba(255,83,193,0.36)_0%,rgba(161,35,210,0.42)_100%)]">
@@ -192,9 +230,37 @@ const VoteSection: React.FC<VoteSectionProps> = (props) => {
             </div>
           </div>
         </div>
-      </div>
+      </div> }
+      {countdown ? (
+        <div className="rounded-[1.2rem] border border-[#f09de0] bg-[rgba(255,255,255,0.12)] px-4 py-3 shadow-[0_14px_24px_rgba(77,4,108,0.16)]">
+          <div className="text-[0.68rem] font-bold uppercase tracking-[0.08em] text-white">
+            Countdown BEAUTY SUMMIT 2026
+          </div>
+          {countdown.done ? (
+            <div className="mt-1 text-[1rem] font-black text-white">Sự kiện đang diễn ra</div>
+          ) : (
+            <div className="mt-2 grid grid-cols-4 gap-2 text-center">
+              {[
+                { label: 'Ngày', value: countdown.days },
+                { label: 'Giờ', value: countdown.hours },
+                { label: 'Phút', value: countdown.minutes },
+                { label: 'Giây', value: countdown.seconds },
+              ].map((item) => (
+                <div key={item.label} className="rounded-[0.85rem] border border-white/14 bg-white/12 px-2 py-2">
+                  <div className="mt-1 text-[1.05rem] font-black leading-none text-[#f0588c]">
+                    {item.label === 'Ngày' ? item.value : padCountdown(item.value)}
+                  </div>
+                  <div className="text-[0.58rem] font-semibold uppercase tracking-[0.05em] text-[#f0588c]">
+                    {item.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : null}
 
-      {voteCategories.length > 0 ? (
+      {countdownActive ? null : voteCategories.length > 0 ? (
         <div className="relative">
           <SearchIcon
             size={18}
@@ -210,7 +276,7 @@ const VoteSection: React.FC<VoteSectionProps> = (props) => {
         </div>
       ) : null}
 
-      {voteCategories.length === 0 ? (
+      {countdownActive ? null : voteCategories.length === 0 ? (
         <div className="rounded-[1.25rem] border border-dashed border-[#f09de0] bg-[rgba(128,20,170,0.22)] px-4 py-6 text-center">
           <div className="text-sm font-semibold text-white">Chưa có dữ liệu bình chọn</div>
           <div className="mt-1 text-[11px] text-white/74">
