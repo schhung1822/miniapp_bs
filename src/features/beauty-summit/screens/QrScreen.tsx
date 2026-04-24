@@ -448,7 +448,7 @@ const QrScreen: React.FC<QrScreenProps> = ({
       <div className="pointer-events-none absolute left-[-5rem] top-[11rem] h-44 w-44 rounded-full bg-[radial-gradient(circle,rgba(90,214,255,0.12)_0%,rgba(90,214,255,0)_72%)]" />
       <div className="pointer-events-none absolute bottom-[8rem] right-[-4rem] h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(255,175,225,0.18)_0%,rgba(255,175,225,0)_72%)]" />
 
-      <div className="relative z-[1] min-w-0 overflow-x-hidden">
+      <div className="relative z-[1] min-w-0 overflow-y-auto overflow-x-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:bg-transparent">
         <div className="beauty-glow beauty-crisp-edge mt-4 overflow-hidden rounded-[1.45rem] border border-[#ff53bf] bg-[linear-gradient(135deg,rgba(122,23,170,0.95)_0%,rgba(141,19,167,0.97)_52%,rgba(113,14,153,0.98)_100%)] shadow-[0_18px_34px_rgba(85,8,123,0.24)]">
           <div className="relative p-4">
             <div className="pointer-events-none absolute inset-x-6 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(255,198,237,0.22)_0%,rgba(255,198,237,0)_72%)]" />

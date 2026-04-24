@@ -117,7 +117,7 @@ const VoucherCodeModal: React.FC<VoucherCodeModalProps> = ({ voucher, onClose })
             disabled={!voucher.code}
             className="flex items-center justify-center text-black gap-2 rounded-[1rem] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:text-white/34"
           >
-            <CopyIcon color={voucher.code ? '#000' : 'rgba(255,255,255,0.34)'} size={16} />
+            <CopyIcon color='#000' size={16} />
             {copied ? 'Đã copy' : 'Copy mã'}
           </button>
           <button

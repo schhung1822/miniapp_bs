@@ -31,6 +31,7 @@ import PermissionNoticeModal from '@/features/beauty-summit/components/Permissio
 import RewardCompletionScreen from '@/features/beauty-summit/components/RewardCompletionScreen';
 import TicketHelpModal from '@/features/beauty-summit/components/TicketHelpModal';
 import VoteConfirmModal from '@/features/beauty-summit/components/VoteConfirmModal';
+import VoucherRedeemConfirmModal from '@/features/beauty-summit/components/VoucherRedeemConfirmModal';
 import DashboardScreen from '@/features/beauty-summit/screens/DashboardScreen';
 import OnboardingScreen from '@/features/beauty-summit/screens/OnboardingScreen';
 import QrScreen from '@/features/beauty-summit/screens/QrScreen';
@@ -680,6 +681,8 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     brand: VoteBrand;
   } | null>(null);
   const [voteSubmitting, setVoteSubmitting] = React.useState<boolean>(false);
+  const [pendingVoucherRedeem, setPendingVoucherRedeem] = React.useState<Voucher | null>(null);
+  const [voucherRedeemSubmitting, setVoucherRedeemSubmitting] = React.useState<boolean>(false);
   const [toast, setToast] = React.useState<string | null>(null);
   const [checkinZones, setCheckinZones] = React.useState<CheckinZone[]>([]);
   const [checkinLog, setCheckinLog] = React.useState<CheckinLog[]>([]);
@@ -906,12 +909,13 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const allMissions = [...missions.before, ...missions.day1, ...missions.day2];
   const currentPhaseMissions = missions[activePhase];
   const completedSet = new Set(completedIds);
+  const completedMissionCount = allMissions.filter((mission) => completedSet.has(mission.id)).length;
   const totalPoints = allMissions
     .filter((mission) => completedSet.has(mission.id))
     .reduce((accumulator, mission) => accumulator + mission.points, 0);
   const availablePoints = totalPoints - spentPoints;
   const progress =
-    allMissions.length === 0 ? 0 : Math.round((completedIds.length / allMissions.length) * 100);
+    allMissions.length === 0 ? 0 : Math.round((completedMissionCount / allMissions.length) * 100);
   const currentTier = TIERS[tier];
   const accessibleZones = checkinZones.filter((zone) =>
     (zone.allowedTiers ?? []).some((allowedTier) => String(allowedTier).trim().toUpperCase() === tier),
@@ -1602,6 +1606,8 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     setSelectedBrandKey(null);
     setPendingVoteAction(null);
     setVoteSubmitting(false);
+    setPendingVoucherRedeem(null);
+    setVoucherRedeemSubmitting(false);
     setVoteQuery('');
     setTicketHelpOpen(false);
     setOaPromptOpen(false);
@@ -1619,17 +1625,40 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
 
   const handleRedeemVoucher = (voucher: Voucher): void => {
     const cost = voucher.cost ?? 0;
-    if (availablePoints < cost || redeemedVoucherIds.includes(voucher.id)) {
+    if (availablePoints < cost) {
+      showToast('Không đủ điểm');
       return;
     }
 
+    if (redeemedVoucherIds.includes(voucher.id)) {
+      return;
+    }
+
+    setPendingVoucherRedeem(voucher);
+  };
+
+  const handleConfirmRedeemVoucher = (): void => {
+    if (!pendingVoucherRedeem || voucherRedeemSubmitting) {
+      return;
+    }
+
+    const voucher = pendingVoucherRedeem;
+    const cost = voucher.cost ?? 0;
+
     void (async () => {
+      setVoucherRedeemSubmitting(true);
+
       try {
         await runRewardStateUpdate('redeem-voucher', { voucherId: voucher.id });
-        setSelectedVoucherId(voucher.id);
-        showToast(`Đổi voucher thành công - ${cost} BP`);
+        setPendingVoucherRedeem(null);
+        if (!voucher.isGrand) {
+          setSelectedVoucherId(voucher.id);
+        }
+        showToast(voucher.isGrand ? 'Đã xác nhận Grand Prize' : `Đổi voucher thành công - ${cost} BP`);
       } catch (error) {
         showToast(readApiErrorMessage(error, 'Không thể đổi voucher'));
+      } finally {
+        setVoucherRedeemSubmitting(false);
       }
     })();
   };
@@ -1712,6 +1741,11 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       return;
     }
 
+    if (pendingVoucherRedeem) {
+      setPendingVoucherRedeem(null);
+      return;
+    }
+
     if (selectedBrandKey) {
       setSelectedBrandKey(null);
       return;
@@ -1734,6 +1768,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     selectedBrandKey,
     selectedMilestonePct,
     selectedVoucherId,
+    pendingVoucherRedeem,
   ]);
 
   React.useEffect(() => {
@@ -1744,6 +1779,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
         Boolean(
           expandedMissionId ||
             selectedVoucherId ||
+            pendingVoucherRedeem ||
             selectedBrandKey ||
             selectedMilestonePct ||
             policyOpen ||
@@ -1769,6 +1805,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     selectedBrandKey,
     selectedMilestonePct,
     selectedVoucherId,
+    pendingVoucherRedeem,
     policyOpen,
     developerInfoOpen,
     scannerOpen,
@@ -1946,6 +1983,17 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
         loading={miniAppLoading}
         onApprove={handlePermissionApproved}
         onDeny={handlePermissionDenied}
+      />
+
+      <VoucherRedeemConfirmModal
+        voucher={pendingVoucherRedeem}
+        loading={voucherRedeemSubmitting}
+        onClose={() => {
+          if (!voucherRedeemSubmitting) {
+            setPendingVoucherRedeem(null);
+          }
+        }}
+        onConfirm={handleConfirmRedeemVoucher}
       />
 
       <VoteConfirmModal
