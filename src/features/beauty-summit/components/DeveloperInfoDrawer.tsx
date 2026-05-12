@@ -1,5 +1,6 @@
 import React from 'react';
 
+import nextgencyLogo from '@/assets/nextgency.png';
 import { CloseIcon, ProfileIcon } from '@/features/beauty-summit/icons';
 
 interface DeveloperInfoDrawerProps {
@@ -9,7 +10,9 @@ interface DeveloperInfoDrawerProps {
 
 const developerItems = [
   'Mã số doanh nghiệp: 0111450660.',
-  'Số điện thoại liên hệ: 0332083366.',
+  'Tên thương hiệu: Nextgency.',
+  'Website: nextgency.vn',
+  'Số điện thoại liên hệ: 0332.083.366.',
   'Số phiên bản Mini App: 1.0.0.',
 ] as const;
 
@@ -45,11 +48,11 @@ const DeveloperInfoDrawer: React.FC<DeveloperInfoDrawerProps> = ({ open, onClose
           </button>
         </div>
 
-        <div className="overflow-hidden rounded-[1.8rem] border border-[#ffd2f4]/88 bg-[linear-gradient(135deg,rgba(178,18,196,0.95)_0%,rgba(131,12,188,0.96)_100%)] shadow-[0_20px_34px_rgba(98,4,103,0.22)]">
+        <div className="overflow-hidden rounded-[16px] border border-[#ffd2f4]/88 bg-[linear-gradient(135deg,rgba(178,18,196,0.95)_0%,rgba(131,12,188,0.96)_100%)] shadow-[0_20px_34px_rgba(98,4,103,0.22)]">
           <div className="px-5 pb-5 pt-5">
             <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[1rem] border border-white/16 bg-[linear-gradient(135deg,rgba(255,84,196,0.34)_0%,rgba(151,36,212,0.42)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-                <ProfileIcon size={24} color="#ffffff" />
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[8px] border border-white bg-[#fff] p-2">
+                <img src={nextgencyLogo} alt="Nextgency" />
               </div>
               <div className="min-w-0">
                 <div className="text-[1rem] font-black uppercase tracking-[0.02em] text-white/90">

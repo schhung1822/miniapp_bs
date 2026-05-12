@@ -53,12 +53,12 @@ const VoucherCodeModal: React.FC<VoucherCodeModalProps> = ({ voucher, onClose })
       onClick={onClose}
     >
       <div
-        className="absolute inset-x-4 top-1/2 -translate-y-1/2 rounded-[1.7rem] border border-[#ff96da]/18 bg-[linear-gradient(180deg,#241f3c_0%,#19172c_100%)] p-5 text-white shadow-[0_24px_80px_rgba(15,11,31,0.5)]"
+        className="absolute inset-x-4 top-1/2 -translate-y-1/2 rounded-[1.7rem] border border-[#ff96da]/18 bg-[#f9f9f9] p-5 text-white shadow-[0_24px_80px_rgba(15,11,31,0.5)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mb-5 flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <div className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-white/90">Voucher đã nhận</div>
+            <div className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#2D0658]">Voucher đã nhận</div>
             <div className="flex items-center gap-3">
               <VoucherLogoBadge
                 logo={voucher.logo}
@@ -67,13 +67,13 @@ const VoucherCodeModal: React.FC<VoucherCodeModalProps> = ({ voucher, onClose })
                 className="h-11 w-11 shrink-0"
               />
               <div className="min-w-0">
-                <div className="truncate text-lg font-bold text-white/90">{voucher.brand}</div>
+                <div className="truncate text-lg font-bold text-[#1a1a2e]">{voucher.brand}</div>
                 <div className="mt-1 text-xs font-medium" style={{ color: voucher.color }}>
                   {voucher.discount}
                 </div>
               </div>
             </div>
-            <div className="mt-2 text-sm leading-6 text-white/66">{voucher.desc}</div>
+            <div className="mt-2 text-sm leading-6 text-[#2D0658]">{voucher.desc}</div>
           </div>
           <button
             type="button"
@@ -92,17 +92,17 @@ const VoucherCodeModal: React.FC<VoucherCodeModalProps> = ({ voucher, onClose })
             background: `linear-gradient(145deg, ${voucher.color}1c, rgba(255,255,255,0.04))`,
           }}
         >
-          <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/90">Mã voucher</div>
+          <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#1a1a2e]">Mã voucher</div>
           <div
             className="rounded-[1rem] border border-white/10 bg-[rgba(18,16,32,0.74)] px-4 py-4 text-center text-[1.05rem] font-black tracking-[0.24em]"
             style={{ color: voucher.code ? '#ffffff' : '#ffd970' }}
           >
             {voucher.code ?? 'GRAND PRIZE'}
           </div>
-          <div className="mt-3 text-xs leading-5 text-white/62">
+          <div className="mt-3 text-xs leading-5 text-[#1a1a2e]">
             {voucher.code ? (
               <>
-                Xuất trình mã này tại quầy <b className="font-bold text-white/90">{voucher.brand}</b> để nhận ưu đãi.
+                Xuất trình mã này tại quầy <b className="font-bold text-[#1a1a2e]">{voucher.brand}</b> để nhận ưu đãi.
               </>
             ) : (
               'Grand prize chỉ mở khóa khi đạt 100% nhiệm vụ.'

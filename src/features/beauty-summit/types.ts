@@ -1,4 +1,4 @@
-export type ExperienceScreen = 'onboarding' | 'terms' | 'qr' | 'main' | 'reward';
+export type ExperienceScreen = 'onboarding' | 'terms' | 'qr' | 'main' | 'survey' | 'reward';
 
 export type TierKey = 'GOLD' | 'RUBY' | 'VIP';
 

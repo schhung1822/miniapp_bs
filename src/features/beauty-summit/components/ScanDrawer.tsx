@@ -30,7 +30,7 @@ const ScanDrawer: React.FC<ScanDrawerProps> = ({
       onClick={onClose}
     >
       <div
-        className="absolute inset-x-0 bottom-0 rounded-t-[1.85rem] border-t border-[#ff96da]/18 bg-[linear-gradient(180deg,#241f3c_0%,#19172c_100%)] px-5 pb-8 pt-3 text-white shadow-[0_-24px_60px_rgba(15,11,31,0.5)]"
+        className="absolute inset-x-0 bottom-0 rounded-t-[1.85rem] border-t border-[#ff96da]/18 bg-[#f9f9f9] px-5 pb-8 pt-3 text-white shadow-[0_-24px_60px_rgba(15,11,31,0.5)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-white/14" />

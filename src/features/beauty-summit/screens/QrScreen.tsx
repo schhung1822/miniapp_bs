@@ -209,23 +209,23 @@ const QrScreen: React.FC<QrScreenProps> = ({
 
     if (!ticketOrders.length) {
       return (
-        <div className="rounded-[1.65rem] border border-white/12 bg-white/[0.05] px-4 py-5 text-center">
-          <div className="text-sm font-semibold text-white">Chưa tìm thấy vé</div>
-          <div className="mt-1 text-xs leading-5 text-white/62">
+        <div className="rounded-[16px] border border-white/12 bg-white/[0.05] px-4 py-5 text-center">
+          <div className="text-sm font-semibold text-[#2D0658]">Chưa tìm thấy vé</div>
+          <div className="mt-1 text-xs leading-5 text-[#2D0658]">
             Số điện thoại này chưa có mã vé trên hệ thống Beauty Summit.
           </div>
           <div className="mt-4 flex items-center justify-center gap-2">
             <button
               type="button"
               onClick={onRefreshTickets}
-              className="rounded-full border border-white/15 bg-white/[0.07] px-4 py-2 text-xs font-bold text-white"
+              className="rounded-full border border-[#2D0658] bg-white/[0.07] px-4 py-2 text-xs font-bold text-[#2D0658]"
             >
               Kiểm tra lại
             </button>
             <button
               type="button"
               onClick={() => setEntryMode('manual')}
-              className="rounded-full border border-[#ff6ab6]/45 bg-[#ff4fb61a] px-4 py-2 text-xs font-bold text-[#ff8dc8]"
+              className="rounded-full border border-[#ff6ab6]/45 bg-[#301e3c] px-4 py-2 text-xs font-bold text-[#ff8dc8]"
             >
               Tự nhập mã vé
             </button>
@@ -314,7 +314,7 @@ const QrScreen: React.FC<QrScreenProps> = ({
               void onGenerate();
             }
           }}
-          placeholder="DHMN4S154"
+          placeholder="Nhập mã vé"
           className="min-w-0 flex-1 rounded-[1.05rem] border border-white/12 bg-[#25223b] px-4 py-3 text-center text-sm font-black tracking-[0.14em] text-white"
         />
         <button

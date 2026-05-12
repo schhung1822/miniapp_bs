@@ -53,9 +53,9 @@ const PolicyDrawer: React.FC<PolicyDrawerProps> = ({ open, onClose }) => {
           {POLICY_SECTIONS.map((section: PolicySection) => (
             <div
               key={section.id}
-              className="overflow-hidden rounded-[1.8rem] border border-[#ffd2f4]/88 bg-[linear-gradient(135deg,rgba(178,18,196,0.95)_0%,rgba(131,12,188,0.96)_100%)] shadow-[0_20px_34px_rgba(98,4,103,0.22)]"
+              className="overflow-hidden rounded-[16px] border border-[#ffd2f4]/88 bg-[linear-gradient(135deg,rgba(178,18,196,0.95)_0%,rgba(131,12,188,0.96)_100%)] shadow-[0_20px_34px_rgba(98,4,103,0.22)]"
             >
-              <div className="px-2 pb-5 pt-2">
+              <div className="px-4 pb-5 pt-2">
                 <div className="flex items-center ">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[1rem] ">
                     {renderSectionIcon(section.id)}

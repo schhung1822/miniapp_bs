@@ -232,9 +232,9 @@ const VoteSection: React.FC<VoteSectionProps> = (props) => {
         </div>
       </div> }
       {countdown ? (
-        <div className="rounded-[1.2rem] border border-[#f09de0] bg-[rgba(255,255,255,0.12)] px-4 py-3 shadow-[0_14px_24px_rgba(77,4,108,0.16)]">
-          <div className="text-[0.68rem] font-bold uppercase tracking-[0.08em] text-white">
-            Countdown BEAUTY SUMMIT 2026
+        <div className="rounded-[14px] border border-[#f09de0] bg-[rgba(255,255,255,0.12)] px-4 py-6 shadow-[0_14px_24px_rgba(77,4,108,0.16)]">
+          <div className="text-[15px] text-center font-bold uppercase tracking-[0.08em] text-white mb-4">
+            ĐÓN CHỜ BEAUTY AWARDS 2026
           </div>
           {countdown.done ? (
             <div className="mt-1 text-[1rem] font-black text-white">Sự kiện đang diễn ra</div>
@@ -250,7 +250,7 @@ const VoteSection: React.FC<VoteSectionProps> = (props) => {
                   <div className="mt-1 text-[1.05rem] font-black leading-none text-[#f0588c]">
                     {item.label === 'Ngày' ? item.value : padCountdown(item.value)}
                   </div>
-                  <div className="text-[0.58rem] font-semibold uppercase tracking-[0.05em] text-[#f0588c]">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.05em] text-[#f0588c]">
                     {item.label}
                   </div>
                 </div>

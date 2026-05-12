@@ -10,6 +10,7 @@ interface MissionDrawerProps {
   value: string;
   onChange: (value: string) => void;
   onClose: () => void;
+  onOpenSurvey: () => void;
   onSubmit: () => void;
   onGoVote: () => void;
 }
@@ -20,6 +21,7 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
   value,
   onChange,
   onClose,
+  onOpenSurvey,
   onSubmit,
   onGoVote,
 }) => {
@@ -33,7 +35,7 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
   const isVoteAction = mission.proofType === 'vote';
   const isSurveyAction = mission.proofType === 'survey';
   const isReferralAction = mission.proofType === 'referral';
-  const disableSubmit = showInput && value.trim().length === 0;
+  const disableSubmit = (showInput || isSurveyAction || isReferralAction) && value.trim().length === 0;
   const hasUploadedImage = showUpload && value.trim().length > 0;
 
   const handleChooseImage = async (): Promise<void> => {
@@ -85,7 +87,7 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
       onClick={onClose}
     >
       <div
-        className="absolute inset-x-0 bottom-0 rounded-t-[1.85rem] border-t border-[#ff96da]/18 bg-[linear-gradient(180deg,#241f3c_0%,#19172c_100%)] px-4 pb-7 pt-3 text-white shadow-[0_-24px_60px_rgba(15,11,31,0.5)]"
+        className="absolute inset-x-0 bottom-0 rounded-t-[1.85rem] border-t border-[#ff96da]/18 bg-[#f9f9f9] px-4 pb-7 pt-3 text-white shadow-[0_-24px_60px_rgba(15,11,31,0.5)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-white/14" />
@@ -102,11 +104,11 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
               {renderMissionIcon()}
             </div>
             <div className="min-w-0">
-              <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
+              <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#2D0658]">
                 Chi tiết nhiệm vụ
               </div>
-              <div className="text-[1.02rem] font-black text-white/90">{mission.title}</div>
-              <div className="mt-1 text-sm leading-6 text-white/66">{mission.desc}</div>
+              <div className="text-[1.02rem] font-black text-[#2D0658]">{mission.title}</div>
+              <div className="mt-1 text-sm leading-6 text-[#2D0658]">{mission.desc}</div>
             </div>
           </div>
 
@@ -143,7 +145,7 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
 
         {showInput ? (
           <div className="mb-4">
-            <label className="mb-2 block text-xs font-semibold text-white/62">{mission.proofLabel}</label>
+            <label className="mb-2 block text-xs font-semibold text-[#142132]">{mission.proofLabel}</label>
             <input
               value={value}
               onChange={(event) => onChange(event.target.value)}
@@ -169,7 +171,7 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
               onClick={() => {
                 void handleChooseImage();
               }}
-              className="mb-4 flex w-full flex-col items-center rounded-[1.15rem] border border-dashed px-4 py-5 text-center"
+              className="mb-4 flex w-full flex-col items-center rounded-[16px] border border-dashed px-4 py-5 text-center"
               style={{ borderColor: `${accentColor}3d`, background: `${accentColor}12` }}
             >
               {hasUploadedImage ? (
@@ -184,8 +186,8 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
               ) : (
                 <>
                   <CameraIcon color={accentColor} size={26} />
-                  <div className="mt-3 text-sm font-semibold text-white">{mission.proofLabel}</div>
-                  <div className="mt-1 text-xs text-white/80">Chọn ảnh từ thư viện hoặc máy của bạn.</div>
+                  <div className="mt-3 text-sm font-semibold text-[#1a1a2e]">{mission.proofLabel}</div>
+                  <div className="mt-1 text-xs text-[#2D0658]">Chọn ảnh từ thư viện hoặc máy của bạn.</div>
                 </>
               )}
             </button>
@@ -196,14 +198,14 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
           <button
             type="button"
             onClick={onGoVote}
-            className="mb-4 flex w-full items-center justify-center gap-2 rounded-[1rem] border px-4 py-3 text-sm font-semibold"
+            className="mb-4 flex w-full text-[#2D0658] items-center justify-center gap-2 rounded-[1rem] border px-4 py-3 text-sm font-semibold"
             style={{
               borderColor: `${accentColor}35`,
               background: `${accentColor}16`,
-              color: '#fff',
+              color: '#2D0658',
             }}
           >
-            <VoteIcon color='#fff' />
+            <VoteIcon color='#2D0658' />
             Chuyển sang tab Vote
           </button>
         ) : null}
@@ -211,8 +213,8 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
         {isSurveyAction ? (
           <button
             type="button"
-            onClick={() => onChange('survey')}
-            className="mb-4 flex w-full items-center justify-center rounded-[1rem] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-semibold text-white"
+            onClick={onOpenSurvey}
+            className="mb-4 flex w-full items-center justify-center rounded-[1rem] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-semibold text-[#2D0658]"
           >
             Mở khảo sát
           </button>
@@ -225,7 +227,7 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
               navigator.clipboard?.writeText('abc').catch(() => {});
               onChange('abc');
             }}
-            className="mb-4 flex w-full items-center justify-center rounded-[1rem] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-semibold text-white"
+            className="mb-4 flex w-full items-center justify-center rounded-[1rem] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-semibold text-[#2D0658]"
           >
             {value === 'abc' ? 'Đã sao chép link' : 'Sao chép link giới thiệu'}
           </button>
@@ -235,11 +237,11 @@ const MissionDrawer: React.FC<MissionDrawerProps> = ({
           type="button"
           onClick={onSubmit}
           disabled={disableSubmit}
-          className="w-full rounded-[1rem] px-4 py-3 text-sm text-white/90 transition disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/36"
+          className="w-full rounded-[1rem] px-4 py-3 text-sm text-[#2D0658] transition disabled:cursor-not-allowed disabled:bg-[#ccc] disabled:text-[#142132]"
           style={
             disableSubmit
               ? undefined
-              : { background: 'linear-gradient(135deg, #ff4fb6 0%, #a53cff 100%)' }
+              : { background: 'linear-gradient(135deg, #ff4fb6 0%, #a53cff 100%); color: #fff' }
           }
         >
           Xác nhận hoàn thành

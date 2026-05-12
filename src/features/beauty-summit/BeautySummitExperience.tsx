@@ -11,6 +11,7 @@ import {
 } from 'zmp-sdk';
 import {
   authorize,
+  closeApp,
   getSetting,
   getSystemInfo,
   nativeStorage,
@@ -35,6 +36,7 @@ import VoucherRedeemConfirmModal from '@/features/beauty-summit/components/Vouch
 import DashboardScreen from '@/features/beauty-summit/screens/DashboardScreen';
 import OnboardingScreen from '@/features/beauty-summit/screens/OnboardingScreen';
 import QrScreen from '@/features/beauty-summit/screens/QrScreen';
+import SurveyScreen from '@/features/beauty-summit/screens/SurveyScreen';
 import TermsScreen from '@/features/beauty-summit/screens/TermsScreen';
 import { getMiniAppTicketLockReason, isMiniAppTicketDisabled } from '@/features/beauty-summit/types';
 import type {
@@ -64,11 +66,12 @@ const DEFAULT_ZALO_PROFILE = {
 } as const;
 
 const DEFAULT_PHONE_DISPLAY = import.meta.env.VITE_DEFAULT_PHONE_DISPLAY?.trim() || '0123456789';
-const FALLBACK_ZALO_PHONE = import.meta.env.VITE_FALLBACK_ZALO_PHONE?.trim() || '84123456789';
 const ZALO_USER_STORAGE_KEY =
   import.meta.env.VITE_ZALO_USER_STORAGE_KEY?.trim() || 'beauty-summit.zalo-user';
 const ZALO_QR_STORAGE_KEY =
   import.meta.env.VITE_ZALO_QR_STORAGE_KEY?.trim() || 'beauty-summit.qr-checkin';
+const ZALO_FIRST_RUN_STORAGE_KEY =
+  import.meta.env.VITE_ZALO_FIRST_RUN_STORAGE_KEY?.trim() || 'beauty-summit.first-run';
 const OA_WIDGET_ID = 'beautySummitOaWidget';
 const BEAUTY_TABS: readonly BeautyTab[] = ['missions', 'vouchers', 'vote', 'profile'];
 const BEAUTY_NATIVE_STORAGE_KEYS = [ZALO_USER_STORAGE_KEY, ZALO_QR_STORAGE_KEY] as const;
@@ -78,7 +81,7 @@ const isBeautyTab = (value: string | null): value is BeautyTab =>
 
 const isZaloRuntime = (): boolean => {
   const { platform } = getSystemInfo();
-  return platform === "android";
+  return platform === 'android' || platform === 'iOS';
 };
 
 interface CachedZaloUser {
@@ -93,6 +96,12 @@ interface CachedQrTicket {
   phone: string;
   ticketCode: string;
   qrValue: string;
+}
+
+interface CachedFirstRunState {
+  userId: string;
+  completed: boolean;
+  completedAt?: string;
 }
 
 interface ZaloPhoneResponse {
@@ -126,6 +135,13 @@ interface MiniAppRewardsResponse {
 }
 
 interface MiniAppRewardActionResponse {
+  data?: {
+    state?: MiniAppRewardState;
+  };
+  message?: string;
+}
+
+interface MiniAppSurveyResponse {
   data?: {
     state?: MiniAppRewardState;
   };
@@ -248,7 +264,7 @@ const setNativeStorageItem = (key: string, value: string): void => {
   try {
     if (isZaloRuntime()) {
       nativeStorage.setItem(key, value);
-      console.log('[BeautySummit] QR cache saved:', value);
+      console.log('[BeautySummit] native storage saved:', key);
     }
   } catch {
     // Ignore storage write errors outside the Zalo runtime.
@@ -266,6 +282,45 @@ const removeNativeStorageItem = (key: string): void => {
 const clearBeautySummitNativeStorage = (): void => {
   BEAUTY_NATIVE_STORAGE_KEYS.forEach((key) => removeNativeStorageItem(key));
 };
+
+const readFirstRunCompleted = (userId: string): boolean => {
+  const normalizedUserId = userId.trim();
+  if (!normalizedUserId) {
+    return false;
+  }
+
+  try {
+    const rawValue = getNativeStorageItem(ZALO_FIRST_RUN_STORAGE_KEY);
+    if (!rawValue) {
+      return false;
+    }
+
+    const parsedValue = JSON.parse(rawValue) as Partial<CachedFirstRunState>;
+    return Boolean(parsedValue.completed && parsedValue.userId?.trim() === normalizedUserId);
+  } catch {
+    removeNativeStorageItem(ZALO_FIRST_RUN_STORAGE_KEY);
+    return false;
+  }
+};
+
+const writeFirstRunCompleted = (userId: string): void => {
+  const normalizedUserId = userId.trim();
+  if (!normalizedUserId) {
+    return;
+  }
+
+  setNativeStorageItem(
+    ZALO_FIRST_RUN_STORAGE_KEY,
+    JSON.stringify({
+      userId: normalizedUserId,
+      completed: true,
+      completedAt: new Date().toISOString(),
+    }),
+  );
+};
+
+const getPostAuthScreen = (userId: string): ExperienceScreen =>
+  readFirstRunCompleted(userId) ? 'main' : 'onboarding';
 
 const isCompleteCachedZaloUser = (
   value: Partial<CachedZaloUser> | null | undefined,
@@ -423,9 +478,17 @@ const checkPermissionSilently = async (): Promise<boolean> => {
   try {
     const settings = await getSetting({});
     const authSetting = (settings as { authSetting?: Record<string, boolean> } | null)?.authSetting;
-    return Boolean(authSetting?.['scope.userPhonenumber']);
+    return Boolean(authSetting?.['scope.userInfo'] && authSetting?.['scope.userPhonenumber']);
   } catch {
     return false;
+  }
+};
+
+const closeMiniApp = async (): Promise<void> => {
+  try {
+    await closeApp();
+  } catch (error) {
+    console.warn('[BeautySummit] unable to close mini app:', error);
   }
 };
 
@@ -449,9 +512,14 @@ const resolveZaloPhoneNumber = async (options?: {
       getAccessToken({}),
     ]);
     const phoneNumber = await fetchZaloPhoneNumber(accessToken, phoneAuth.token);
-    return normalizePhoneValue(phoneNumber || FALLBACK_ZALO_PHONE);
+    const normalizedPhone = normalizePhoneValue(phoneNumber);
+    if (!normalizedPhone) {
+      throw new Error('Unable to resolve Zalo phone number');
+    }
+
+    return normalizedPhone;
   } catch (error) {
-    return FALLBACK_ZALO_PHONE;
+    throw error instanceof Error ? error : new Error('Phone permission not granted');
   }
 };
 
@@ -637,6 +705,28 @@ const updateMiniAppRewardState = async (
   return state;
 };
 
+const submitMiniAppSurvey = async (
+  user: CachedZaloUser,
+  missionId: string,
+  feedback: string,
+): Promise<MiniAppRewardState> => {
+  const response = await apiClient.post<MiniAppSurveyResponse>('/api/khaosat', {
+    id: user.id,
+    name: user.name,
+    phone: normalizePhoneValue(user.phone),
+    avatar: user.avatar,
+    missionId,
+    camNhan: feedback.trim(),
+  });
+
+  const state = response.data.data?.state;
+  if (!state) {
+    throw new Error(response.data.message || 'Unable to submit survey');
+  }
+
+  return state;
+};
+
 const readApiErrorMessage = (error: unknown, fallback: string): string => {
   const response = (error as { response?: { data?: { message?: string } } } | null)?.response;
   return response?.data?.message || (error instanceof Error ? error.message : fallback);
@@ -672,6 +762,8 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
   const [voteQuery, setVoteQuery] = React.useState<string>('');
   const [proofInputs, setProofInputs] = React.useState<Record<string, string>>({});
   const [expandedMissionId, setExpandedMissionId] = React.useState<string | null>(null);
+  const [surveyMissionId, setSurveyMissionId] = React.useState<string | null>(null);
+  const [surveyFeedback, setSurveyFeedback] = React.useState<string>('');
   const [selectedVoucherId, setSelectedVoucherId] = React.useState<string | null>(null);
   const [selectedMilestonePct, setSelectedMilestonePct] = React.useState<number | null>(null);
   const [rewardScreenSeen, setRewardScreenSeen] = React.useState<boolean>(false);
@@ -738,6 +830,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
 
   const toastTimer = React.useRef<number | null>(null);
   const qrSuccessMessageRef = React.useRef<string>('Tạo mã QR thành công');
+  const termsAcceptedBeforePermissionRef = React.useRef<boolean>(false);
 
   React.useEffect(() => {
     const tabFromUrl = searchParams.get('tab');
@@ -810,18 +903,28 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       try {
         const cachedUser = readCachedZaloUser();
         if (cachedUser) {
+          const hasRequiredPermissions = await checkPermissionSilently();
+          if (!hasRequiredPermissions) {
+            throw new Error('Required Zalo permissions not granted');
+          }
+
           if (cancelled) {
             return;
           }
 
           applyResolvedUser(cachedUser);
           setPermissionsGranted(true);
-          setScreen('main');
+          const nextScreen = getPostAuthScreen(cachedUser.id);
+          if (nextScreen === 'onboarding') {
+            setAgreed(false);
+            setSlideIndex(0);
+          }
+          setScreen(nextScreen);
           return;
         }
 
         const resolvedUser = await resolveZaloUserFromSdk({
-          requestPermissions: false,
+          requestPermissions: true,
         });
 
         if (cancelled) {
@@ -830,9 +933,15 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
        
         applyResolvedUser(resolvedUser);
         setPermissionsGranted(true);
-        setScreen('main');
+        const nextScreen = getPostAuthScreen(resolvedUser.id);
+        if (nextScreen === 'onboarding') {
+          setAgreed(false);
+          setSlideIndex(0);
+        }
+        setScreen(nextScreen);
       } catch (error) {
         if (!cancelled) {
+          clearBeautySummitNativeStorage();
           setZaloUserId('');
           setZaloPhone('');
           setTicketOrders([]);
@@ -842,6 +951,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           setQrGenerated(false);
           setPermissionsGranted(false);
           setScreen('onboarding');
+          void closeMiniApp();
         }
       } finally {
         if (!cancelled) {
@@ -945,6 +1055,8 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
 
   const expandedMission: Mission | null =
     allMissions.find((mission) => mission.id === expandedMissionId) ?? null;
+  const surveyMission: Mission | null =
+    allMissions.find((mission) => mission.id === surveyMissionId) ?? null;
   const selectedVoucher: Voucher | null =
     [...bpointVouchers, ...freeVouchers].find((voucher) => voucher.id === selectedVoucherId) ??
     null;
@@ -1308,6 +1420,70 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     })();
   };
 
+  const handleOpenSurvey = React.useCallback((): void => {
+    if (!expandedMission || expandedMission.proofType !== 'survey') {
+      return;
+    }
+
+    setSurveyMissionId(expandedMission.id);
+    setSurveyFeedback('');
+    setExpandedMissionId(null);
+    setScreen('survey');
+  }, [expandedMission]);
+
+  const handleSubmitSurvey = React.useCallback((): void => {
+    const missionId = surveyMission?.id ?? surveyMissionId ?? '';
+    const feedback = surveyFeedback.trim();
+    const currentUser = buildCurrentMiniAppUser();
+
+    if (!missionId || !currentUser) {
+      showToast('Không thể tải thông tin tài khoản');
+      return;
+    }
+
+    if (!feedback) {
+      showToast('Vui lòng nhập cảm nhận về sự kiện');
+      return;
+    }
+
+    void (async () => {
+      setMiniAppLoading(true);
+
+      try {
+        let nextState: MiniAppRewardState;
+        try {
+          nextState = await submitMiniAppSurvey(currentUser, missionId, feedback);
+        } catch (error) {
+          if (!shouldRetryTicketFetchAfterSync(error)) {
+            throw error;
+          }
+
+          await syncMiniAppUser(currentUser);
+          nextState = await submitMiniAppSurvey(currentUser, missionId, feedback);
+        }
+
+        applyRewardState(nextState);
+        setProofInputs((current) => ({ ...current, [missionId]: 'survey' }));
+        setSurveyMissionId(null);
+        setSurveyFeedback('');
+        setScreen('main');
+        setActiveTab('missions');
+        showToast('Đã hoàn thành khảo sát');
+      } catch (error) {
+        showToast(readApiErrorMessage(error, 'Không thể gửi khảo sát'));
+      } finally {
+        setMiniAppLoading(false);
+      }
+    })();
+  }, [
+    applyRewardState,
+    buildCurrentMiniAppUser,
+    surveyFeedback,
+    surveyMission?.id,
+    surveyMissionId,
+    showToast,
+  ]);
+
   const handleToggleVote = (category: VoteCategory, brand: VoteBrand): void => {
     setPendingVoteAction({ category, brand });
   };
@@ -1350,6 +1526,18 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       return;
     }
 
+    const currentUser = buildCurrentMiniAppUser();
+    if (currentUser) {
+      writeFirstRunCompleted(currentUser.id);
+    }
+
+    if (permissionsGranted && currentUser) {
+      termsAcceptedBeforePermissionRef.current = false;
+      setScreen('main');
+      return;
+    }
+
+    termsAcceptedBeforePermissionRef.current = true;
     setOaPromptOpen(true);
   };
 
@@ -1507,6 +1695,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
 
     clearBeautySummitNativeStorage();
     qrSuccessMessageRef.current = 'Tạo mã QR thành công';
+    termsAcceptedBeforePermissionRef.current = false;
     setPermissionStep(null);
     setPermissionIntent(null);
     setPermissionsGranted(false);
@@ -1518,12 +1707,16 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     setOrderCode('');
     setQrValue('');
     setQrGenerated(false);
+    setSurveyMissionId(null);
+    setSurveyFeedback('');
 
     if (permissionIntent === 'activate') {
       setAgreed(false);
       setSlideIndex(0);
       setScreen('onboarding');
     }
+
+    await closeMiniApp();
   };
   const handlePermissionApproved = async (): Promise<void> => {
     const intent = permissionIntent;
@@ -1537,8 +1730,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     setMiniAppLoading(true);
 
     try {
-      if(!isZaloRuntime()) {
-        setScreen('main');
+      if (!isZaloRuntime()) {
         showToast('Đã kích hoạt app thành công');
       }
 
@@ -1562,13 +1754,25 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       if (intent === 'generate-qr') {
         finalizeQr(undefined, resolvedUser.id);
       } else {
-        setScreen('main');
-        showToast('Đã kích hoạt app thành công');
+        const completedBeforePermission = termsAcceptedBeforePermissionRef.current;
+        if (completedBeforePermission) {
+          writeFirstRunCompleted(resolvedUser.id);
+        }
+
+        const nextScreen = completedBeforePermission ? 'main' : getPostAuthScreen(resolvedUser.id);
+        termsAcceptedBeforePermissionRef.current = false;
+        if (nextScreen === 'onboarding') {
+          setAgreed(false);
+          setSlideIndex(0);
+        }
+        setScreen(nextScreen);
+        showToast(nextScreen === 'main' ? 'Đã kích hoạt app thành công' : 'Đã cấp quyền thành công');
       }
       return;
     } catch (error: any) {
       if (error.code === -1401 || error.code === -201) {
         clearBeautySummitNativeStorage();
+        termsAcceptedBeforePermissionRef.current = false;
         setPermissionsGranted(false);
         setAgreed(false);
         setSlideIndex(0);
@@ -1579,11 +1783,16 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
         setOrderCode('');
         setQrValue('');
         setQrGenerated(false);
+        setSurveyMissionId(null);
+        setSurveyFeedback('');
         setScreen('onboarding');
+        void closeMiniApp();
         return;
       }
       
       showToast('Không thể kích hoạt app. Vui lòng cấp quyền!');
+      termsAcceptedBeforePermissionRef.current = false;
+      void closeMiniApp();
       return;
     } finally {
       setMiniAppLoading(false);
@@ -1592,6 +1801,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
 
   const handleLogout = React.useCallback((): void => {
     clearBeautySummitNativeStorage();
+    termsAcceptedBeforePermissionRef.current = false;
     setPermissionStep(null);
     setPermissionIntent(null);
     setPermissionsGranted(false);
@@ -1607,6 +1817,8 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     setScannerBusy(false);
     setScannerResult(null);
     setExpandedMissionId(null);
+    setSurveyMissionId(null);
+    setSurveyFeedback('');
     setSelectedVoucherId(null);
     setSelectedMilestonePct(null);
     setSelectedBrandKey(null);
@@ -1762,6 +1974,13 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
       return;
     }
 
+    if (screen === 'survey') {
+      setSurveyMissionId(null);
+      setSurveyFeedback('');
+      setScreen('main');
+      return;
+    }
+
     if (screen === 'qr' || screen === 'reward') {
       setScreen('main');
     }
@@ -1774,12 +1993,14 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
     selectedBrandKey,
     selectedMilestonePct,
     selectedVoucherId,
+    surveyMissionId,
     pendingVoucherRedeem,
   ]);
 
   React.useEffect(() => {
     const openedFromDashboard =
       screen === 'qr' ||
+      screen === 'survey' ||
       screen === 'reward' ||
       (screen === 'main' &&
         Boolean(
@@ -1883,6 +2104,16 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
         />
       ) : null}
 
+      {screen === 'survey' ? (
+        <SurveyScreen
+          missionTitle={surveyMission?.title ?? 'Đánh giá sự kiện'}
+          value={surveyFeedback}
+          loading={miniAppLoading}
+          onChange={setSurveyFeedback}
+          onSubmit={handleSubmitSurvey}
+        />
+      ) : null}
+
       {screen === 'main' ? (
         <DashboardScreen
           tier={currentTier}
@@ -1936,6 +2167,7 @@ const BeautySummitExperience: React.FC<BeautySummitExperienceProps> = ({ onHeade
           }}
           onOpenMission={(mission) => setExpandedMissionId(mission.id)}
           onCloseMission={() => setExpandedMissionId(null)}
+          onOpenSurvey={handleOpenSurvey}
           onSubmitMission={handleSubmitMission}
           onVoteQueryChange={setVoteQuery}
           onToggleVote={handleToggleVote}

@@ -19,14 +19,14 @@ const TicketHelpModal: React.FC<TicketHelpModalProps> = ({ open, onClose, onOpen
       onClick={onClose}
     >
       <div
-        className="absolute inset-x-0 bottom-0 rounded-t-[1.85rem] border-t border-[#ff96da]/18 bg-[linear-gradient(180deg,#241f3c_0%,#19172c_100%)] px-5 pb-8 pt-3 text-white shadow-[0_-24px_60px_rgba(15,11,31,0.5)]"
+        className="absolute inset-x-0 bottom-0 rounded-t-[1.85rem] border-t border-[#ff96da]/18 bg-[#f9f9f9] px-5 pb-8 pt-3 text-white shadow-[0_-24px_60px_rgba(15,11,31,0.5)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-white/14" />
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <div className="text-lg font-black text-white/90">Tìm mã vé ở đâu?</div>
-            <div className="mt-1 text-sm text-white/82">Hai tình huống nhận mã phổ biến.</div>
+            <div className="text-lg font-black text-[#132036]">Tìm mã vé ở đâu?</div>
+            <div className="mt-1 text-sm text-[#132036]">Hai tình huống nhận mã phổ biến.</div>
           </div>
           <button
             type="button"
@@ -40,14 +40,14 @@ const TicketHelpModal: React.FC<TicketHelpModalProps> = ({ open, onClose, onOpen
 
         <div className="space-y-3">
           <div className="rounded-[1.1rem] border border-[#f4d37a]/24 bg-[rgba(255,221,87,0.08)] p-4">
-            <div className="mb-2 text-sm font-bold text-white/90">1. Khách mua vé trực tiếp</div>
-            <div className="text-sm leading-6 text-white/70">
+            <div className="mb-2 text-sm font-bold text-[#132036]">1. Khách mua vé trực tiếp</div>
+            <div className="text-sm leading-6 text-[#132036]">
               Mã vé được gửi qua email hoặc tin nhắn Zalo tại thời điểm thanh toán thành công.
             </div>
           </div>
           <div className="rounded-[1.1rem] border border-[#ff8dda]/20 bg-[rgba(255,79,182,0.08)] p-4">
-            <div className="mb-2 text-sm font-bold text-white/90">2. Khách nhận vé từ đối tác</div>
-            <div className="text-sm leading-6 text-white/70">
+            <div className="mb-2 text-sm font-bold text-[#132036]">2. Khách nhận vé từ đối tác</div>
+            <div className="text-sm leading-6 text-[#132036]">
               Mã vé sẽ được chuyển qua nhãn hàng hoặc đối tác mời tham dự. Bạn có thể liên hệ trực tiếp đầu mối đã gửi thư mời.
             </div>
           </div>

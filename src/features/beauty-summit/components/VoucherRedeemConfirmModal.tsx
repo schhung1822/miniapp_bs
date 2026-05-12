@@ -29,7 +29,7 @@ const VoucherRedeemConfirmModal: React.FC<VoucherRedeemConfirmModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="absolute inset-x-4 top-1/2 -translate-y-1/2 rounded-[1.7rem] border border-[#ff96da]/18 bg-[linear-gradient(180deg,#241f3c_0%,#19172c_100%)] p-5 text-white shadow-[0_24px_60px_rgba(15,11,31,0.5)]"
+        className="absolute inset-x-4 top-1/2 -translate-y-1/2 rounded-[1.7rem] border border-[#ff96da]/18 bg-[#f9f9f9] p-5 text-white shadow-[0_24px_60px_rgba(15,11,31,0.5)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mb-4 flex items-start justify-between gap-4">

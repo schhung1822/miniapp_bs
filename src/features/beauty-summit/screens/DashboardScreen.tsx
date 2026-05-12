@@ -86,6 +86,7 @@ interface DashboardScreenProps {
   onProofValueChange: (value: string) => void;
   onOpenMission: (mission: Mission) => void;
   onCloseMission: () => void;
+  onOpenSurvey: () => void;
   onSubmitMission: () => void;
   onVoteQueryChange: (value: string) => void;
   onToggleVote: (category: VoteCategory, brand: VoteBrand) => void;
@@ -200,6 +201,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
     onProofValueChange,
     onOpenMission,
     onCloseMission,
+    onOpenSurvey,
     onSubmitMission,
     onVoteQueryChange,
     onToggleVote,
@@ -263,7 +265,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
   const renderPassCard = (): React.ReactNode => (
     <div className="
       beauty-glow beauty-crisp-edge mb-4 overflow-hidden 
-      rounded-[1rem] 
+      rounded-[14px] 
       border-[2px] border-[#f24ab2] 
       bg-[linear-gradient(135deg,rgba(149,25,171,0.94)_0%,rgba(141,22,162,0.96)_52%,rgba(111,14,153,0.96)_100%)] 
       
@@ -327,7 +329,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
           </div>
 
           <button type="button" onClick={onOpenQr} className="shrink-0 text-center">
-            <div className="flex relative justify-center items-center bg-[rgba(39,7,74,0.96)] beauty-crisp-edge rounded-[1.45rem] border border-[#7f49ff] p-2.5 shadow-[0_12px_24px_rgba(43,2,72,0.34)]">
+            <div className="flex relative justify-center items-center bg-[rgba(39,7,74,0.96)] beauty-crisp-edge rounded-[14px] border border-[#7f49ff] p-2.5 shadow-[0_12px_24px_rgba(43,2,72,0.34)]">
               {hasQr ? (
                 <BeautyQrCode
                   value={qrValue}
@@ -339,8 +341,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                 />
               ) : (
                 <div className="flex h-[82px] w-[82px] flex-col items-center justify-center rounded-[0.8rem] sm:h-[92px] sm:w-[92px]">
-                  <QrIcon size={36} color="#ffffff" />
-                  <p className="text-[#ffffff]">Tạo mã QR</p>
+                  <QrIcon size={30} color="#ffffff" />
+                  <p className="text-[#ffffff] text-[14px] mt-2">Tạo mã QR</p>
                 </div>
               )}
               {hasQr ? (
@@ -373,7 +375,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
     );
 
     return (
-      <div className="mb-4 rounded-[1.55rem] border border-white/50 bg-[linear-gradient(180deg,rgba(119,17,161,0.94)_0%,rgba(102,11,148,0.96)_100%)] px-4 py-4 shadow-[0_18px_34px_rgba(68,5,108,0.24)]">
+      <div className="mb-4 rounded-[14px] border border-white/50 bg-[linear-gradient(180deg,rgba(119,17,161,0.94)_0%,rgba(102,11,148,0.96)_100%)] px-4 py-4 shadow-[0_18px_34px_rgba(68,5,108,0.24)]">
         <div className="mb-4 flex items-center justify-between gap-4">
           <div className="text-[14px] font-semibold text-[#ffffff]">Tiến độ nhiệm vụ</div>
           <div className="text-[15px] font-black text-[#ff69c9]">
@@ -429,7 +431,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                   </button>
                 ) : (
                   <div
-                    className="flex h-[33px] w-[33px] items-center justify-center rounded-[1rem]"
+                    className="flex h-[33px] w-[33px] items-center justify-center rounded-[14px]"
                     style={{
                       background: item.unlocked
                         ? 'linear-gradient(135deg, #ff62c4, #8d65ff)'
@@ -491,7 +493,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                 key={item.key}
                 type="button"
                 onClick={() => onPhaseChange(item.key)}
-                className={`relative flex flex-col items-center overflow-hidden rounded-[1rem] border px-2 pb-2 pt-1.5 text-center transition ${
+                className={`relative flex flex-col items-center overflow-hidden rounded-[14px] border px-2 pb-2 pt-1.5 text-center transition ${
                   active
                     ? 'border-[#ff85d5] bg-[linear-gradient(180deg,rgba(142,34,185,0.94)_0%,rgba(118,24,169,0.97)_100%)] shadow-[0_14px_28px_rgba(96,10,141,0.24)]'
                     : 'border-[#ff91d6] bg-[linear-gradient(180deg,rgba(228,57,143,0.14)_0%,rgba(223,39,87,0.1)_100%)] shadow-[0_10px_20px_rgba(88,8,104,0.12)]'
@@ -595,7 +597,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
 
     return (
       <div className="space-y-4">
-        <div className="rounded-[1.45rem] border border-[#f09de0] bg-[linear-gradient(135deg,rgba(121,22,167,0.96)_0%,rgba(122,21,171,0.96)_58%,rgba(103,14,155,0.98)_100%)] px-5 py-3 shadow-[0_18px_34px_rgba(77,4,108,0.22)]">
+        <div className="rounded-[14px] border border-[#f09de0] bg-[linear-gradient(135deg,rgba(121,22,167,0.96)_0%,rgba(122,21,171,0.96)_58%,rgba(103,14,155,0.98)_100%)] px-5 py-3 shadow-[0_18px_34px_rgba(77,4,108,0.22)]">
           <div className="flex items-start justify-between gap-5">
             <div className="min-w-0">
               <div className="text-[0.9rem] font-medium text-white/88">BPoint khả dụng</div>
@@ -661,7 +663,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
               return (
                 <div
                   key={voucher.id}
-                  className={`rounded-[1.25rem] border px-3.5 py-3 shadow-[0_16px_30px_rgba(68,6,109,0.22)] ${
+                  className={`rounded-[12px] border px-3.5 py-3 shadow-[0_16px_30px_rgba(68,6,109,0.22)] ${
                     grandPrize ? 'beauty-grand-prize-card beauty-crisp-edge' : ''
                   }`}
                   style={{
@@ -733,7 +735,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
                   key={voucher.id}
                   type="button"
                   onClick={() => (claimed ? onOpenVoucher(voucher) : onClaimVoucher(voucher))}
-                  className="flex w-full items-center gap-3 rounded-[1.25rem] border border-[#f09de0] bg-[linear-gradient(135deg,rgba(123,25,173,0.96)_0%,rgba(111,20,167,0.97)_58%,rgba(96,13,155,0.98)_100%)] px-3.5 py-3 text-left shadow-[0_16px_30px_rgba(68,6,109,0.22)]"
+                  className="flex w-full items-center gap-3 rounded-[12px] border border-[#f09de0] bg-[linear-gradient(135deg,rgba(123,25,173,0.96)_0%,rgba(111,20,167,0.97)_58%,rgba(96,13,155,0.98)_100%)] px-3.5 py-3 text-left shadow-[0_16px_30px_rgba(68,6,109,0.22)]"
                 >
                   <VoucherLogoBadge
                     logo={voucher.logo}
@@ -829,6 +831,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = (props) => {
         value={proofValue}
         onChange={onProofValueChange}
         onClose={onCloseMission}
+        onOpenSurvey={onOpenSurvey}
         onSubmit={onSubmitMission}
         onGoVote={() => {
           onCloseMission();
