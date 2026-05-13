@@ -3,6 +3,7 @@ www/
 .env
 .DS_Store
 *.log
+*.tsbuildinfo
+.next/
 .vscode/
 .claude/
-crm_beautysummit/

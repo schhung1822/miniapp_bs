@@ -1,0 +1,392 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model FormTemplate {
+  id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  created_at  DateTime? @db.Timestamp(0)
+  updated_at  DateTime? @db.Timestamp(0)
+  created_by  String?   @db.VarChar(255)
+  updated_by  String?   @db.VarChar(255)
+  nc_order    Decimal?  @db.Decimal(10, 2)
+  id_temp     String?   @default(uuid()) @db.Text
+  slug        String?   @unique @db.VarChar(255)
+  name        String?   @db.Text
+  isActive    String?   @db.Text
+  configJson  String?   @db.Text
+  create_time DateTime? @db.DateTime(0)
+  update_time DateTime? @updatedAt @db.DateTime(0)
+
+  @@index([nc_order], map: "template_order_idx")
+  @@map("template")
+}
+
+model brand {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+  created_by String?   @db.VarChar(255)
+  updated_by String?   @db.VarChar(255)
+  nc_order   Decimal?  @db.Decimal(10, 2)
+  brand_id   String?   @db.Text
+  brand_name String?   @db.Text
+  category   String?   @db.Text
+  product    String?   @db.Text
+  voted      String?   @db.Text
+  logo_url   String?   @db.Text
+  link       String?   @db.Text
+
+  @@index([nc_order], map: "brand_order_idx")
+  @@index([brand_id(length: 64)], map: "brand_brand_id_idx")
+  @@index([category(length: 64)], map: "brand_category_idx")
+}
+
+model voted {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+  created_by String?   @db.VarChar(255)
+  updated_by String?   @db.VarChar(255)
+  nc_order   Decimal?  @db.Decimal(10, 2)
+  ordercode  String?   @db.Text
+  name       String?   @db.Text
+  phone      String?   @db.Text
+  email      String?   @db.Text
+  gender     String?   @db.Text
+  time_vote  DateTime? @db.DateTime(0)
+  brand_id   String?   @db.Text
+
+  @@index([nc_order], map: "voted_order_idx")
+  @@index([brand_id(length: 64)], map: "voted_brand_id_idx")
+  @@index([phone(length: 32)], map: "voted_phone_idx")
+}
+
+model customer {
+  id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  created_at  DateTime? @db.Timestamp(0)
+  updated_at  DateTime? @db.Timestamp(0)
+  created_by  String?   @db.VarChar(255)
+  updated_by  String?   @db.VarChar(255)
+  nc_order    Decimal?  @db.Decimal(10, 2)
+  customer_id String?   @db.Text
+  name        String?   @db.Text
+  gender      String?   @db.Text
+  phone       String?   @db.Text
+  email       String?   @db.Text
+  career      String?   @db.Text
+  user_ip     String?   @db.Text
+  user_agent  String?   @db.Text
+  fbp         String?   @db.Text
+  fbc         String?   @db.Text
+  create_time DateTime? @db.DateTime(0)
+
+  @@index([nc_order], map: "customer_order_idx")
+  @@index([customer_id(length: 64)], map: "customer_customer_id_idx")
+  @@index([phone(length: 32)], map: "customer_phone_idx")
+}
+
+model orders {
+  id             Int       @id @default(autoincrement()) @db.UnsignedInt
+  created_at     DateTime? @db.Timestamp(0)
+  updated_at     DateTime? @db.Timestamp(0)
+  created_by     String?   @db.VarChar(255)
+  updated_by     String?   @db.VarChar(255)
+  nc_order       Decimal?  @db.Decimal(10, 2)
+  ordercode      String?   @db.Text
+  create_time    DateTime? @db.DateTime(0)
+  name           String?   @db.Text
+  phone          String?   @db.Text
+  email          String?   @db.Text
+  gender         String?   @db.Text
+  class          String?   @db.Text
+  money          String?   @db.Text
+  money_VAT      String?   @db.Text
+  status         String?   @db.Text
+  is_gift        BigInt?
+  update_time    DateTime? @db.DateTime(0)
+  is_checkin     BigInt?
+  number_checkin BigInt?
+  checkin_time   DateTime? @db.DateTime(0)
+  career         String?   @db.Text
+  hope           String?   @db.Text
+  ref            String?   @db.Text
+  source         String?   @db.Text
+  send_noti      BigInt?
+  customer_id    String?   @db.Text
+  voucher        String?   @db.Text
+  voucher_status String?   @db.Text
+  utm_source     String?   @db.Text
+  utm_medium     String?   @db.Text
+  utm_campaign   String?   @db.Text
+  order_id       String?   @db.Text
+
+  @@index([nc_order], map: "order_order_idx")
+  @@index([ordercode(length: 64)], map: "orders_ordercode_idx")
+  @@index([status(length: 64)], map: "orders_status_idx")
+  @@index([phone(length: 32)], map: "orders_phone_idx")
+  @@index([customer_id(length: 64)], map: "orders_customer_id_idx")
+}
+
+model product {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+  created_by String?   @db.VarChar(255)
+  updated_by String?   @db.VarChar(255)
+  nc_order   Decimal?  @db.Decimal(10, 2)
+  pro_ID     String?   @db.Text
+  name       String?   @db.Text
+  brand      String?   @db.Text
+  class      String?   @db.Text
+  gia_ban    BigInt?
+  gia_von    BigInt?
+  property   String?   @db.Text
+
+  @@index([nc_order], map: "product_order_idx")
+}
+
+model categories {
+  id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  created_at  DateTime? @db.Timestamp(0)
+  updated_at  DateTime? @db.Timestamp(0)
+  created_by  String?   @db.VarChar(255)
+  updated_by  String?   @db.VarChar(255)
+  nc_order    Decimal?  @db.Decimal(10, 2)
+  category_id String?   @db.Text
+  name        String?   @unique @db.VarChar(255)
+  create_time DateTime? @default(now()) @db.DateTime(0)
+  update_time DateTime? @updatedAt @db.DateTime(0)
+
+  @@index([nc_order], map: "categories_order_idx")
+}
+
+model booth {
+  id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  created_at  DateTime? @db.Timestamp(0)
+  updated_at  DateTime? @db.Timestamp(0)
+  created_by  String?   @db.VarChar(255)
+  updated_by  String?   @db.VarChar(255)
+  nc_order    Decimal?  @db.Decimal(10, 2)
+  create_time DateTime? @db.DateTime(0)
+  name        String?   @db.Text
+  phone       String?   @db.Text
+  email       String?   @db.Text
+
+  @@index([nc_order], map: "booth_order_idx")
+}
+
+model ticket {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+  created_by String?   @db.VarChar(255)
+  updated_by String?   @db.VarChar(255)
+  nc_order   Decimal?  @db.Decimal(10, 2)
+  ticket_id  String?   @db.Text
+  name       String?   @db.Text
+  money      String?   @db.Text
+  money_sale String?   @db.Text
+  time_start DateTime? @db.DateTime(0)
+  time_end   DateTime? @db.DateTime(0)
+  img        String?   @db.Text
+
+  @@index([nc_order], map: "ticket_order_idx")
+  @@index([ticket_id(length: 64)], map: "ticket_ticket_id_idx")
+}
+
+model app_settings {
+  setting_key   String    @id @db.VarChar(100)
+  setting_value String?   @db.Text
+  updated_at    DateTime? @default(now()) @updatedAt @db.DateTime(0)
+}
+
+model voucher {
+  id         Int             @id @default(autoincrement()) @db.UnsignedInt
+  created_at DateTime?       @db.Timestamp(0)
+  updated_at DateTime?       @db.Timestamp(0)
+  created_by String?         @db.VarChar(255)
+  updated_by String?         @db.VarChar(255)
+  nc_order   Decimal?        @db.Decimal(10, 2)
+  voucher    String?         @db.Text
+  classy     voucher_classy?
+  money      BigInt?
+  rate       BigInt?
+  number     BigInt?
+  class      voucher_class?
+  from_date  DateTime?       @db.DateTime(0)
+  to_date    DateTime?       @db.DateTime(0)
+
+  @@index([nc_order], map: "voucher_order_idx")
+}
+
+enum voucher_classy {
+  monet
+  rate
+  money
+}
+
+enum voucher_class {
+  STANDARD
+  GOLD
+  RUBY
+}
+
+model token {
+  id                Int       @id @default(autoincrement()) @db.UnsignedInt
+  created_at        DateTime? @db.Timestamp(0)
+  updated_at        DateTime? @db.Timestamp(0)
+  created_by        String?   @db.VarChar(255)
+  updated_by        String?   @db.VarChar(255)
+  nc_order          Decimal?  @db.Decimal(10, 2)
+  access_token      String?   @db.Text
+  refresh_token     String?   @db.Text
+  user_kiot         String?   @db.Text
+  client_kiot       String?   @db.Text
+  key_secret_kiot   String?   @db.Text
+  access_token_kiot String?   @db.Text
+
+  @@index([nc_order], map: "toekn_order_idx")
+}
+
+model user {
+  id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  created_at  DateTime? @db.Timestamp(0)
+  updated_at  DateTime? @db.Timestamp(0)
+  created_by  String?   @db.VarChar(255)
+  updated_by  String?   @db.VarChar(255)
+  nc_order    Decimal?  @db.Decimal(10, 2)
+  user_id     String?   @db.Text
+  user        String?   @unique @db.VarChar(255)
+  email       String?   @unique @db.VarChar(255)
+  zid         String?   @unique @db.VarChar(255)
+  phone       String?   @db.Text
+  password    String?   @db.Text
+  name        String?   @db.Text
+  avatar      String?   @db.Text
+  role        String?   @default("user") @db.VarChar(50)
+  status      String?   @db.Text
+  last_login  DateTime? @db.DateTime(0)
+  create_time DateTime? @default(now()) @db.DateTime(0)
+  update_time DateTime? @updatedAt @db.DateTime(0)
+
+  @@index([nc_order], map: "user_order_idx")
+  @@index([phone(length: 32)], map: "user_phone_idx")
+}
+
+model user_zaloOA {
+  id           Int       @id @default(autoincrement()) @db.UnsignedInt
+  created_at   DateTime? @db.Timestamp(0)
+  updated_at   DateTime? @db.Timestamp(0)
+  created_by   String?   @db.VarChar(255)
+  updated_by   String?   @db.VarChar(255)
+  nc_order     Decimal?  @db.Decimal(10, 2)
+  user_id      String?   @db.Text
+  name         String?   @db.Text
+  alias        String?   @db.Text
+  is_sensitive String?   @db.Text
+  follower     String?   @db.Text
+  avatar       String?   @db.Text
+  phone        String?   @db.Text
+  city         String?   @db.Text
+  address      String?   @db.Text
+  district     String?   @db.Text
+  id_lark      String?   @db.Text
+
+  @@index([nc_order], map: "user_zaloOA_order_idx")
+}
+
+model miniapp_user_reward_state {
+  id                       Int       @id @default(autoincrement()) @db.UnsignedInt
+  created_at               DateTime? @db.Timestamp(0)
+  updated_at               DateTime? @db.Timestamp(0)
+  created_by               String?   @db.VarChar(255)
+  updated_by               String?   @db.VarChar(255)
+  nc_order                 Decimal?  @db.Decimal(10, 2)
+  zid                      String    @unique @db.VarChar(255)
+  phone                    String?   @db.Text
+  name                     String?   @db.Text
+  avatar                   String?   @db.Text
+  completed_mission_ids    String?   @db.LongText
+  claimed_free_voucher_ids String?   @db.LongText
+  redeemed_voucher_ids     String?   @db.LongText
+  claimed_milestone_pcts   String?   @db.LongText
+  votes_json               String?   @db.LongText
+  spent_points             Int?      @default(0)
+  total_points             Int?      @default(0)
+  available_points         Int?      @default(0)
+  create_time              DateTime? @default(now()) @db.DateTime(0)
+  update_time              DateTime? @updatedAt @db.DateTime(0)
+
+  @@index([nc_order], map: "miniapp_user_reward_state_order_idx")
+}
+
+model miniapp_voucher {
+  id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  created_at  DateTime? @db.Timestamp(0)
+  updated_at  DateTime? @db.Timestamp(0)
+  created_by  String?   @db.VarChar(255)
+  updated_by  String?   @db.VarChar(255)
+  nc_order    Decimal?  @db.Decimal(10, 2)
+  voucher_id  String    @unique @db.VarChar(64)
+  kind        String    @db.VarChar(20)
+  brand       String    @db.VarChar(255)
+  logo        String?   @db.LongText
+  discount    String    @db.VarChar(255)
+  description String?   @db.Text
+  code        String?   @unique @db.VarChar(64)
+  color       String?   @db.VarChar(20)
+  cost        Int?
+  is_grand    Int?      @default(0) @db.TinyInt
+  is_active   Int?      @default(1) @db.TinyInt
+  create_time DateTime? @default(now()) @db.DateTime(0)
+  update_time DateTime? @updatedAt @db.DateTime(0)
+
+  @@index([kind], map: "miniapp_voucher_kind_idx")
+  @@index([nc_order], map: "miniapp_voucher_order_idx")
+}
+
+model checkin {
+  id           Int       @id @default(autoincrement()) @db.UnsignedInt
+  order_id     Int?      @db.UnsignedInt
+  ordercode    String?   @db.VarChar(64)
+  zone_id      String?   @db.VarChar(64)
+  zone_name    String?   @db.VarChar(255)
+  checkin_time DateTime? @db.DateTime(0)
+  created_by   String?   @db.VarChar(255)
+
+  @@index([ordercode])
+  @@index([zone_id])
+}
+
+model checkin_log {
+  id           Int       @id @default(autoincrement())
+  order_id     Int       @db.UnsignedInt
+  ordercode    String    @db.VarChar(64)
+  zone_id      String    @db.VarChar(64)
+  zone_name    String?   @db.VarChar(255)
+  source       String?   @db.VarChar(255)
+  checkin_time DateTime? @default(now()) @db.DateTime(0)
+  created_by   String?   @db.VarChar(255)
+
+  @@index([order_id], map: "checkin_log_order_id_idx")
+  @@index([ordercode], map: "checkin_log_ordercode_idx")
+  @@index([zone_id], map: "checkin_log_zone_id_idx")
+}
+
+model checkin_locations {
+  id            Int       @id @default(autoincrement()) @db.UnsignedInt
+  name          String    @db.VarChar(255)
+  allowed_tiers String    @db.VarChar(255)
+  image_url     String?   @db.Text
+  prerequisite  String?   @db.VarChar(255)
+  nc_order      Decimal?  @db.Decimal(10, 2)
+  created_at    DateTime? @default(now()) @db.Timestamp(0)
+  updated_at    DateTime? @db.Timestamp(0)
+  is_active     Int?      @default(1) @db.TinyInt
+  event_date    DateTime? @db.Date
+}
